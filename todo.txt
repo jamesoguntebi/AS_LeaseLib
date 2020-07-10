@@ -1,0 +1,40 @@
+  _______    ____    _____     ____        
+ |__   __|  / __ \  |  __ \   / __ \     _ 
+    | |    | |  | | | |  | | | |  | |   (_)
+    | |    | |  | | | |  | | | |  | |      
+    | |    | |__| | | |__| | | |__| |    _ 
+    |_|     \____/  |_____/   \____/    (_)
+
+P0:
+
+P1:
+- unit tests
+- option to send thanks for your payment email
+- option to add default payment
+- scheduled addition of rent due entry
+
+P2:
+- option to add partial payment
+
+P3:
+- 
+
+
+  _____     ____    _   _   ______     
+ |  __ \   / __ \  | \ | | |  ____|  _ 
+ | |  | | | |  | | |  \| | | |__    (_)
+ | |  | | | |  | | | . ` | |  __|      
+ | |__| | | |__| | | |\  | | |____   _ 
+ |_____/   \____/  |_| \_| |______| (_)
+
+P0:
+- config.ts to parse the config sheet
+
+P1:
+- 
+
+P2:
+-
+
+P3:
+- 
