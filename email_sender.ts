@@ -22,7 +22,7 @@ export default class EmailSender {
     template.templateParams = templateParams;
 
     GmailApp.sendEmail(
-      config.renter.email,
+      config.renter.emails.join(', '),
       'Thanks for your lease payment',
       nonHtmlBody,
       {

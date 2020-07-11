@@ -30,7 +30,8 @@ export default class Config {
       renter: {
         firstName: getCellData('renter first name').string(),
         lastName: getCellData('renter last name').string(),
-        email: getCellData('renter email').string(),
+        emails: getCellData('renter email').string().split(/,|\n/)
+                    .map(e => e.trim()).filter(e => !!e),
       },
       rentAmount: getCellData('monthly rent').number(),
       rentDueDayOfMonth: getCellData('monthly due date').number(),
@@ -70,7 +71,7 @@ export interface LeaseConfig {
 interface Renter {
   firstName: string;
   lastName: string;
-  email: string;
+  emails: string[];
 }
 
 interface SearchQuery {
