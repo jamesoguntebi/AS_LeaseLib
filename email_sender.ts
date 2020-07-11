@@ -27,7 +27,7 @@ export default class EmailSender {
       nonHtmlBody,
       {
         cc: config.emailCC,
-        name: 'Oguntebi Lease Bot',
+        name: config.emailDisplayName,
         htmlBody: template.evaluate().getContent(),
       });
   }
