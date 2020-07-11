@@ -6,9 +6,7 @@
     |_|     \____/  |_____/   \____/    (_)
 
 P0:
-- add loan/interest features
 - integrate into live sheets
-- generalize terminology in code and config
 
 P1:
 - unit tests
@@ -34,6 +32,8 @@ P3:
 P0:
 - config.ts to parse the config sheet
 - get date from email to add payment, instead of assuming today
+- add loan/interest features
+- generalize terminology in code and config
 
 P1:
 - add option to add a full payment
