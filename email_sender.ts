@@ -2,7 +2,8 @@ import Config from "./config";
 import BalanceSheet from "./balance_sheet";
 
 export default class EmailSender {
-  static sendPaymentThanks(amount: number = Config.get().rentAmount) {
+  static sendPaymentThanks(
+        amount: number = Config.get().rentConfig.monthlyAmount) {
     const config = Config.get();
 
     const templateParams: PaymentEmailTemplateParams = {

@@ -1,3 +1,4 @@
+type Range = GoogleAppsScript.Spreadsheet.Range;
 type Sheet = GoogleAppsScript.Spreadsheet.Sheet;
 
 export default class JasSpreadsheetApp {
@@ -48,27 +49,5 @@ export default class JasSpreadsheetApp {
     throw new Error(`Expected a column with a name including '${name}' in ` + 
         `sheet '${sheet.getName()}'. ` + 
         `Column labels: ${columnLabels.join(', ')}`);
-  }
-
-  static getCellData(sheet: Sheet, row: number, column: number): CellData {
-    return new CellData(sheet.getRange(row, column).getValue());
-  }
-}
-
-export class CellData {
-  constructor(private data: any) {}
-
-  string(): string {
-    if (typeof this.data !== 'string') {
-      throw new Error('Expected string');
-    }
-    return this.data as string;
-  }
-
-  number(): number {
-    if (typeof this.data !== 'number') {
-      throw new Error('Expected number');
-    }
-    return this.data as number;
   }
 }

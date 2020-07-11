@@ -1,5 +1,6 @@
 import Config from "./config";
-import JasSpreadsheetApp, { CellData } from "./jas_spreadsheet_app";
+import JasSpreadsheetApp from "./jas_spreadsheet_app";
+import { CellData } from "./jas_range";
 
 
 export default class BalanceSheet {
@@ -7,41 +8,40 @@ export default class BalanceSheet {
     const sheet = JasSpreadsheetApp.findSheet('balance');
     const firstDataRow = sheet.getFrozenRows() + 1;
     const balanceColumn = JasSpreadsheetApp.findColumn('balance', sheet);
-    return new CellData(sheet.getRange(firstDataRow, balanceColumn).getValue())
-        .number();
+    return new CellData(sheet.getRange(firstDataRow, balanceColumn)).number();
   }
 
   /**
    * Adds a rent due transaction today the balance sheet if today is Rent Due
    * day.
    */
-  static maybeAddRentDue(amount: number = -Config.get().rentAmount) {
-    if (Config.get().rentDueDayOfMonth === new Date().getDate()) {
-      BalanceSheet.addRentDue(amount);
+  static maybeAddRentOrInterestTransaction() {
+    const currentDayOfMonth = new Date().getDate();
+    const config = Config.get();
+
+    if (config.rentConfig?.dueDayOfMonth === currentDayOfMonth) {
+      BalanceSheet.insertRow({
+        date: new Date(),
+        description: 'Rent Due',
+        transaction: -config.rentConfig.monthlyAmount,
+      });
+    } else if (config.loanConfig?.interestDayOfMonth === currentDayOfMonth) {
+      BalanceSheet.insertRow({
+        date: new Date(),
+        description: 'Monthly Interest',
+        transaction: 'interest',
+      });
     }
-  }
-
-  /**
-   * Adds a rent due transaction today the balance sheet if today is Rent Due
-   * day.
-   */
-  static addRentDue(amount: number = -Config.get().rentAmount) {
-    BalanceSheet.insertRow({
-      date: new Date(),
-      description: 'Rent Due',
-      transaction: amount,
-    });
   }
 
   /**
    * Adds a payment to the balance sheet. The default amount is the full rent
    * amount.
    */
-  static addPayment(
-      amount: number = Config.get().rentAmount, date: Date = new Date()) {
+  static addPayment(amount: number, date: Date) {
     BalanceSheet.insertRow({
       date,
-      description: 'Rent Payment',
+      description: Config.get().rentConfig ? 'Rent Payment' : 'Loan Payment',
       transaction: amount,
     });
   }
@@ -51,6 +51,9 @@ export default class BalanceSheet {
     const headerRow = sheet.getFrozenRows();
     sheet.insertRowAfter(headerRow);
     const newRow = headerRow + 1;
+    const balanceColumn = JasSpreadsheetApp.findColumn('balance', sheet);
+    const previousBalanceCellA1 =
+        sheet.getRange(newRow + 1, balanceColumn).getA1Notation();
 
     const setCell = (columnName: string, value: any) => {
       const column = JasSpreadsheetApp.findColumn(columnName, sheet);
@@ -58,25 +61,33 @@ export default class BalanceSheet {
     };
 
     setCell('date', balanceRow.date);
-    setCell('transaction', balanceRow.transaction);
     setCell('description', balanceRow.description);
     if (balanceRow.zelleId) {
       setCell('zelle id', balanceRow.zelleId);
     }
 
-    const balanceColumn = JasSpreadsheetApp.findColumn('balance', sheet);
-    const previousBalanceCell = sheet.getRange(newRow + 1, balanceColumn);
+    if (typeof balanceRow.transaction === 'number') {
+      setCell('transaction', balanceRow.transaction);
+    } else {
+      const prevBal = previousBalanceCellA1;
+      const interestRate =
+          Config.getFixedCellNotation(Config.Fields.LOAN_INTEREST_RATE);
+      setCell(
+          'transaction',
+          `= if (${prevBal} >= 0, - ${prevBal} * ${interestRate} / 12, 0)`);
+    }
+
     const transactionCell =
         sheet.getRange(
             newRow, JasSpreadsheetApp.findColumn('transaction', sheet));
     setCell('balance',
-        `= ${previousBalanceCell.getA1Notation()} - ${transactionCell.getA1Notation()}`);
+        `= ${previousBalanceCellA1} - ${transactionCell.getA1Notation()}`);
   }
 }
 
-export interface BalanceRow {
+interface BalanceRow {
   date: Date,
-  transaction: number,
   description: string,
+  transaction: number | 'interest',
   zelleId?: string,
 }

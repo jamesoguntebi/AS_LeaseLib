@@ -1,8 +1,8 @@
 import BalanceSheet from "./balance_sheet";
 import EmailChecker from "./email_checker";
 
-export function maybeAddRentDueTransaction() {
-  return Executrix.run(() => BalanceSheet.maybeAddRentDue());
+export function maybeAddRentOrInterestTransaction() {
+  return Executrix.run(() => BalanceSheet.maybeAddRentOrInterestTransaction());
 }
 
 export function checkedLabeledEmails() {
