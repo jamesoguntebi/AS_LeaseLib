@@ -27,12 +27,9 @@ export default class Config {
             .map(pt => Config.assertIsPaymentType(pt));
 
     return {
-      renter: {
-        firstName: getCellData('renter first name').string(),
-        lastName: getCellData('renter last name').string(),
-        emails: getCellData('renter email').string().split(/,|\n/)
+      customerDisplayName: getCellData('customer display name').string(),
+      customerEmails: getCellData('customer emails').string().split(/,|\n/)
                     .map(e => e.trim()).filter(e => !!e),
-      },
       rentAmount: getCellData('monthly rent').number(),
       rentDueDayOfMonth: getCellData('monthly due date').number(),
       emailCC: getCellData('email cc').string(),
@@ -58,20 +55,15 @@ export default class Config {
 }
 
 export interface LeaseConfig {
+  customerDisplayName: string;
+  customerEmails: string[];
   emailCC: string;
   emailDisplayName: string;
   linkToSheetHref: string;
   linkToSheetText: string;
   rentAmount: number;
   rentDueDayOfMonth: number;
-  renter: Renter;
   searchQuery: SearchQuery;
-}
-
-interface Renter {
-  firstName: string;
-  lastName: string;
-  emails: string[];
 }
 
 interface SearchQuery {

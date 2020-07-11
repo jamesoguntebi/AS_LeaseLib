@@ -10,7 +10,7 @@ export default class EmailSender {
       linkHref: config.linkToSheetHref,
       linkText: config.linkToSheetText,
       paymentAmount: amount,
-      renterFirstName: config.renter.firstName,
+      customerDisplayName: config.customerDisplayName,
     };
 
 
@@ -22,7 +22,7 @@ export default class EmailSender {
     template.templateParams = templateParams;
 
     GmailApp.sendEmail(
-      config.renter.emails.join(', '),
+      config.customerEmails.join(', '),
       'Thanks for your lease payment',
       nonHtmlBody,
       {
@@ -37,8 +37,8 @@ export default class EmailSender {
 /** Keep in sync with email_template_payment.html. */
 interface PaymentEmailTemplateParams {
   balance: number,
+  customerDisplayName: string,
   linkHref: string,
   linkText: string,
   paymentAmount: number,
-  renterFirstName: string,
 }
