@@ -1,7 +1,44 @@
+import Config from "./config";
 import JasSpreadsheetApp from "./jas_spreadsheet_app";
+import DateUtil from "./date_util";
+
 
 export default class BalanceSheet {
-  static insertRow(balanceRow: BalanceRow) {
+  /**
+   * Adds a rent due transaction today the balance sheet if today is Rent Due
+   * day.
+   */
+  static maybeAddRentDue(amount: number = -Config.get().rentAmount) {
+    if (Config.get().rentDueDayOfMonth === new Date().getDate()) {
+      BalanceSheet.addRentDue(amount);
+    }
+  }
+
+  /**
+   * Adds a rent due transaction today the balance sheet if today is Rent Due
+   * day.
+   */
+  static addRentDue(amount: number = -Config.get().rentAmount) {
+    BalanceSheet.insertRow({
+      date: new Date(),
+      description: 'Rent Due',
+      transaction: amount,
+    });
+  }
+
+  /**
+   * Adds a payment to the balance sheet. The default amount is the full rent
+   * amount.
+   */
+  static addPayment(amount: number = Config.get().rentAmount) {
+    BalanceSheet.insertRow({
+      date: new Date(),
+      description: 'Rent Payment',
+      transaction: amount,
+    });
+  }
+
+  private static insertRow(balanceRow: BalanceRow) {
     const sheet = JasSpreadsheetApp.findSheet('balance');
     const headerRow = sheet.getFrozenRows();
     sheet.insertRowAfter(headerRow);
