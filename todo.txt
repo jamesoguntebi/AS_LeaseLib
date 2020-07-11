@@ -13,6 +13,10 @@ P1:
 P2:
 - option to add partial payment
 - parse email to input payments
+- instead of checking emails, let manual step be to label emails. script do the
+  rest
+- use dropdown list to select payment types in sheet config
+
 
 P3:
 - maybe manage triggers programatically?

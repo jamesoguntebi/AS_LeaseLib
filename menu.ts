@@ -1,5 +1,5 @@
 import BalanceSheet from "./balance_sheet";
-import Email from "./email";
+import EmailSender from "./email_sender";
 
 export function onOpen() {
   SpreadsheetApp.getUi().createMenu('Lease Tools')
@@ -11,11 +11,11 @@ export function onOpen() {
 
 export function addFullPayment() {
   BalanceSheet.addPayment();
-  Email.sendPaymentThanks();
+  EmailSender.sendPaymentThanks();
 }
 
 export function sendPaymentReceivedMail() {
-  Email.sendPaymentThanks();
+  EmailSender.sendPaymentThanks();
 }
 
 export function addRentDueTransaction() {

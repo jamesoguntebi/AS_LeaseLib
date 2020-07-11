@@ -1,6 +1,5 @@
 import Config from "./config";
 import JasSpreadsheetApp, { CellData } from "./jas_spreadsheet_app";
-import DateUtil from "./date_util";
 
 
 export default class BalanceSheet {

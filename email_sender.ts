@@ -1,7 +1,7 @@
 import Config from "./config";
 import BalanceSheet from "./balance_sheet";
 
-export default class Email {
+export default class EmailSender {
   static sendPaymentThanks(amount: number = Config.get().rentAmount) {
     const config = Config.get();
 
@@ -21,14 +21,15 @@ export default class Email {
     const template = HtmlService.createTemplateFromFile('email_template_payment');
     template.templateParams = templateParams;
 
-    MailApp.sendEmail({
-      to: config.renter.email,
-      cc: config.emailCC,
-      subject: 'Thanks for your lease payment',
-      name: 'Oguntebi Lease Bot',
-      body: nonHtmlBody,
-      htmlBody: template.evaluate().getContent(),
-    });
+    GmailApp.sendEmail(
+      config.renter.email,
+      'Thanks for your lease payment',
+      nonHtmlBody,
+      {
+        cc: config.emailCC,
+        name: 'Oguntebi Lease Bot',
+        htmlBody: template.evaluate().getContent(),
+      });
   }
 }
 
