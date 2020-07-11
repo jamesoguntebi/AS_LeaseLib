@@ -1,5 +1,6 @@
 import Config, { PaymentType } from "./config";
 import BalanceSheet from "./balance_sheet";
+import EmailSender from "./email_sender";
 
 type GmailMessage = GoogleAppsScript.Gmail.GmailMessage;
 
@@ -40,7 +41,10 @@ export default class EmailChecker {
           const parser = EmailChecker.PARSERS.get(paymentType);
           const paymentAmount = parser(message);
           if (paymentAmount !== null) {
-            BalanceSheet.addPayment(paymentAmount);
+            const paymentDate = new Date();
+            paymentDate.setTime(message.getDate().getTime());
+            BalanceSheet.addPayment(paymentAmount, paymentDate);
+            EmailSender.sendPaymentThanks(paymentAmount);
             threadProcessed = true;
             break;
           }

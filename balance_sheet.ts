@@ -37,9 +37,10 @@ export default class BalanceSheet {
    * Adds a payment to the balance sheet. The default amount is the full rent
    * amount.
    */
-  static addPayment(amount: number = Config.get().rentAmount) {
+  static addPayment(
+      amount: number = Config.get().rentAmount, date: Date = new Date()) {
     BalanceSheet.insertRow({
-      date: new Date(),
+      date,
       description: 'Rent Payment',
       transaction: amount,
     });
