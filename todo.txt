@@ -6,6 +6,9 @@
     |_|     \____/  |_____/   \____/    (_)
 
 P0:
+- add loan/interest features
+- integrate into live sheets
+- generalize terminology in code and config
 
 P1:
 - unit tests
@@ -41,6 +44,7 @@ P1:
 P2:
 - instead of checking emails, let manual step be to label emails. script do the
   rest
+- Add email display name to config for outgoing emails
 
 P3:
 - 
