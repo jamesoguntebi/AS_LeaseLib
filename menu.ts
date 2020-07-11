@@ -1,4 +1,4 @@
-import Payments from "./payments";
+import BalanceSheet from "./balance_sheet";
 
 export function onOpen() {
   SpreadsheetApp.getUi().createMenu('Lease Tools')
@@ -8,5 +8,5 @@ export function onOpen() {
 }
 
 export function addFullPayment() {
-  Payments.addPayment();
+  BalanceSheet.addPayment();
 }
