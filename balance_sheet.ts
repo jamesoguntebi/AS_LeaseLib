@@ -1,9 +1,17 @@
 import Config from "./config";
-import JasSpreadsheetApp from "./jas_spreadsheet_app";
+import JasSpreadsheetApp, { CellData } from "./jas_spreadsheet_app";
 import DateUtil from "./date_util";
 
 
 export default class BalanceSheet {
+  static getBalance(): number { 
+    const sheet = JasSpreadsheetApp.findSheet('balance');
+    const firstDataRow = sheet.getFrozenRows() + 1;
+    const balanceColumn = JasSpreadsheetApp.findColumn('balance', sheet);
+    return new CellData(sheet.getRange(firstDataRow, balanceColumn).getValue())
+        .number();
+  }
+
   /**
    * Adds a rent due transaction today the balance sheet if today is Rent Due
    * day.

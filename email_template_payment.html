@@ -1,0 +1,20 @@
+<!--
+ - @param {PaymentEmailTemplateParams} templateParams See interface in email.ts.
+ -->
+
+<p>Hello <?= templateParams.renterFirstName ?>,</p>
+
+<p>
+  Thank you for your recent payment of $<?= templateParams.paymentAmount ?>.
+  Your balance is now
+  <strong <? if (templateParams.balance > 0) { ?>
+            style="color: #b34;"
+          <? } ?>>
+    $<?= templateParams.balance ?>
+  </strong>.
+</p>
+
+<p>
+  See balance sheet:
+  <a href="<?= templateParams.linkHref ?>"><?= templateParams.linkText ?></a>
+</p>

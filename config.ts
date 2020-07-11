@@ -24,6 +24,8 @@ export default class Config {
       rentAmount: getCellData('monthly rent').number(),
       rentDueDayOfMonth: getCellData('monthly due date').number(),
       emailCC: getCellData('email cc').string(),
+      linkToSheetHref: getCellData('link to sheet href').string(),
+      linkToSheetText: getCellData('link to sheet text').string(),
     };
   }
 }
@@ -33,6 +35,8 @@ export interface LeaseConfig {
   rentAmount: number;
   rentDueDayOfMonth: number;
   emailCC: string;
+  linkToSheetHref: string;
+  linkToSheetText: string;
 }
 
 interface Renter {
