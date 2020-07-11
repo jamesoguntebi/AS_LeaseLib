@@ -15,6 +15,7 @@ P1:
 
 P2:
 - option to add partial payment
+- parse email to input payments
 
 P3:
 - 
@@ -29,6 +30,7 @@ P3:
 
 P0:
 - config.ts to parse the config sheet
+- add option to add a full payment
 
 P1:
 - 

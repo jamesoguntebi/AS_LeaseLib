@@ -1,15 +1,15 @@
-import SpreadsheetAppUtil, { CellData } from "./spreadsheet_app_util";
+import JasSpreadsheetApp, { CellData } from "./jas_spreadsheet_app";
 
 type Sheet = GoogleAppsScript.Spreadsheet.Sheet;
 
 export default class Config {
   static get(): LeaseConfig {
-    const configSheet = SpreadsheetAppUtil.findSheet('config');
-    const valueColumn = SpreadsheetAppUtil.findColumn('value', configSheet);
+    const configSheet = JasSpreadsheetApp.findSheet('config');
+    const valueColumn = JasSpreadsheetApp.findColumn('value', configSheet);
     console.log({valueColumn});
 
     const getCellData = (configName: string) => {
-      const configRow = SpreadsheetAppUtil.findRow(configName, configSheet);
+      const configRow = JasSpreadsheetApp.findRow(configName, configSheet);
       console.log({configRow});
       return new CellData(
           configSheet.getRange(configRow, valueColumn).getValue());

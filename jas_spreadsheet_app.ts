@@ -1,6 +1,6 @@
 type Sheet = GoogleAppsScript.Spreadsheet.Sheet;
 
-export default class SpreadsheetAppUtil {
+export default class JasSpreadsheetApp {
   static findSheet(name: string): Sheet {
     const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
     name = name.toLowerCase();

@@ -8,5 +8,5 @@ export function onOpen() {
 }
 
 export function addFullPayment() {
-  Payments.addFullPayment();
+  Payments.addPayment();
 }
