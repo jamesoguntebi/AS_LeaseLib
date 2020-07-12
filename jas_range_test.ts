@@ -1,5 +1,5 @@
 import JasRange, { CellData } from './jas_range';
-import JasSpreadsheetApp from './jas_spreadsheet_app';
+import JasSpreadsheet from './jas_spreadsheet';
 import { Tester } from './testing/tester';
 import { Test } from './testing/testrunner';
 
@@ -9,7 +9,7 @@ export default class JasRangeTest implements Test {
   readonly name: string = 'JasRangeTest';
 
   run(t: Tester) {
-    const sheet = JasSpreadsheetApp.findSheet('balance');
+    const sheet = JasSpreadsheet.findSheet('balance');
 
     t.describe('getFixedA1Notation', () => {
       t.it('adds dollar sign symbol', () => {
