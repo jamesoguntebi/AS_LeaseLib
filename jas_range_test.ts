@@ -1,8 +1,9 @@
-import 'jasmine';
 import JasRange, { CellData } from './jas_range';
 import JasSpreadsheetApp from './jas_spreadsheet_app';
 import { Tester } from './testing/tester';
 import { Test } from './testing/testrunner';
+
+type Range = GoogleAppsScript.Spreadsheet.Range;
 
 export default class JasRangeTest implements Test {
   readonly name: string = 'JasRangeTest';
@@ -23,25 +24,36 @@ export default class JasRangeTest implements Test {
     });
 
     t.describe('CellData', () => {
+      let defaultRange: Range;
+      let defaultOldValue: any;
+
+      t.beforeEach(() => {
+        defaultRange = sheet.getRange(1, 1, 1, 1);
+        defaultOldValue = defaultRange.getValue();
+      });
+
+      t.afterEach(() => defaultRange.setValue(defaultOldValue));
+
       t.it('throws for multi-cell range', () => {
         const range = sheet.getRange(1, 1, 2, 2);
         t.expect(() => new CellData(range)).toThrow();
       });
 
       t.it('throws for wrong type', () => {
-        const range = sheet.getRange(1, 1, 1, 1);
-        const oldValue = range.getValue();
-        range.setValue(3);
-        t.expect(() => new CellData(range).string()).toThrow();
-        range.setValue(oldValue);
+        defaultRange.setValue(3);
+        t.expect(() => new CellData(defaultRange).string()).toThrow();
       });
 
       t.it('handles optional calls', () => {
-        const range = sheet.getRange(1, 1, 1, 1);
-        const oldValue = range.getValue();
-        range.clear({contentsOnly: true});
-        t.expect(new CellData(range).stringOptional()).toEqual(undefined);
-        range.setValue(oldValue);
+        defaultRange.clear({contentsOnly: true});
+        t.expect(new CellData(defaultRange).stringOptional()).toEqual(undefined);
+      });
+
+      t.it('finds string array', () => {
+        defaultRange.setValue(
+            ',,apples,bananas\ncarrots  ,,\n\ndragonfruit, edameme');
+        t.expect(new CellData(defaultRange).stringArray()).toEqual(
+            ['apples', 'bananas', 'carrots', 'dragonfruit', 'edameme']);
       });
     });
   }

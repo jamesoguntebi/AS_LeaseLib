@@ -5,14 +5,59 @@ export class Tester {
   private successCount = 0;
   private failureCount = 0;
 
+  // Empty state allows beforeEach and afterEach, hence one context starting in
+  // the stack.
+  private currentDescriptionContext: DescriptionContext = {};
+  private descriptionContextStack: DescriptionContext[] =
+      [this.currentDescriptionContext];
+  private beforeEachFns: Array<() => void> = [];
+  private afterEachFns: Array<() => void> = [];
+
+  private isInsideUnit = false;
+
   describe(description: string, testFn: () => void): void {
+    if (this.isInsideUnit) {
+      throw new Error('Illegal context for describe()');
+    }
+
+    this.currentDescriptionContext = {};
+    this.descriptionContextStack.push(this.currentDescriptionContext);
     this.output(description);
     this.indent();
+
     testFn();
+
     this.dedent();
+    this.descriptionContextStack.pop();
+  }
+
+  beforeEach(beforeFn: () => void): void {
+    if (this.isInsideUnit) {
+      throw new Error('Illegal context for beforeEach()');
+    }
+    if (this.currentDescriptionContext.beforeEach) {
+      throw new Error('This description context already has beforeEach()');
+    }
+    this.currentDescriptionContext.beforeEach = beforeFn;
+  }
+
+  afterEach(afterFn: () => void): void {
+    if (this.isInsideUnit) {
+      throw new Error('Illegal context for beforeEach()');
+    }
+    if (this.currentDescriptionContext.afterEach) {
+      throw new Error('This description context already has afterEach()');
+    }
+    this.currentDescriptionContext.afterEach = afterFn;
   }
 
   it(unitTestName: string, testFn: () => void): void {
+    this.isInsideUnit = true;
+
+    for (const context of this.descriptionContextStack) {
+      context.beforeEach?.();
+    }
+
     try {
       testFn();
       this.output(`PASS -- ${unitTestName}`);
@@ -29,6 +74,12 @@ export class Tester {
       this.dedent();
       this.failureCount++;
     }
+
+    for (const context of this.descriptionContextStack) {
+      context.afterEach?.();
+    }
+
+    this.isInsideUnit = false;
   }
 
   expect<T>(actual: T): Expectation<T> {
@@ -51,10 +102,23 @@ export class Tester {
     this.indentation -= Tester.INDENT_PER_LEVEL;
   }
 
+  private isInDescriptionContext() {
+    this.indentation -= Tester.INDENT_PER_LEVEL;
+  }
+
   private output(result: string) {
     result.split('\n').forEach(line =>
         this.testOutput.push(Array(this.indentation + 1).join(' ') + line));
   }
+
+  private last<T>(array: T[]): T {
+    return array[array.length - 1];
+  } 
+}
+
+export interface DescriptionContext {
+  beforeEach?: () => void,
+  afterEach?: () => void,
 }
 
 export interface TestResult {
@@ -69,9 +133,22 @@ class Expectation<T> {
   constructor(private readonly actual: T) {}
 
   toEqual(expected: T) {
-    if (this.actual !== expected) {
-      this.throw(`Expected ${expected}, got ${this.actual}.`);
+    const fail = () => this.throw(`Expected ${expected}, got ${this.actual}.`);
+
+    if (Array.isArray(expected) && Array.isArray(this.actual)) {
+      const end = Math.max(expected.length, this.actual.length);
+      let pass = true;
+      for (let i = 0; i < end; i++) {
+        if (this.actual[i] !== expected[i]) {
+          pass = false;
+          break;
+        }
+      }
+      if (!pass) fail();
+      return;
     }
+
+    if (this.actual !== expected) fail();
   }
 
   toThrow() {
