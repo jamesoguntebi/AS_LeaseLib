@@ -32,10 +32,7 @@ export default class EmailChecker {
         EmailChecker.assertLabel(EmailChecker.DONE_LABEL_NAME);
 
     for (const thread of pendingLabel.getThreads()) {
-      let threadProcessed = false;
-      const subjects = [];
       for (const message of thread.getMessages()) {
-        subjects.push(message.getSubject());
         for (const paymentType of Config.get().searchQuery.paymentTypes) {
           const parser = EmailChecker.PARSERS.get(paymentType);
           const paymentAmount = parser(message);
@@ -44,21 +41,29 @@ export default class EmailChecker {
             paymentDate.setTime(message.getDate().getTime());
             BalanceSheet.addPayment(paymentAmount, paymentDate);
             EmailSender.sendPaymentThanks(paymentAmount);
-            threadProcessed = true;
             Logger.log(
                 `Processed email with subject: '${message.getSubject()}'`);
+            thread.removeLabel(pendingLabel);
+            thread.addLabel(doneLabel);
             break;
           }
         }
       }
-
-      if (!threadProcessed) {
-        throw new Error(`Labeled thread did not have any successful parsers. ` +
-            `Thread subjects: ${subjects.join(', ')}`);
-      }
-      thread.removeLabel(pendingLabel);
-      thread.addLabel(doneLabel);
     }
+  }
+
+  static assertNoUnproccessLabeledThreads() {
+    const pendingLabel =
+        EmailChecker.assertLabel(EmailChecker.PENDING_LABEL_NAME);
+    const threads = pendingLabel.getThreads();
+
+    for (const thread of pendingLabel.getThreads()) {
+      const subjects = thread.getMessages().map(m => m.getSubject());
+      Logger.log(`Labeled thread did not have any successful parsers. ` +
+          `Thread subjects: ${subjects.join(', ')}`);
+    }
+
+    if (threads.length) throw new Error('Failed to parse labeled messages.');
   }
 
   private static parseVenmoMessage(message: GmailMessage): number|null {

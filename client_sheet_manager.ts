@@ -17,6 +17,7 @@ export default class ClientSheetManager {
       // a safeguard to prevent cross-talk between client sheets.
       Utilities.sleep(500);
     }
+    _JasLibContext.spreadsheetId = '';
   }
 
   static register(spreadsheetId: string) {
