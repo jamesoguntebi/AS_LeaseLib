@@ -28,7 +28,7 @@ export default class EmailSender {
       'Received your payment - Thanks!',
       nonHtmlBody,
       {
-        cc: config.emailCC,
+        cc: config.emailCCs.join(', '),
         name: config.emailDisplayName,
         htmlBody: template.evaluate().getContent(),
       });

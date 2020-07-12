@@ -35,11 +35,14 @@ export default class Config {
             .map(pt => pt.trim())
             .map(pt => Config.assertIsPaymentType(pt));
 
+    const emailCCs = (getCellData('email cc').stringOptional() || '')
+        .split(/,|\n/).map(e => e.trim()).filter(e => !!e);
+
     return {
       customerDisplayName: getCellData('customer display name').string(),
       customerEmails: getCellData('customer emails').string().split(/,|\n/)
                     .map(e => e.trim()).filter(e => !!e),
-      emailCC: getCellData('email cc').stringOptional(),
+      emailCCs,
       emailDisplayName: getCellData('email display name').string(),
       linkToSheetHref: getCellData('link to sheet href').string(),
       linkToSheetText: getCellData('link to sheet text').string(),
@@ -100,7 +103,6 @@ export default class Config {
     if (!rentConfig && !loanConfig) {
       throw new Error('No renter or borrower config defined.')
     }
-
     if (rentConfig && loanConfig) {
       throw new Error('Both renter or borrower config defined.')
     }
@@ -122,7 +124,7 @@ export default class Config {
 export interface LeaseConfig {
   customerDisplayName: string;
   customerEmails: string[];
-  emailCC?: string;
+  emailCCs: string[];
   emailDisplayName: string;
   linkToSheetHref: string;
   linkToSheetText: string;
