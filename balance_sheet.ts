@@ -25,12 +25,16 @@ export default class BalanceSheet {
         description: 'Rent Due',
         transaction: -config.rentConfig.monthlyAmount,
       });
+      Logger.log(`Added 'Rent Due' transaction!`);
     } else if (config.loanConfig?.interestDayOfMonth === currentDayOfMonth) {
-      BalanceSheet.insertRow({
-        date: new Date(),
-        description: 'Monthly Interest',
-        transaction: 'interest',
-      });
+      if (config.loanConfig.interestRate > 0) {
+        BalanceSheet.insertRow({
+          date: new Date(),
+          description: 'Monthly Interest',
+          transaction: 'interest',
+        });
+        Logger.log(`Added 'Monthly Interest' transaction!`);
+      }
     }
   }
 

@@ -7,30 +7,40 @@ export default class ClientSheetManager {
    * @param fn 
    */
   static forEach(fn: (_: string) => void) {
-    for (const spreadsheetId of ClientSheetManager.getAll()) {
+    const spreadsheetIds = ClientSheetManager.getAll();
+    Logger.log(`Registered clients: ${JSON.stringify(spreadsheetIds)}`);
+    for (const spreadsheetId of spreadsheetIds) {
       _JasLibContext.spreadsheetId = spreadsheetId;
       fn(spreadsheetId);
       SpreadsheetApp.flush();
       // Sleeping after each spreadsheet operation is likely unecessary. It's
       // a safeguard to prevent cross-talk between client sheets.
-      Utilities.sleep(2000);
+      Utilities.sleep(500);
     }
   }
 
   static register(spreadsheetId: string) {
     const registeredSet = new Set(ClientSheetManager.getAll());
+    if (registeredSet.has(spreadsheetId)) return;
+
     registeredSet.add(spreadsheetId);
     PropertiesService.getScriptProperties().setProperty(
         ClientSheetManager.PROPERTY_NAME,
         JSON.stringify(Array.from(registeredSet)));
+
+    Logger.log(`Library added client sheet ${spreadsheetId}`);
   }
 
   static unregister(spreadsheetId: string) {
     const registeredSet = new Set(ClientSheetManager.getAll());
+    if (!registeredSet.has(spreadsheetId)) return;
+    
     registeredSet.delete(spreadsheetId);
     PropertiesService.getScriptProperties().setProperty(
         ClientSheetManager.PROPERTY_NAME,
         JSON.stringify(Array.from(registeredSet)));
+
+    Logger.log(`Library is removing client sheet ${spreadsheetId}`);
   }
 
   private static getAll(): RegisteredClientsValue {

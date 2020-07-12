@@ -6,7 +6,6 @@
     |_|     \____/  |_____/   \____/    (_)
 
 P0:
-- integrate into live sheets
 - sheet validations
   - correctly named sheets, maybe columns
   - probably better to run some unit tests against the sheet
@@ -19,6 +18,9 @@ P1:
 - unit tests
 - read all emails, and ask admin to verify emails that should be parsed
 - better trigger versioning
+- Only make balace red in email for rent, not for loans
+- Ensure email search ignores case
+- Move client projects off of dev mode to versioned library
 
 P2:
 - option to add partial payment
@@ -30,6 +32,7 @@ P3:
   - https://developers.google.com/apps-script/reference/script/trigger-builder
 - integrate with Plaid to *maybe* get Zelle Ids  
 - automated way to unregister deleted clients
+- remove Zelle ID from balance row interface
 
 P4
 - we get message date to use as transaction date. this date isn't always
@@ -50,12 +53,14 @@ P0:
 - add loan/interest features
 - generalize terminology in code and config
 - put spreadsheetId in new LibContext (research life cycle)
+- integrate into live sheets
 
 P1:
 - add option to add a full payment
 - scheduled addition of rent due entry
 - option to send thanks for your payment email
 - parse email to input payments
+- accommodate 0-interest loan
 
 P2:
 - instead of checking emails, let manual step be to label emails. script do the

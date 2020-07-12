@@ -31,7 +31,7 @@ export default class Config {
     const paymentTypesRow =
         JasSpreadsheetApp.findRow('payment types', configSheet);
     const paymentTypes =
-        getCellData('payment types').string().split(',')
+        getCellData('payment types').string().split(/,|\n/)
             .map(pt => pt.trim())
             .map(pt => Config.assertIsPaymentType(pt));
 
