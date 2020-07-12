@@ -25,7 +25,7 @@ export default class EmailSender {
 
     GmailApp.sendEmail(
       config.customerEmails.join(', '),
-      'Thanks for your lease payment',
+      'Received your payment - Thanks!',
       nonHtmlBody,
       {
         cc: config.emailCC,
