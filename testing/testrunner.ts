@@ -6,7 +6,7 @@ export default class TestRunner {
       '1e-xDkyts6jt_2JPGS5i1hX4opVJ9niQ9f0y8YtAvTlw';
 
   static run(spreadsheetId: string = TestRunner.LEASE_TEMPLATE_SPREADSHEET_ID,
-      verbose = true) {
+      verbose = false) {
     _JasLibContext.spreadsheetId = spreadsheetId;
 
     const tests: Array<new() => Test> = [
