@@ -1,5 +1,6 @@
 import JasRangeTest from "../jas_range_test";
 import { Tester } from "./tester";
+import JasSpreadsheetTest from "../jas_spreadsheet_test";
 
 export default class TestRunner {
   private static readonly LEASE_TEMPLATE_SPREADSHEET_ID =
@@ -11,11 +12,12 @@ export default class TestRunner {
 
     const tests: Array<new() => Test> = [
       JasRangeTest,
+      JasSpreadsheetTest,
     ];
 
     let successTotal = 0;
     let failureTotal = 0;
-    const outputTotal = ['Testing...'];
+    const outputTotal = ['Testing...\n'];
 
     for (const testClass of tests) {
       const test = new testClass();
@@ -24,10 +26,9 @@ export default class TestRunner {
       const {successCount, failureCount, output} = tester.getTestResults();
       successTotal += successCount;
       failureTotal += failureCount;
-      outputTotal.push('');
       outputTotal.push(
           `${test.name} -- ${TestRunner.getStats(successCount, failureCount)}`);
-      if (failureCount || verbose) outputTotal.push(...output);
+      if (failureCount || verbose) outputTotal.push(...output, '');
     }
 
     outputTotal.push('');

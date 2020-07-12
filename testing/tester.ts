@@ -154,6 +154,18 @@ class Expectation<T> {
     } catch (e) {}
   }
 
+  toNotThrow() {
+    if (typeof this.actual !== 'function') {
+      this.throw('Expectation is not a function');
+    }
+
+    try {
+      this.actual();
+    } catch (e) {
+      this.throw('Expected function not to throw.');
+    }
+  }
+
   private throw(message: string): never {
     const error = new Error(message);
     error.name = Expectation.ERROR_NAME;
