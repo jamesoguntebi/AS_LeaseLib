@@ -54,9 +54,7 @@ export class Tester {
   it(unitTestName: string, testFn: () => void): void {
     this.isInsideUnit = true;
 
-    for (const context of this.descriptionContextStack) {
-      context.beforeEach?.();
-    }
+    for (const context of this.descriptionContextStack) context.beforeEach?.();
 
     try {
       testFn();
@@ -75,9 +73,7 @@ export class Tester {
       this.failureCount++;
     }
 
-    for (const context of this.descriptionContextStack) {
-      context.afterEach?.();
-    }
+    for (const context of this.descriptionContextStack) context.afterEach?.();
 
     this.isInsideUnit = false;
   }
@@ -110,10 +106,6 @@ export class Tester {
     result.split('\n').forEach(line =>
         this.testOutput.push(Array(this.indentation + 1).join(' ') + line));
   }
-
-  private last<T>(array: T[]): T {
-    return array[array.length - 1];
-  } 
 }
 
 export interface DescriptionContext {
