@@ -1,5 +1,4 @@
 type Range = GoogleAppsScript.Spreadsheet.Range;
-type Sheet = GoogleAppsScript.Spreadsheet.Sheet;
 
 export default class JasRange {
   /**

@@ -2,10 +2,7 @@ import BalanceSheet from "./balance_sheet";
 import EmailChecker from "./email_checker";
 import { LibContext } from "./lib_context";
 import ClientSheetManager from "./client_sheet_manager";
-
-const TestOnlySheetIds: Record<string, string> = {
-  RENNA_LEASE: '162oDHkMXPc18AMOE-LHEFYcT5O0S19Sgtx32u7hnWQ4',
-}
+import TestRunner from "./testing/testrunner";
 
 declare global {
   var _JasLibContext: LibContext;
@@ -34,6 +31,10 @@ export function registerClientSheet(spreadsheetId: string) {
 export function unregisterClientSheet(spreadsheetId: string) {
   return Executrix.run(
       () => ClientSheetManager.unregister(spreadsheetId));
+}
+
+export function runTests() {
+  return Executrix.run(() => TestRunner.run());
 }
 
 export function testing(spreadsheetId: string) {
