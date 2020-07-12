@@ -1,21 +1,22 @@
 export class Tester {
   private static readonly INDENT_PER_LEVEL = 2;
-  private descriptionStack: string[] = [];
-  private indentation = 0;
+  private indentation = Tester.INDENT_PER_LEVEL;
   private testOutput: string[] = [];
+  private successCount = 0;
+  private failureCount = 0;
 
   describe(description: string, testFn: () => void): void {
     this.output(description);
     this.indent();
-    this.descriptionStack.push(description);
     testFn();
-    this.descriptionStack.pop();
+    this.dedent();
   }
 
   it(unitTestName: string, testFn: () => void): void {
     try {
       testFn();
       this.output(`PASS -- ${unitTestName}`);
+      this.successCount++;
     } catch (e) {
       this.output(`FAIL -- ${unitTestName}`);
       this.indent();
@@ -26,6 +27,7 @@ export class Tester {
         this.output('Exception during test execution. No error object.')
       }
       this.dedent();
+      this.failureCount++;
     }
   }
 
@@ -33,8 +35,12 @@ export class Tester {
     return new Expectation(actual);
   }
 
-  getTestResults(): string {
-    return this.testOutput.join('\n');
+  getTestResults(): TestResult {
+    return {
+      successCount: this.successCount,
+      failureCount: this.failureCount,
+      output: this.testOutput, 
+    }
   }
 
   private indent() {
@@ -51,6 +57,12 @@ export class Tester {
   }
 }
 
+export interface TestResult {
+  successCount: number,
+  failureCount: number,
+  output: string[],
+}
+
 class Expectation<T> {
   static readonly ERROR_NAME = '__expectation_error__';
 
@@ -58,9 +70,24 @@ class Expectation<T> {
 
   toEqual(expected: T) {
     if (this.actual !== expected) {
-      const error = new Error(`Expected ${expected}, got ${this.actual}.`);
-      error.name = Expectation.ERROR_NAME;
-      throw error;
+      this.throw(`Expected ${expected}, got ${this.actual}.`);
     }
+  }
+
+  toThrow() {
+    if (typeof this.actual !== 'function') {
+      this.throw('Expectation is not a function');
+    }
+
+    try {
+      this.actual();
+      this.throw('Expected function to throw.');
+    } catch (e) {}
+  }
+
+  private throw(message: string): never {
+    const error = new Error(message);
+    error.name = Expectation.ERROR_NAME;
+    throw error;
   }
 }
