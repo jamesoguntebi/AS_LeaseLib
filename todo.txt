@@ -10,15 +10,11 @@ P0:
   - correctly named sheets, maybe columns
   - probably better to run some unit tests against the sheet
 - refactor out general AS lib
-- restructure triggers
-  - only the lib has triggers
-  - scripts that depend on the lib register
 
 P1:
 - unit tests
 - read all emails, and ask admin to verify emails that should be parsed
 - better trigger versioning
-- Only make balace red in email for rent, not for loans
 - Move client projects off of dev mode to versioned library
 
 P2:
@@ -27,11 +23,8 @@ P2:
 - allow disabling outgoing emails in the config
 
 P3:
-- maybe manage triggers programatically?
-  - https://developers.google.com/apps-script/reference/script/trigger-builder
 - integrate with Plaid to *maybe* get Zelle Ids  
 - automated way to unregister deleted clients
-- remove Zelle ID from balance row interface
 
 P4
 - we get message date to use as transaction date. this date isn't always
@@ -53,6 +46,9 @@ P0:
 - generalize terminology in code and config
 - put spreadsheetId in new LibContext (research life cycle)
 - integrate into live sheets
+- restructure triggers
+  - only the lib has triggers
+  - scripts that depend on the lib register
 
 P1:
 - add option to add a full payment
@@ -61,11 +57,14 @@ P1:
 - parse email to input payments
 - accommodate 0-interest loan
 - Ensure email search ignores case
+- Only make balace red in email for rent, not for loans
 
 P2:
 - instead of checking emails, let manual step be to label emails. script do the
   rest
 - Add email display name to config for outgoing emails
+- maybe manage triggers programatically?
+  - https://developers.google.com/apps-script/reference/script/trigger-builder
 
 P3:
-- 
+- remove Zelle ID from balance row interface
