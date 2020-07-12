@@ -58,6 +58,7 @@ P1:
 - accommodate 0-interest loan
 - Ensure email search ignores case
 - Only make balace red in email for rent, not for loans
+- implement unit test framework
 
 P2:
 - instead of checking emails, let manual step be to label emails. script do the
