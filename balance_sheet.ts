@@ -66,9 +66,6 @@ export default class BalanceSheet {
 
     setCell('date', balanceRow.date);
     setCell('description', balanceRow.description);
-    if (balanceRow.zelleId) {
-      setCell('zelle id', balanceRow.zelleId);
-    }
 
     if (typeof balanceRow.transaction === 'number') {
       setCell('transaction', balanceRow.transaction);
@@ -93,5 +90,4 @@ interface BalanceRow {
   date: Date,
   description: string,
   transaction: number | 'interest',
-  zelleId?: string,
 }
