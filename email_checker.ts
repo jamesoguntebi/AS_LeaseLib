@@ -45,6 +45,8 @@ export default class EmailChecker {
             BalanceSheet.addPayment(paymentAmount, paymentDate);
             EmailSender.sendPaymentThanks(paymentAmount);
             threadProcessed = true;
+            Logger.log(
+                `Processed email with subject: '${message.getSubject()}'`);
             break;
           }
         }
