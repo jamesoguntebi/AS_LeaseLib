@@ -7,7 +7,7 @@ export default class EmailSender {
     const config = Config.get();
 
     const templateParams: PaymentEmailTemplateParams = {
-      balance: BalanceSheet.getBalance(),
+      balance: BalanceSheet.getBalance().toLocaleString('en'),
       colorHighBalance: !!config.rentConfig,
       linkHref: config.linkToSheetHref,
       linkText: config.linkToSheetText,
@@ -39,7 +39,7 @@ export default class EmailSender {
 
 /** Keep in sync with email_template_payment.html. */
 interface PaymentEmailTemplateParams {
-  balance: number,
+  balance: string,
   colorHighBalance: boolean,
   customerDisplayName: string,
   linkHref: string,
