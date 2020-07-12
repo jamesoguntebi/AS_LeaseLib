@@ -34,14 +34,18 @@ export class CellData {
   }
 
   string(): string {
-    if (this.range.isBlank() || typeof this.data !== 'string') {
+    if (this.isBlank() || typeof this.data !== 'string') {
       throw new Error('Expected string');
     }
     return this.data as string;
   }
 
+  stringOptional(): string|undefined {
+    return this.isBlank() ? undefined : this.string();
+  }
+
   number(): number {
-    if (this.range.isBlank() || typeof this.data !== 'number') {
+    if (this.isBlank() || typeof this.data !== 'number') {
       throw new Error('Expected number');
     }
     return this.data as number;

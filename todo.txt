@@ -11,6 +11,7 @@ P0:
 - sheet validations
   - correctly named sheets, maybe columns
   - probably better to run some unit tests against the sheet
+- refactor out general AS lib
 
 P1:
 - unit tests
