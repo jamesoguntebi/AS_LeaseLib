@@ -2,10 +2,12 @@ import Config, { PaymentType } from "./config";
 import BalanceSheet from "./balance_sheet";
 import EmailSender from "./email_sender";
 
+type GmailLabel = GoogleAppsScript.Gmail.GmailLabel;
 type GmailMessage = GoogleAppsScript.Gmail.GmailMessage;
 
 export default class EmailChecker {
-  static readonly LABEL_NAME = 'AS Payment Processing';
+  static readonly PENDING_LABEL_NAME = 'AS Payment Process Pending';
+  static readonly DONE_LABEL_NAME = 'AS Payment Processed';
 
   static readonly PAYMENT_QUERIES = new Map<PaymentType, string>([
     [
@@ -22,17 +24,14 @@ export default class EmailChecker {
     ['Zelle', EmailChecker.parseZelleMessage],
   ]);
 
-
   /** Searches among labeled emails. */
   static checkedLabeledEmails() {
-    const paymentsLabel = GmailApp.getUserLabelByName(EmailChecker.LABEL_NAME);
-    if (!paymentsLabel) {
-      throw new Error(`Gmail label ${EmailChecker.LABEL_NAME} not found.`);
-    }
+    const pendingLabel =
+        EmailChecker.assertLabel(EmailChecker.PENDING_LABEL_NAME);
+    const doneLabel =
+        EmailChecker.assertLabel(EmailChecker.DONE_LABEL_NAME);
 
-    const threads = paymentsLabel.getThreads();
-
-    for (const thread of paymentsLabel.getThreads()) {
+    for (const thread of pendingLabel.getThreads()) {
       let threadProcessed = false;
       const subjects = [];
       for (const message of thread.getMessages()) {
@@ -55,7 +54,8 @@ export default class EmailChecker {
         throw new Error(`Labeled thread did not have any successful parsers. ` +
             `Thread subjects: ${subjects.join(', ')}`);
       }
-      thread.removeLabel(paymentsLabel);
+      thread.removeLabel(pendingLabel);
+      thread.addLabel(doneLabel);
     }
   }
 
@@ -110,6 +110,14 @@ export default class EmailChecker {
             });
         }));
     Logger.log({messages});
+  }
+
+  private static assertLabel(labelName: string): GmailLabel {
+    const label = GmailApp.getUserLabelByName(labelName);
+    if (!label) {
+      throw new Error(`Gmail label ${labelName} not found.`);
+    }
+    return label;
   }
 }
 

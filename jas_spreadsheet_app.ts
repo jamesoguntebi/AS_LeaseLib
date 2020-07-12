@@ -3,7 +3,13 @@ type Sheet = GoogleAppsScript.Spreadsheet.Sheet;
 
 export default class JasSpreadsheetApp {
   static findSheet(name: string): Sheet {
-    const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    const spreadsheet = SpreadsheetApp.openById(_JasLibContext.spreadsheetId);
+
+    if (!spreadsheet) {
+      throw new Error(`Cannot find spreadsheet with id: ${
+        _JasLibContext.spreadsheetId}`);
+    }
+
     name = name.toLowerCase();
     for (const sheet of spreadsheet.getSheets()) {
       if (sheet.getName().toLowerCase().includes(name)) {
