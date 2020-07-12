@@ -40,9 +40,9 @@ export default class Config {
 
     return {
       customerDisplayName: getCellData('customer display name').string(),
-      customerEmails: getCellData('customer emails').string().split(/,|\n/)
-                    .map(e => e.trim()).filter(e => !!e),
-      emailCCs,
+      customerEmails: getCellData('customer emails').stringArray(),
+      emailCCs: getCellData('email cc').stringArray(),
+      emailBCCs: getCellData('email bcc').stringArray(),
       emailDisplayName: getCellData('email display name').string(),
       linkToSheetHref: getCellData('link to sheet href').string(),
       linkToSheetText: getCellData('link to sheet text').string(),
@@ -125,6 +125,7 @@ export interface LeaseConfig {
   customerDisplayName: string;
   customerEmails: string[];
   emailCCs: string[];
+  emailBCCs: string[];
   emailDisplayName: string;
   linkToSheetHref: string;
   linkToSheetText: string;

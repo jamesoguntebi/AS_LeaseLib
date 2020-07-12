@@ -44,6 +44,11 @@ export class CellData {
     return this.isBlank() ? undefined : this.string();
   }
 
+  stringArray(): string[] {
+    return this.isBlank() ? [] :
+        this.string().split(/,|\n/).map(s => s.trim()).filter(s => !!s);
+  }
+
   number(): number {
     if (this.isBlank() || typeof this.data !== 'number') {
       throw new Error('Expected number');
