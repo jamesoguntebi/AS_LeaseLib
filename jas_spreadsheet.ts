@@ -1,7 +1,7 @@
 type Range = GoogleAppsScript.Spreadsheet.Range;
 type Sheet = GoogleAppsScript.Spreadsheet.Sheet;
 
-export default class JasSpreadsheetApp {
+export default class JasSpreadsheet {
   static findSheet(name: string): Sheet {
     const spreadsheet = SpreadsheetApp.openById(_JasLibContext.spreadsheetId);
 

@@ -1,4 +1,4 @@
-import JasSpreadsheetApp from "./jas_spreadsheet_app";
+import JasSpreadsheet from "./jas_spreadsheet";
 import JasRange, { CellData } from "./jas_range";
 
 type Sheet = GoogleAppsScript.Spreadsheet.Sheet;
@@ -18,18 +18,18 @@ export default class Config {
   }
 
   static get(): LeaseConfig {
-    const configSheet = JasSpreadsheetApp.findSheet('config');
-    const valueColumn = JasSpreadsheetApp.findColumn('value', configSheet);
+    const configSheet = JasSpreadsheet.findSheet('config');
+    const valueColumn = JasSpreadsheet.findColumn('value', configSheet);
 
     const getCellData = (configName: string) => {
-      const configRow = JasSpreadsheetApp.findRow(configName, configSheet);
+      const configRow = JasSpreadsheet.findRow(configName, configSheet);
       return new CellData(configSheet.getRange(configRow, valueColumn));
     };
 
     const {rentConfig, loanConfig} = Config.validateRentOrLoanConfig();
 
     const paymentTypesRow =
-        JasSpreadsheetApp.findRow('payment types', configSheet);
+        JasSpreadsheet.findRow('payment types', configSheet);
     const paymentTypes =
         getCellData('payment types').string().split(/,|\n/)
             .map(pt => pt.trim())
@@ -56,11 +56,11 @@ export default class Config {
   }
 
   static getFixedCellNotation(field: ConfigField) {
-    const configSheet = JasSpreadsheetApp.findSheet('config');
-    const valueColumn = JasSpreadsheetApp.findColumn('value', configSheet);
+    const configSheet = JasSpreadsheet.findSheet('config');
+    const valueColumn = JasSpreadsheet.findColumn('value', configSheet);
 
     if (field === Config.Fields.LOAN_INTEREST_RATE) {
-      const row = JasSpreadsheetApp.findRow(field, configSheet);
+      const row = JasSpreadsheet.findRow(field, configSheet);
       return JasRange.getFixedA1Notation(
           configSheet.getRange(row, valueColumn));
     }
@@ -68,11 +68,11 @@ export default class Config {
 
   private static validateRentOrLoanConfig():
       {rentConfig?: RentConfig, loanConfig?: LoanConfig} {
-    const configSheet = JasSpreadsheetApp.findSheet('config');
-    const valueColumn = JasSpreadsheetApp.findColumn('value', configSheet);
+    const configSheet = JasSpreadsheet.findSheet('config');
+    const valueColumn = JasSpreadsheet.findColumn('value', configSheet);
 
     const getCellData = (configName: string) => {
-      const configRow = JasSpreadsheetApp.findRow(configName, configSheet);
+      const configRow = JasSpreadsheet.findRow(configName, configSheet);
       return new CellData(configSheet.getRange(configRow, valueColumn));
     };
 

@@ -1,13 +1,13 @@
 import Config from "./config";
-import JasSpreadsheetApp from "./jas_spreadsheet_app";
+import JasSpreadsheet from "./jas_spreadsheet";
 import { CellData } from "./jas_range";
 
 
 export default class BalanceSheet {
   static getBalance(): number { 
-    const sheet = JasSpreadsheetApp.findSheet('balance');
+    const sheet = JasSpreadsheet.findSheet('balance');
     const firstDataRow = sheet.getFrozenRows() + 1;
-    const balanceColumn = JasSpreadsheetApp.findColumn('balance', sheet);
+    const balanceColumn = JasSpreadsheet.findColumn('balance', sheet);
     return new CellData(sheet.getRange(firstDataRow, balanceColumn)).number();
   }
 
@@ -51,16 +51,16 @@ export default class BalanceSheet {
   }
 
   private static insertRow(balanceRow: BalanceRow) {
-    const sheet = JasSpreadsheetApp.findSheet('balance');
+    const sheet = JasSpreadsheet.findSheet('balance');
     const headerRow = sheet.getFrozenRows();
     sheet.insertRowAfter(headerRow);
     const newRow = headerRow + 1;
-    const balanceColumn = JasSpreadsheetApp.findColumn('balance', sheet);
+    const balanceColumn = JasSpreadsheet.findColumn('balance', sheet);
     const previousBalanceCellA1 =
         sheet.getRange(newRow + 1, balanceColumn).getA1Notation();
 
     const setCell = (columnName: string, value: any) => {
-      const column = JasSpreadsheetApp.findColumn(columnName, sheet);
+      const column = JasSpreadsheet.findColumn(columnName, sheet);
       sheet.getRange(newRow, column).setValue(value);
     };
 
@@ -79,8 +79,7 @@ export default class BalanceSheet {
     }
 
     const transactionCell =
-        sheet.getRange(
-            newRow, JasSpreadsheetApp.findColumn('transaction', sheet));
+        sheet.getRange(newRow, JasSpreadsheet.findColumn('transaction', sheet));
     setCell('balance',
         `= ${previousBalanceCellA1} - ${transactionCell.getA1Notation()}`);
   }
