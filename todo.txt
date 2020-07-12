@@ -19,7 +19,6 @@ P1:
 - read all emails, and ask admin to verify emails that should be parsed
 - better trigger versioning
 - Only make balace red in email for rent, not for loans
-- Ensure email search ignores case
 - Move client projects off of dev mode to versioned library
 
 P2:
@@ -61,6 +60,7 @@ P1:
 - option to send thanks for your payment email
 - parse email to input payments
 - accommodate 0-interest loan
+- Ensure email search ignores case
 
 P2:
 - instead of checking emails, let manual step be to label emails. script do the

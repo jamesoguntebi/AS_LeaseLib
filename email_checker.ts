@@ -65,7 +65,7 @@ export default class EmailChecker {
     if (!message.getFrom().toLowerCase().includes('venmo')) return null;
     const subjectRegEx =
         new RegExp(Config.get().searchQuery.searchName + 
-            '.* paid you \\$([0-9]+(\.[0-9][0-9])?)');
+            '.* paid you \\$([0-9]+(\.[0-9][0-9])?)', 'i');
     const regExResult = subjectRegEx.exec(message.getSubject());
     if (!regExResult) return null;
     return Number(regExResult[1]);
