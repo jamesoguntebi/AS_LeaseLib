@@ -13,6 +13,11 @@ export default class JasSpreadsheetTest implements Test {
         t.expect(() => JasSpreadsheet.findSheet('balance')).toNotThrow();
       });
 
+      t.it('does fuzzy matching, ignoring case', () => {
+        t.expect(() => JasSpreadsheet.findSheet('BAL')).toNotThrow();
+        t.expect(() => JasSpreadsheet.findSheet('CONFI')).toNotThrow();
+      });
+
       t.it('throws for absent sheet', () => {
         t.expect(() => JasSpreadsheet.findSheet('no such sheet')).toThrow();
       });

@@ -2,7 +2,7 @@ import BalanceSheet from "./balance_sheet";
 import EmailChecker from "./email_checker";
 import { LibContext } from "./lib_context";
 import ClientSheetManager from "./client_sheet_manager";
-import TestRunner from "./testing/testrunner";
+import TestRunner, { TestRunnerParams } from "./testing/testrunner";
 
 declare global {
   var _JasLibContext: LibContext;
@@ -33,8 +33,12 @@ export function unregisterClientSheet(spreadsheetId: string) {
       () => ClientSheetManager.unregister(spreadsheetId));
 }
 
-export function runTests() {
-  return Executrix.run(() => TestRunner.run());
+export function runTests(params: TestRunnerParams | string = {}) {
+  Logger.log({params});
+  if (typeof params === 'string') {
+    params = {testClassNames: params.split(',')};
+  }
+  return Executrix.run(() => TestRunner.run(params as TestRunnerParams));
 }
 
 export function testing(spreadsheetId: string) {

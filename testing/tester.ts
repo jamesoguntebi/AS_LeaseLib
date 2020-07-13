@@ -2,33 +2,47 @@ export class Tester {
   private static readonly INDENT_PER_LEVEL = 2;
   private indentation = Tester.INDENT_PER_LEVEL;
   private testOutput: string[] = [];
-  private successCount = 0;
-  private failureCount = 0;
 
   // Empty state allows beforeEach and afterEach, hence one context starting in
   // the stack.
-  private currentDescriptionContext: DescriptionContext = {};
+  private currentDescriptionContext: DescriptionContext =
+      {successCount: 0, failureCount: 0, output: []};
   private descriptionContextStack: DescriptionContext[] =
       [this.currentDescriptionContext];
-  private beforeEachFns: Array<() => void> = [];
-  private afterEachFns: Array<() => void> = [];
 
   private isInsideUnit = false;
+
+  constructor(private readonly verbose: boolean) {}
 
   describe(description: string, testFn: () => void): void {
     if (this.isInsideUnit) {
       throw new Error('Illegal context for describe()');
     }
 
-    this.currentDescriptionContext = {};
+    this.currentDescriptionContext =
+        {successCount: 0, failureCount: 0, output: []};
     this.descriptionContextStack.push(this.currentDescriptionContext);
-    this.output(description);
     this.indent();
 
     testFn();
 
     this.dedent();
-    this.descriptionContextStack.pop();
+
+    // Remove the description context, and handle its statistics and output.
+    const {successCount, failureCount, output: lastContextOutput} =
+        this.descriptionContextStack.pop();
+
+    this.currentDescriptionContext =
+        this.descriptionContextStack[this.descriptionContextStack.length - 1]; 
+
+    this.currentDescriptionContext.successCount += successCount;
+    this.currentDescriptionContext.failureCount += failureCount;
+    
+    if (this.verbose || failureCount) {
+      const descriptionWithStats = Array(this.indentation + 1).join(' ') +
+          `${description} -- ${Tester.getStats(successCount, failureCount)}`;
+      this.testOutput.push(descriptionWithStats, ...lastContextOutput);
+    }
   }
 
   beforeEach(beforeFn: () => void): void {
@@ -58,8 +72,8 @@ export class Tester {
 
     try {
       testFn();
-      this.output(`PASS -- ${unitTestName}`);
-      this.successCount++;
+      if (this.verbose) this.output(`PASS -- ${unitTestName}`);
+      this.currentDescriptionContext.successCount++;
     } catch (e) {
       this.output(`FAIL -- ${unitTestName}`);
       this.indent();
@@ -70,7 +84,7 @@ export class Tester {
         this.output('Exception during test execution. No error object.')
       }
       this.dedent();
-      this.failureCount++;
+      this.currentDescriptionContext.failureCount++;
     }
 
     for (const context of this.descriptionContextStack) context.afterEach?.();
@@ -84,8 +98,8 @@ export class Tester {
 
   getTestResults(): TestResult {
     return {
-      successCount: this.successCount,
-      failureCount: this.failureCount,
+      successCount: this.currentDescriptionContext.successCount,
+      failureCount: this.currentDescriptionContext.failureCount,
       output: this.testOutput, 
     }
   }
@@ -103,14 +117,23 @@ export class Tester {
   }
 
   private output(result: string) {
-    result.split('\n').forEach(line =>
-        this.testOutput.push(Array(this.indentation + 1).join(' ') + line));
+    result.split('\n').forEach(line => {
+      this.currentDescriptionContext.output.push(
+          Array(this.indentation + 1).join(' ') + line);
+    });
+  }
+  
+  static getStats(success: number, failure: number): string {
+    return `${success + failure} run, ${success} pass, ${failure} fail`;
   }
 }
 
 export interface DescriptionContext {
   beforeEach?: () => void,
   afterEach?: () => void,
+  successCount: number,
+  failureCount: number,
+  output: string[];
 }
 
 export interface TestResult {
