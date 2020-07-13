@@ -34,7 +34,6 @@ export function unregisterClientSheet(spreadsheetId: string) {
 }
 
 export function runTests(params: TestRunnerParams | string = {}) {
-  Logger.log({params});
   if (typeof params === 'string') {
     params = {testClassNames: params.split(',')};
   }

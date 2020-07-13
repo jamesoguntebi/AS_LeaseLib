@@ -7,13 +7,11 @@ export default class TestRunner {
       '1e-xDkyts6jt_2JPGS5i1hX4opVJ9niQ9f0y8YtAvTlw';
 
   static run({
-      spreadsheetId = TestRunner.LEASE_TEMPLATE_SPREADSHEET_ID,
-      verbose = false,
-      testClassNames = undefined,
+    spreadsheetId = TestRunner.LEASE_TEMPLATE_SPREADSHEET_ID,
+    verbose = false,
+    testClassNames = undefined,
   }: TestRunnerParams) {
     _JasLibContext.spreadsheetId = spreadsheetId;
-
-    Logger.log({testClassNames});
 
     let testClasses: Array<new() => Test> = [
       JasRangeTest,
@@ -23,10 +21,9 @@ export default class TestRunner {
     if (testClassNames) {
       const testClassesSet = new Set(testClassNames);
       testClasses = testClasses.filter(tc => testClassesSet.has(tc.name));
-    }
-
-    if (!testClasses.length) {
-      throw new Error(`No tests found among ${testClassNames}`)
+      if (!testClasses.length) {
+        throw new Error(`No tests found among ${testClassNames}`)
+      }
     }
 
     let successTotal = 0;
