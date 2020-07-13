@@ -5,7 +5,7 @@ import { Test } from './testing/testrunner';
 type Sheet = GoogleAppsScript.Spreadsheet.Sheet;
 
 export default class JasSpreadsheetTest implements Test {
-  readonly name: string = 'JasSpreadsheetTest';
+  readonly name = 'JasSpreadsheetTest';
 
   run(t: Tester) {
     t.describe('findSheet', () => {

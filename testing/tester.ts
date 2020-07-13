@@ -199,6 +199,30 @@ class Expectation<T> {
     }
   }
 
+  toContain(expectedContents: unknown) {
+    if (typeof this.actual === 'string') {
+      if (typeof expectedContents !== 'string') {
+        throw new Error(`Cannot check containment in a string. Got ${
+            typeof expectedContents}`)
+      }
+      if (!this.actual.includes(expectedContents)) {
+        throw new Error(
+          `Did not find '${expectedContents}' in '${this.actual}'.`);
+      }
+      return;
+    }
+
+    if (typeof Array.isArray(this.actual)) {
+      if (!(this.actual as unknown as any[]).includes(expectedContents)) {
+        throw new Error(
+          `Did not find '${expectedContents}' in '${this.actual}'.`);
+      }
+      return;
+    }
+
+    throw new Error('Can only check containment of arrays and strings.');
+  }
+
   private throw(message: string): never {
     const error = new Error(message);
     error.name = Expectation.ERROR_NAME;

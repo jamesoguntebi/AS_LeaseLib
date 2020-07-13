@@ -7,8 +7,7 @@
 <p>
   Thank you for your recent payment of $<?= templateParams.paymentAmount ?>.
   Your balance is now
-  <strong <? if (templateParams.balance > 0 &&
-                 templateParams.colorHighBalance) { ?>
+  <strong <? if (templateParams.colorBalance) { ?>
             style="color: #b34;"
           <? } ?>>
     $<?= templateParams.balance ?>

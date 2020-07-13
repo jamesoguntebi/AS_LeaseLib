@@ -6,7 +6,7 @@ import { Test } from './testing/testrunner';
 type Range = GoogleAppsScript.Spreadsheet.Range;
 
 export default class JasRangeTest implements Test {
-  readonly name: string = 'JasRangeTest';
+  readonly name = 'JasRangeTest';
 
   run(t: Tester) {
     const sheet = JasSpreadsheet.findSheet('balance');
