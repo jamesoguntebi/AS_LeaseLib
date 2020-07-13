@@ -52,18 +52,23 @@ export default class EmailChecker {
     }
   }
 
-  static assertNoUnproccessLabeledThreads() {
+  static assertNoPendingThreads() {
     const pendingLabel =
         EmailChecker.assertLabel(EmailChecker.PENDING_LABEL_NAME);
     const threads = pendingLabel.getThreads();
+    const threadSubjects: string[][] = [];
 
     for (const thread of pendingLabel.getThreads()) {
       const subjects = thread.getMessages().map(m => m.getSubject());
       Logger.log(`Labeled thread did not have any successful parsers. ` +
           `Thread subjects: ${subjects.join(', ')}`);
+      threadSubjects.push(subjects);
     }
 
-    if (threads.length) throw new Error('Failed to parse labeled messages.');
+    if (threads.length) {
+      throw new Error(`Failed to parse labeled threads with subjects: ${
+          threadSubjects}`)
+    };
   }
 
   private static parseVenmoMessage(message: GmailMessage): number|null {

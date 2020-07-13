@@ -19,7 +19,7 @@ export function maybeAddRentOrInterestTransaction() {
 export function checkedLabeledEmails() {
   return Executrix.run(() => {
     ClientSheetManager.forEach(EmailChecker.checkedLabeledEmails);
-    EmailChecker.assertNoUnproccessLabeledThreads();
+    EmailChecker.assertNoPendingThreads();
   });
 }
 
