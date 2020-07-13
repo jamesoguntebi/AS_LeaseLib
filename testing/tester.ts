@@ -1,7 +1,6 @@
 export class Tester {
   private static readonly INDENT_PER_LEVEL = 2;
   private indentation = Tester.INDENT_PER_LEVEL;
-  private testOutput: string[] = [];
 
   // Empty state allows beforeEach and afterEach, hence one context starting in
   // the stack.
@@ -41,7 +40,8 @@ export class Tester {
     if (this.verbose || failureCount) {
       const descriptionWithStats = Array(this.indentation + 1).join(' ') +
           `${description} -- ${Tester.getStats(successCount, failureCount)}`;
-      this.testOutput.push(descriptionWithStats, ...lastContextOutput);
+      this.currentDescriptionContext.output.push(
+          descriptionWithStats, ...lastContextOutput);
     }
   }
 
@@ -100,7 +100,7 @@ export class Tester {
     return {
       successCount: this.currentDescriptionContext.successCount,
       failureCount: this.currentDescriptionContext.failureCount,
-      output: this.testOutput, 
+      output: this.currentDescriptionContext.output, 
     }
   }
 
@@ -109,10 +109,6 @@ export class Tester {
   }
 
   private dedent() {
-    this.indentation -= Tester.INDENT_PER_LEVEL;
-  }
-
-  private isInDescriptionContext() {
     this.indentation -= Tester.INDENT_PER_LEVEL;
   }
 
