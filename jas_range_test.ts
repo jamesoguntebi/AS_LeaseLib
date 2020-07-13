@@ -19,7 +19,8 @@ export default class JasRangeTest implements Test {
 
       t.it('throws for multi-cell range', () => {
         const range = sheet.getRange(1, 1, 2, 2);
-        t.expect(() => JasRange.getFixedA1Notation(range)).toThrow();
+        t.expect(() => JasRange.getFixedA1Notation(range))
+            .toThrow('multi-cell');
       });
     });
 
@@ -28,7 +29,7 @@ export default class JasRangeTest implements Test {
       let defaultOldValue: any;
 
       t.beforeEach(() => {
-        defaultRange = sheet.getRange(1, 1, 1, 1);
+        defaultRange = sheet.getRange(2, 2, 1, 1);
         defaultOldValue = defaultRange.getValue();
       });
 
@@ -36,12 +37,13 @@ export default class JasRangeTest implements Test {
 
       t.it('throws for multi-cell range', () => {
         const range = sheet.getRange(1, 1, 2, 2);
-        t.expect(() => new CellData(range)).toThrow();
+        t.expect(() => new CellData(range)).toThrow('multi-cell');
       });
 
       t.it('throws for wrong type', () => {
         defaultRange.setValue(3);
-        t.expect(() => new CellData(defaultRange).string()).toThrow();
+        t.expect(() => new CellData(defaultRange).string())
+            .toThrow('expected string');
       });
 
       t.it('handles optional calls', () => {

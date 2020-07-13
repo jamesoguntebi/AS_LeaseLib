@@ -2,7 +2,7 @@ import JasSpreadsheet from './jas_spreadsheet';
 import { Tester } from './testing/tester';
 import { Test } from './testing/testrunner';
 
-type Range = GoogleAppsScript.Spreadsheet.Range;
+type Sheet = GoogleAppsScript.Spreadsheet.Sheet;
 
 export default class JasSpreadsheetTest implements Test {
   readonly name: string = 'JasSpreadsheetTest';
@@ -19,7 +19,28 @@ export default class JasSpreadsheetTest implements Test {
       });
 
       t.it('throws for absent sheet', () => {
-        t.expect(() => JasSpreadsheet.findSheet('no such sheet')).toThrow();
+        t.expect(() => JasSpreadsheet.findSheet('no such sheet'))
+            .toThrow('Expected a sheet');
+      });
+
+      t.describe('with multiple matching sheets', () => {
+        const spreadsheet =
+            SpreadsheetApp.openById(_JasLibContext.spreadsheetId);
+        let newSheet: Sheet;
+
+        t.beforeEach(() => {
+          newSheet = spreadsheet.insertSheet();
+          newSheet.setName('Balad'); // To share prefix with 'Balance' sheet.
+        });
+
+        t.afterEach(() => {
+          spreadsheet.deleteSheet(newSheet);
+        });
+
+        t.it('throws for ambiguous query', () => {
+          t.expect(() => JasSpreadsheet.findSheet('bala'))
+              .toThrow('multiple sheets');
+        });
       });
     });
 
@@ -39,7 +60,12 @@ export default class JasSpreadsheetTest implements Test {
 
       t.it('throws for absent column', () => {
         t.expect(() => JasSpreadsheet.findColumn('no such column', sheet))
-            .toThrow();
+            .toThrow('Expected a column');
+      });
+
+      t.it('throws for ambiguous column', () => {
+        t.expect(() => JasSpreadsheet.findColumn('d', sheet))
+            .toThrow('multiple columns');
       });
     });
 
@@ -58,7 +84,12 @@ export default class JasSpreadsheetTest implements Test {
 
       t.it('throws for absent row', () => {
         t.expect(() => JasSpreadsheet.findRow('no such row', sheet))
-            .toThrow();
+            .toThrow('Expected a row');
+      });
+
+      t.it('throws for ambiguous row', () => {
+        t.expect(() => JasSpreadsheet.findRow('customer', sheet))
+            .toThrow('multiple rows');
       });
     });
   }

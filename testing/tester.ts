@@ -166,7 +166,7 @@ class Expectation<T> {
     if (this.actual !== expected) fail();
   }
 
-  toThrow() {
+  toThrow(expectedErrorMessage?: string) {
     if (typeof this.actual !== 'function') {
       this.throw('Expectation is not a function');
     }
@@ -174,7 +174,16 @@ class Expectation<T> {
     try {
       this.actual();
       this.throw('Expected function to throw.');
-    } catch (e) {}
+    } catch (e) {
+      if (expectedErrorMessage) {
+        const errorContent = e.stack || e.message || '';
+        if (!errorContent.toLowerCase().includes(
+                expectedErrorMessage.toLowerCase())) {
+          this.augmentAndThrow(
+              e, `Expected error to include '${expectedErrorMessage}'`);
+        }
+      }
+    }
   }
 
   toNotThrow() {
@@ -185,7 +194,12 @@ class Expectation<T> {
     try {
       this.actual();
     } catch (e) {
-      this.throw('Expected function not to throw.');
+      const expectationMsg = 'Expected function not to throw.';
+      if (e instanceof Error) {
+        this.augmentAndThrow(e, expectationMsg);
+      } else {
+        this.throw(expectationMsg);
+      }
     }
   }
 
@@ -193,5 +207,11 @@ class Expectation<T> {
     const error = new Error(message);
     error.name = Expectation.ERROR_NAME;
     throw error;
+  }
+
+  private augmentAndThrow(e: Error, expectationMsg: string): never {
+    e.message = `${expectationMsg}\n${e.message}`;
+    e.stack = `${expectationMsg}\n${e.stack}`;
+    throw e;
   }
 }
