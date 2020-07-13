@@ -9,7 +9,9 @@ P0:
 - sheet validations
   - correctly named sheets, maybe columns
   - probably better to run some unit tests against the sheet
+  - require validation when registering sheet
 - refactor out general AS lib
+- update README
 
 P1:
 - unit tests
