@@ -11,6 +11,8 @@ P0:
   - probably better to run some unit tests against the sheet
   - require validation when registering sheet
 - refactor out general AS lib
+  - generate typescript types declaration:
+    https://www.typescriptlang.org/docs/handbook/declaration-files/publishing.html
 - update README
 
 P1:
