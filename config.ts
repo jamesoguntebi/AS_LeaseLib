@@ -28,15 +28,13 @@ export default class Config {
 
     const {rentConfig, loanConfig} = Config.validateRentOrLoanConfig();
 
-    const paymentTypesRow =
-        JasSpreadsheet.findRow('payment types', configSheet);
     const paymentTypes =
         getCellData('payment types').string().split(/,|\n/)
             .map(pt => pt.trim())
             .map(pt => Config.assertIsPaymentType(pt));
-
-    const emailCCs = (getCellData('email cc').stringOptional() || '')
-        .split(/,|\n/).map(e => e.trim()).filter(e => !!e);
+    if (!paymentTypes.length) {
+      throw new Error('At least one payment type is required in Config.');
+    }
 
     return {
       customerDisplayName: getCellData('customer display name').string(),

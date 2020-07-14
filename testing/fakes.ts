@@ -109,7 +109,7 @@ class FakeGmailMessage extends Fake<GmailMessage> {
   }
 }
 
-interface GmailMessageParams {
+export interface GmailMessageParams {
   date?: Date;
   from?: string;
   plainBody?: string;

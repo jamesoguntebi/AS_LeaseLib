@@ -10,7 +10,7 @@ export default class TestRunner {
 
   static run({
     spreadsheetId = TestRunner.LEASE_TEMPLATE_SPREADSHEET_ID,
-    verbose = false,
+    verbose = true,
     testClassNames = undefined,
   }: TestRunnerParams) {
     _JasLibContext.spreadsheetId = spreadsheetId;

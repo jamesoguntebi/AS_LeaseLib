@@ -45,21 +45,37 @@ export default class EmailCheckerTest implements Test {
             {
               name: EmailChecker.PENDING_LABEL_NAME,
               threads: [
-                {
-                  messages: [{
-                    subject: 'We deposited your Zelle payment',
-                    from: 'automation@ally.com',
-                    plainBody: 'We have successfully deposited the $100.00 ' + 
-                        'Zelle® payment from Firstname',
-                  }],
-                },
+                {messages: [EmailCheckerTest.ZELLE_MESSAGE]},
               ],
             },
             {name: EmailChecker.DONE_LABEL_NAME},
           ]});
         });
 
-        t.it('Calls', () => {
+        t.it('handles the email', () => {
+          // When emails are checked.
+          EmailChecker.checkedLabeledEmails();
+
+          t.expect(EmailSender.sendPaymentThanks).toHaveBeenCalled();
+          t.expect(BalanceSheet.addPayment).toHaveBeenCalled();
+          t.expect(() => EmailChecker.assertNoPendingThreads()).toNotThrow();
+        });
+      });
+
+      t.describe('with valid Venmo email', () => {
+        t.beforeEach(() => {
+          FakeGmailApp.setData({labels: [
+            {
+              name: EmailChecker.PENDING_LABEL_NAME,
+              threads: [
+                {messages: [EmailCheckerTest.VENMO_MESSAGE]},
+              ],
+            },
+            {name: EmailChecker.DONE_LABEL_NAME},
+          ]});
+        });
+
+        t.it('handles the email', () => {
           // When emails are checked.
           EmailChecker.checkedLabeledEmails();
 
@@ -73,14 +89,12 @@ export default class EmailCheckerTest implements Test {
 
   private static readonly ZELLE_MESSAGE: GmailMessageParams = {
     subject: 'We deposited your Zelle payment',
-    from: 'automation@ally.com',
+    from: 'email@transfers.ally.com',
     plainBody: 'We have successfully deposited the $100.00 ' + 
         'Zelle® payment from Firstname',
   }
   private static readonly VENMO_MESSAGE: GmailMessageParams = {
-    subject: 'We deposited your Zelle payment',
-    from: 'automation@ally.com',
-    plainBody: 'We have successfully deposited the $100.00 ' + 
-        'Zelle® payment from Firstname',
+    subject: 'Firstname paid you $100.00',
+    from: 'automation@venmo.com',
   }
 }
