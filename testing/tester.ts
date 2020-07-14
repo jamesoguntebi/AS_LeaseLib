@@ -109,7 +109,7 @@ export class Tester {
     return new Expectation(actual);
   }
 
-  spyOn<T, K extends keyof T>(object: T, method: K): Spy<T, K> {
+  spyOn<TObj, TProp extends keyof TObj>(object: TObj, method: TProp): Spy<TObj, TProp> {
     if (this.isInsideUnit) {
       throw new Error('Spies cannot be installed inside unit tests.');
     }
@@ -280,21 +280,21 @@ class Expectation<T> {
   }
 }
 
-class Spy<T, K extends keyof T> {
+class Spy<TObj, TProp extends keyof TObj> {
   static readonly MARKER = '__jas_spy__';
   private readonly calls: unknown[][] = [];
-  private storedProperty: T[K];
+  private storedProperty: TObj[TProp];
 
   readonly and: SpyAction;
 
-  constructor(private readonly object: T, private readonly property: K) {
+  constructor(private readonly object: TObj, private readonly property: TProp) {
     this.storedProperty = object[property];
     this.and = new SpyAction(this.storedProperty as unknown as Function);
 
     const newFunctionProperty = ((...params) => {
       this.calls.push(params);
       return this.and.call(params);
-    }) as unknown as T[K];
+    }) as unknown as TObj[TProp];
     newFunctionProperty[Spy.MARKER] = this;
 
     object[property] = newFunctionProperty;

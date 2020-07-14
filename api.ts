@@ -4,6 +4,9 @@ import { LibContext } from "./lib_context";
 import ClientSheetManager from "./client_sheet_manager";
 import TestRunner, { TestRunnerParams } from "./testing/testrunner";
 
+const LEASE_TEMPLATE_SPREADSHEET_ID =
+    '1e-xDkyts6jt_2JPGS5i1hX4opVJ9niQ9f0y8YtAvTlw';
+
 declare global {
   var _JasLibContext: LibContext;
 }
@@ -20,6 +23,20 @@ export function checkedLabeledEmails() {
   return Executrix.run(() => {
     ClientSheetManager.forEach(EmailChecker.checkedLabeledEmails);
     EmailChecker.assertNoPendingThreads();
+  });
+}
+
+export function template_maybeAddRentOrInterestTransaction() {
+  _JasLibContext.spreadsheetId = LEASE_TEMPLATE_SPREADSHEET_ID;
+  return Executrix.run(() => {
+    BalanceSheet.maybeAddRentOrInterestTransaction();
+  });
+}
+
+export function template_checkedLabeledEmails() {
+  _JasLibContext.spreadsheetId = LEASE_TEMPLATE_SPREADSHEET_ID;
+  return Executrix.run(() => {
+    EmailChecker.checkedLabeledEmails();
   });
 }
 

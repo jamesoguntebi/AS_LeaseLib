@@ -26,7 +26,29 @@ export default class Config {
       return new CellData(configSheet.getRange(configRow, valueColumn));
     };
 
-    const {rentConfig, loanConfig} = Config.validateRentOrLoanConfig();
+    let rentConfig: RentConfig;
+    const rentMonthlyAmountCellData = getCellData('rent monthly amount');
+    const rentMonthlyDueDateCellData = getCellData('rent monthly due date');
+    if (!rentMonthlyAmountCellData.isBlank() ||
+        !rentMonthlyDueDateCellData.isBlank()) {
+      rentConfig = {
+        monthlyAmount: rentMonthlyAmountCellData.number(),
+        dueDayOfMonth: rentMonthlyDueDateCellData.number(),
+      };
+    }
+
+    let loanConfig: LoanConfig;
+    const loanInterestRateCellData =
+        getCellData(Config.Fields.LOAN_INTEREST_RATE);
+    const loanMonthlyInterestDayCellData =
+        getCellData('loan monthly interest day');
+    if (!loanInterestRateCellData.isBlank() ||
+        !loanMonthlyInterestDayCellData.isBlank()) {
+      loanConfig = {
+        interestRate: loanInterestRateCellData.number(),
+        interestDayOfMonth: loanMonthlyInterestDayCellData.number(),
+      };
+    }
 
     const paymentTypes =
         getCellData('payment types').string().split(/,|\n/)
@@ -36,7 +58,7 @@ export default class Config {
       throw new Error('At least one payment type is required in Config.');
     }
 
-    return {
+    return Config.validate({
       customerDisplayName: getCellData('customer display name').string(),
       customerEmails: getCellData('customer emails').stringArray(),
       emailCCs: getCellData('email cc').stringArray(),
@@ -50,7 +72,7 @@ export default class Config {
         paymentTypes,
         searchName: getCellData('gmail search name').string(),
       },
-    };
+    });
   }
 
   static getFixedCellNotation(field: ConfigField) {
@@ -64,48 +86,40 @@ export default class Config {
     }
   }
 
-  private static validateRentOrLoanConfig():
-      {rentConfig?: RentConfig, loanConfig?: LoanConfig} {
-    const configSheet = JasSpreadsheet.findSheet('config');
-    const valueColumn = JasSpreadsheet.findColumn('value', configSheet);
-
-    const getCellData = (configName: string) => {
-      const configRow = JasSpreadsheet.findRow(configName, configSheet);
-      return new CellData(configSheet.getRange(configRow, valueColumn));
-    };
-
-    let rentConfig: RentConfig|undefined;
-    const rentMonthlyAmountCellData = getCellData('rent monthly amount');
-    const rentMonthlyDueDateCellData = getCellData('rent monthly due date');
-    if (!rentMonthlyAmountCellData.isBlank() ||
-        !rentMonthlyDueDateCellData.isBlank()) {
-      rentConfig = {
-        monthlyAmount: rentMonthlyAmountCellData.number(),
-        dueDayOfMonth: rentMonthlyDueDateCellData.number(),
-      };
-    }
-
-    let loanConfig: LoanConfig|undefined;
-    const loanInterestRateCellData =
-        getCellData(Config.Fields.LOAN_INTEREST_RATE);
-    const loanMonthlyInterestDayCellData =
-        getCellData('loan monthly interest day');
-    if (!loanInterestRateCellData.isBlank() ||
-        !loanMonthlyInterestDayCellData.isBlank()) {
-      loanConfig = {
-        interestRate: loanInterestRateCellData.number(),
-        interestDayOfMonth: loanMonthlyInterestDayCellData.number(),
-      };
-    }
-
-    if (!rentConfig && !loanConfig) {
+  static validate(config: LeaseConfig = Config.get()): LeaseConfig {
+    if (!config.rentConfig && !config.loanConfig) {
       throw new Error('No renter or borrower config defined.')
     }
-    if (rentConfig && loanConfig) {
+    if (config.rentConfig && config.loanConfig) {
       throw new Error('Both renter or borrower config defined.')
     }
 
-    return {rentConfig, loanConfig};
+    if (config.rentConfig) {
+      Config.validateDayOfMonth(config.rentConfig.dueDayOfMonth);
+      if (config.rentConfig.monthlyAmount < 0) {
+        throw new Error('Illegal negative rent');
+      }
+    }
+    if (config.loanConfig) {
+      Config.validateDayOfMonth(config.loanConfig.interestDayOfMonth);
+      if (config.loanConfig.interestRate < 0 ||
+          config.loanConfig.interestRate > 1) {
+        throw new Error('Interest rate must be between 0 and 1.');
+      }
+    }
+
+    if (!config.searchQuery.paymentTypes.length) {
+      throw new Error('At least one payment type is required in Config.');
+    }
+
+    return config;
+  }
+
+  private static validateDayOfMonth(day: number) {
+    if (!Number.isInteger(day) || day < 1 || day > 28) {
+      throw new Error('Day of month must be a whole number from 1 to 28 to ' +
+          'valid in all months.');
+    }
   }
 
   private static assertIsPaymentType(s: string): PaymentType {
@@ -116,6 +130,55 @@ export default class Config {
           `Got ${s}.`);
     }
     return s as PaymentType;
+  }
+
+  static getLoanConfigForTest(override?: Partial<LeaseConfig>, overrides: {
+    loanConfig?: Partial<LoanConfig>,
+    searchQuery?: Partial<SearchQuery>,
+  } = {}): LeaseConfig {
+    return Config.getConfigForTest({
+      loanConfig: {
+        interestRate: 0.05,
+        interestDayOfMonth: 1,
+        ...overrides.loanConfig,
+      },
+      ...override,
+    }, overrides);
+  }
+
+  static getRentConfigForTest(override?: Partial<LeaseConfig>, overrides: {
+    rentConfig?: Partial<RentConfig>,
+    searchQuery?: Partial<SearchQuery>,
+  } = {}): LeaseConfig {
+    return Config.getConfigForTest({
+      rentConfig: {
+        monthlyAmount: 3600,
+        dueDayOfMonth: 15,
+        ...overrides.rentConfig,
+      },
+      ...override,
+    }, overrides);
+  }
+
+  /** Only to be called from getRentConfigForTest or getLoanConfigForTest. */
+  private static getConfigForTest(override: Partial<LeaseConfig>, overrides: {
+    searchQuery?: Partial<SearchQuery>,
+  } = {}): LeaseConfig {
+    return Config.validate({
+      customerDisplayName: 'Gandalf the White',
+      customerEmails: ['mithrandir@gmail.com', 'thewhiterider@gmail.com'],
+      emailCCs: ['legolas@gmail.com', 'aragorn@gmail.com'],
+      emailBCCs: ['saruman@gmail.com', 'radagast@gmail.com'],
+      emailDisplayName: 'Gandalf',
+      linkToSheetHref: 'https://bankofmiddleearth.com/loans/gandalf',
+      linkToSheetText: 'bankofmiddleearth.com/loans/gandalf',
+      searchQuery: {
+        paymentTypes: ['Zelle', 'Venmo'],
+        searchName: 'Gandalf',
+        ...overrides.searchQuery,
+      },
+      ...override,
+    });
   }
 }
 

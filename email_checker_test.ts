@@ -4,6 +4,7 @@ import EmailChecker from "./email_checker";
 import { FakeGmailApp, GmailMessageParams } from "./testing/fakes";
 import BalanceSheet from "./balance_sheet";
 import EmailSender from "./email_sender";
+import Config from "./config";
 
 export default class EmailCheckerTest implements Test {
   readonly name = 'EmailCheckerTest';
@@ -14,6 +15,7 @@ export default class EmailCheckerTest implements Test {
           .callFake(FakeGmailApp.getUserLabelByName);
       t.spyOn(BalanceSheet, 'addPayment');
       t.spyOn(EmailSender, 'sendPaymentThanks');
+      t.spyOn(Config, 'get').and.returnValue(Config.getLoanConfigForTest());
     });
 
     t.describe('checkedLabeledEmails', () => {
@@ -91,10 +93,10 @@ export default class EmailCheckerTest implements Test {
     subject: 'We deposited your Zelle payment',
     from: 'email@transfers.ally.com',
     plainBody: 'We have successfully deposited the $100.00 ' + 
-        'Zelle® payment from Firstname',
+        'Zelle® payment from Gandalf',
   }
   private static readonly VENMO_MESSAGE: GmailMessageParams = {
-    subject: 'Firstname paid you $100.00',
-    from: 'automation@venmo.com',
+    subject: 'Gandalf paid you $100.00',
+    from: 'venmo@venmo.com',
   }
 }
