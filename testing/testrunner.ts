@@ -33,25 +33,37 @@ export default class TestRunner {
     let successTotal = 0;
     let failureTotal = 0;
     const outputTotal = ['Testing...\n'];
+    const startTime = Date.now();
 
     for (const testClass of testClasses) {
+      const testStartTime = Date.now();
       const test = new testClass();
       const tester = new Tester(verbose);
       test.run(tester);
       const {successCount, failureCount, output} = tester.getTestResults();
       successTotal += successCount;
       failureTotal += failureCount;
-      outputTotal.push(
-          `${test.name} -- ${Tester.getStats(successCount, failureCount)}`);
+      const runTime = `(in ${Date.now() - testStartTime} ms)`;
+      if (!failureCount) {
+        outputTotal.push( `${test.name} ✓ ${runTime}`);
+      } else {
+        outputTotal.push(
+            `${test.name} - ${failureCount} failures ${runTime}`);
+      }
       if (failureCount || verbose) outputTotal.push(...output, '');
     }
 
     outputTotal.push('');
     outputTotal.push(
-        `Total -- ${Tester.getStats(successTotal, failureTotal)}`);
+        `Total -- ${TestRunner.getStats(successTotal, failureTotal)} ` +
+        `(in ${Date.now() - startTime} ms)`);
     outputTotal.push('');
 
     Logger.log(outputTotal.join('\n'));
+  }
+  
+  private static getStats(success: number, failure: number): string {
+    return `${success + failure} run, ${success} pass, ${failure} fail`;
   }
 }
 

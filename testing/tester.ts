@@ -38,10 +38,10 @@ export class Tester {
     this.currentDescriptionContext.failureCount += failureCount;
     
     if (this.verbose || failureCount) {
-      const descriptionWithStats = Array(this.indentation + 1).join(' ') +
-          `${description} -- ${Tester.getStats(successCount, failureCount)}`;
+      const indentedDescription =
+          Array(this.indentation + 1).join(' ') + description;
       this.currentDescriptionContext.output.push(
-          descriptionWithStats, ...lastContextOutput);
+          '', indentedDescription, ...lastContextOutput);
     }
 
     for (const spy of spies) spy.reset();
@@ -77,12 +77,15 @@ export class Tester {
 
     this.isInsideUnit = true;
 
+    const startTime = Date.now();
     try {
       testFn();
-      if (this.verbose) this.output(`PASS -- ${unitTestName}`);
+      if (this.verbose) {
+        this.output(`✓ ${unitTestName} (in ${Date.now() - startTime} ms)`);
+      };
       this.currentDescriptionContext.successCount++;
     } catch (e) {
-      this.output(`FAIL -- ${unitTestName}`);
+      this.output(`✗ ${unitTestName} (in ${Date.now() - startTime} ms)`);
       this.indent();
       if (e instanceof Error) {
         this.output(e.name === Expectation.ERROR_NAME ?
@@ -139,10 +142,6 @@ export class Tester {
       this.currentDescriptionContext.output.push(
           Array(this.indentation + 1).join(' ') + line);
     });
-  }
-  
-  static getStats(success: number, failure: number): string {
-    return `${success + failure} run, ${success} pass, ${failure} fail`;
   }
 }
 
