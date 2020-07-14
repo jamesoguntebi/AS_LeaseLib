@@ -1,3 +1,5 @@
+import { FakeGmailApp, GmailAppParams } from "./fakes";
+
 export class Tester {
   private static readonly INDENT_PER_LEVEL = 2;
   private indentation = Tester.INDENT_PER_LEVEL;
@@ -12,6 +14,26 @@ export class Tester {
   private isInsideUnit = false;
 
   constructor(private readonly verbose: boolean) {}
+
+  withGmailFake(gmailAppParams: GmailAppParams) {
+    for (const prop in GmailApp) {
+      if (typeof GmailApp[prop] === 'function') {
+        const spy = this.spyOn(GmailApp, prop as keyof typeof GmailApp);
+
+        if (prop === 'getUserLabelByName') {
+          spy.and.callFake(FakeGmailApp.getUserLabelByName);
+        }
+      }
+    }
+    this.populateGmail(gmailAppParams);
+  }
+
+  populateGmail(gmailAppParams: GmailAppParams) {
+    if (!Spy.isSpy(GmailApp.getUserLabelByName)) {
+      throw('Spy on GmailApp before populating fake data.');
+    }
+    FakeGmailApp.setData(gmailAppParams);
+  }
 
   describe(description: string, testFn: () => void): void {
     if (this.isInsideUnit) {
@@ -109,7 +131,8 @@ export class Tester {
     return new Expectation(actual);
   }
 
-  spyOn<TObj, TProp extends keyof TObj>(object: TObj, method: TProp): Spy<TObj, TProp> {
+  spyOn<TObj, TProp extends keyof TObj>(object: TObj, method: TProp):
+      Spy<TObj, TProp> {
     if (this.isInsideUnit) {
       throw new Error('Spies cannot be installed inside unit tests.');
     }
@@ -246,22 +269,14 @@ class Expectation<T> {
   }
 
   toHaveBeenCalled() {
-    const spy = this.actual[Spy.MARKER] as Spy<any, any> | undefined;
-    if (!spy) {
-      throw new Error('Call expectations are only valid for Spies.')
-    }
-
+    const spy = Spy.assertSpy(this.actual);
     if (!spy.getCalls().length) {
       throw new Error(`Expected ${spy} to have been called.`);
     }
   }
 
   toNotHaveBeenCalled() {
-    const spy = this.actual[Spy.MARKER] as Spy<any, any> | undefined;
-    if (!spy) {
-      throw new Error('Call expectations are only valid for Spies.')
-    }
-
+    const spy = Spy.assertSpy(this.actual);
     if (spy.getCalls().length) {
       throw new Error(`Expected ${spy} to not have been called.`);
     }
@@ -281,11 +296,21 @@ class Expectation<T> {
 }
 
 class Spy<TObj, TProp extends keyof TObj> {
-  static readonly MARKER = '__jas_spy__';
+  private static readonly MARKER = '__jas_spy__';
   private readonly calls: unknown[][] = [];
   private storedProperty: TObj[TProp];
 
   readonly and: SpyAction;
+
+  static isSpy(object: unknown): boolean {
+    return !!object[Spy.MARKER];
+  }
+
+  static assertSpy(object: unknown): Spy<any, any> {
+    const spy = object[Spy.MARKER] as Spy<any, any> | undefined;
+    if (!spy) throw new Error('Object is not a spy.');
+    return spy;
+  }
 
   constructor(private readonly object: TObj, private readonly property: TProp) {
     this.storedProperty = object[property];
