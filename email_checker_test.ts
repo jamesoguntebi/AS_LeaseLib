@@ -1,7 +1,7 @@
 import { Test } from "./testing/testrunner";
 import { Tester } from "./testing/tester";
 import EmailChecker from "./email_checker";
-import { FakeGmailApp } from "./testing/fakes";
+import { FakeGmailApp, GmailMessageParams } from "./testing/fakes";
 import BalanceSheet from "./balance_sheet";
 import EmailSender from "./email_sender";
 
@@ -69,5 +69,18 @@ export default class EmailCheckerTest implements Test {
         });
       });
     });
+  }
+
+  private static readonly ZELLE_MESSAGE: GmailMessageParams = {
+    subject: 'We deposited your Zelle payment',
+    from: 'automation@ally.com',
+    plainBody: 'We have successfully deposited the $100.00 ' + 
+        'Zelle® payment from Firstname',
+  }
+  private static readonly VENMO_MESSAGE: GmailMessageParams = {
+    subject: 'We deposited your Zelle payment',
+    from: 'automation@ally.com',
+    plainBody: 'We have successfully deposited the $100.00 ' + 
+        'Zelle® payment from Firstname',
   }
 }

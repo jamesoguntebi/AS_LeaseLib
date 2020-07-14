@@ -18,6 +18,12 @@ P0:
 P1:
 - unit tests
     - setConfigForTest
+    - see how costly it is to use a temp sheet for all test runs
+        - pass (t: Tester) in constructor, not run()
+        - can call t.withTempSheet() in constructor or t.withGmailFake
+        - beforeEach and afterEach are arrays of functions
+        - DescriptionContext class
+        - 
 - For every 5 minute 'check labeled Emails', first check if there are any
     labeled emails, then open every spreadsheet.
 - read all emails, and ask admin to verify emails that should be parsed
