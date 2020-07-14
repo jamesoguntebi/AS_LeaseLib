@@ -17,7 +17,8 @@ export class FakeGmailApp {
   }
 
   static getUserLabelByName(name: string): GmailLabel|null {
-    return FakeGmailApp.labelMap.get(name).fake() ?? null;
+    const label = FakeGmailApp.labelMap.get(name)?.fake();
+    return label;
   }
 }
 

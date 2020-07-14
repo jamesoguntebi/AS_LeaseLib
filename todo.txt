@@ -15,9 +15,13 @@ P0:
 
 P1:
 - unit tests
+    - setConfigForTest
+- For every 5 minute 'check labeled Emails', first check if there are any
+    labeled emails, then open every spreadsheet.
 - read all emails, and ask admin to verify emails that should be parsed
 - better trigger versioning
 - Move client projects off of dev mode to versioned library
+- More comments everywhere
 
 P2:
 - option to add partial payment

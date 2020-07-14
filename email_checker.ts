@@ -37,8 +37,11 @@ export default class EmailChecker {
           const parser = EmailChecker.PARSERS.get(paymentType);
           const paymentAmount = parser(message);
           if (paymentAmount !== null) {
+            // AS Date and JS Date are slightly different, so we cannot pass
+            // AS Date directly.
             const paymentDate = new Date();
             paymentDate.setTime(message.getDate().getTime());
+
             BalanceSheet.addPayment(paymentAmount, paymentDate);
             EmailSender.sendPaymentThanks(paymentAmount);
             Logger.log(
@@ -82,7 +85,6 @@ export default class EmailChecker {
   }
 
   private static parseZelleMessage(message: GmailMessage): number|null {
-    // /deposited.*\$([0-9]+(\.[0-9][0-9])?).*payment/
     if (!message.getFrom().toLowerCase().includes('ally')) return null;
 
     if (!/payment|deposited|deposit/.test(message.getSubject())) return null;
@@ -108,7 +110,6 @@ export default class EmailChecker {
         [...paymentTypes.map(pt => `(${EmailChecker.PAYMENT_QUERIES.get(pt)}`)]
             .join(' OR ') /*+
         `) + ${config.searchQuery.searchName}`*/;
-    Logger.log({query});
     const threads = GmailApp.search(query);
 
     const messages = [];
@@ -121,14 +122,11 @@ export default class EmailChecker {
               from: message.getFrom(),
             });
         }));
-    Logger.log({messages});
   }
 
   private static assertLabel(labelName: string): GmailLabel {
     const label = GmailApp.getUserLabelByName(labelName);
-    if (!label) {
-      throw new Error(`Gmail label ${labelName} not found.`);
-    }
+    if (!label) throw new Error(`Gmail label ${labelName} not found.`);
     return label;
   }
 }

@@ -17,9 +17,9 @@ export default class TestRunner {
 
     let testClasses: Array<new() => Test> = [
       EmailCheckerTest,
-      EmailSenderTest,
-      JasRangeTest,
-      JasSpreadsheetTest,
+      // EmailSenderTest,
+      // JasRangeTest,
+      // JasSpreadsheetTest,
     ];
 
     if (testClassNames) {

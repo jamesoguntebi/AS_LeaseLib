@@ -5,7 +5,7 @@ export class Tester {
   // Empty state allows beforeEach and afterEach, hence one context starting in
   // the stack.
   private currentDescriptionContext: DescriptionContext =
-      {successCount: 0, failureCount: 0, output: []};
+      {successCount: 0, failureCount: 0, output: [], spies: []};
   private descriptionContextStack: DescriptionContext[] =
       [this.currentDescriptionContext];
 
@@ -19,7 +19,7 @@ export class Tester {
     }
 
     this.currentDescriptionContext =
-        {successCount: 0, failureCount: 0, output: []};
+        {successCount: 0, failureCount: 0, output: [], spies: []};
     this.descriptionContextStack.push(this.currentDescriptionContext);
     this.indent();
 
@@ -28,7 +28,7 @@ export class Tester {
     this.dedent();
 
     // Remove the description context, and handle its statistics and output.
-    const {successCount, failureCount, output: lastContextOutput} =
+    const {successCount, failureCount, output: lastContextOutput, spies} =
         this.descriptionContextStack.pop();
 
     this.currentDescriptionContext =
@@ -43,6 +43,8 @@ export class Tester {
       this.currentDescriptionContext.output.push(
           descriptionWithStats, ...lastContextOutput);
     }
+
+    for (const spy of spies) spy.reset();
   }
 
   beforeEach(beforeFn: () => void): void {
@@ -66,9 +68,14 @@ export class Tester {
   }
 
   it(unitTestName: string, testFn: () => void): void {
-    this.isInsideUnit = true;
+    if (this.isInsideUnit) {
+      throw new Error(
+          'Cannot nest it() units. Use a describe() for the outer.');
+    }
 
     for (const context of this.descriptionContextStack) context.beforeEach?.();
+
+    this.isInsideUnit = true;
 
     try {
       testFn();
@@ -87,13 +94,28 @@ export class Tester {
       this.currentDescriptionContext.failureCount++;
     }
 
-    for (const context of this.descriptionContextStack) context.afterEach?.();
-
     this.isInsideUnit = false;
+
+    for (const context of this.descriptionContextStack) {
+      context.afterEach?.();
+      for (const spy of context.spies) spy.clearCalls();
+    };
   }
 
   expect<T>(actual: T): Expectation<T> {
     return new Expectation(actual);
+  }
+
+  spyOn<T, K extends keyof T>(object: T, method: K): Spy<T, K> {
+    if (this.isInsideUnit) {
+      throw new Error('Spies cannot be installed inside unit tests.');
+    }
+    if (typeof object[method] !== 'function') {
+      throw new Error('Can only spy on functions');
+    }
+    const spy = new Spy(object, method);
+    this.currentDescriptionContext.spies.push(spy);
+    return spy;
   }
 
   getTestResults(): TestResult {
@@ -130,6 +152,7 @@ export interface DescriptionContext {
   successCount: number,
   failureCount: number,
   output: string[];
+  spies: Spy<any, any>[];
 }
 
 export interface TestResult {
@@ -223,6 +246,28 @@ class Expectation<T> {
     throw new Error('Can only check containment of arrays and strings.');
   }
 
+  toHaveBeenCalled() {
+    const spy = this.actual[Spy.MARKER] as Spy<any, any> | undefined;
+    if (!spy) {
+      throw new Error('Call expectations are only valid for Spies.')
+    }
+
+    if (!spy.getCalls().length) {
+      throw new Error(`Expected ${spy} to have been called.`);
+    }
+  }
+
+  toNotHaveBeenCalled() {
+    const spy = this.actual[Spy.MARKER] as Spy<any, any> | undefined;
+    if (!spy) {
+      throw new Error('Call expectations are only valid for Spies.')
+    }
+
+    if (spy.getCalls().length) {
+      throw new Error(`Expected ${spy} to not have been called.`);
+    }
+  }
+
   private throw(message: string): never {
     const error = new Error(message);
     error.name = Expectation.ERROR_NAME;
@@ -234,4 +279,85 @@ class Expectation<T> {
     e.stack = `${expectationMsg}\n${e.stack}`;
     throw e;
   }
+}
+
+class Spy<T, K extends keyof T> {
+  static readonly MARKER = '__jas_spy__';
+  private readonly calls: unknown[][] = [];
+  private storedProperty: T[K];
+
+  readonly and: SpyAction;
+
+  constructor(private readonly object: T, private readonly property: K) {
+    this.storedProperty = object[property];
+    this.and = new SpyAction(this.storedProperty as unknown as Function);
+
+    const newFunctionProperty = ((...params) => {
+      this.calls.push(params);
+      return this.and.call(params);
+    }) as unknown as T[K];
+    newFunctionProperty[Spy.MARKER] = this;
+
+    object[property] = newFunctionProperty;
+  }
+
+  reset() {
+    this.object[this.property] = this.storedProperty;
+  }
+
+  clearCalls() {
+    this.calls.length = 0;
+  }
+
+  getCalls() {
+    return this.calls;
+  }
+
+  toString() {
+    const objectString = this.object.constructor.name === 'Function' ?
+        this.object['name'] : this.object.constructor.name;
+    return `${objectString}.${this.property}`;
+  }
+}
+
+class SpyAction {
+  private actionType = SpyActionType.DO_NOTHING;
+  private fakeCall: Function|null = null;
+
+  constructor(private readonly defaultImplementation: Function) {}
+
+  call(params: unknown[]): unknown {
+    switch(this.actionType) {
+      case SpyActionType.CALL_THROUGH:
+        return this.defaultImplementation(...params);
+      case SpyActionType.DO_NOTHING:
+        break;
+      case SpyActionType.FAKE:
+        return this.fakeCall(...params);
+    }
+  }
+
+  callThrough() {
+    this.actionType = SpyActionType.CALL_THROUGH;
+  }
+
+  stub() {
+    this.actionType = SpyActionType.DO_NOTHING;
+  }
+
+  callFake(fakeFn: Function) {
+    this.actionType = SpyActionType.FAKE;
+    this.fakeCall = fakeFn;
+  }
+
+  returnValue(retValue: unknown) {
+    this.actionType = SpyActionType.FAKE;
+    this.fakeCall = () => retValue;
+  }
+}
+
+enum SpyActionType {
+  CALL_THROUGH,
+  DO_NOTHING,
+  FAKE,
 }
