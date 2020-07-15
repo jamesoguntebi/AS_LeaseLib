@@ -6,6 +6,10 @@ export default class EmailSenderTest implements Test{
   readonly name: string = 'EmailSenderTest';
 
   run(t: Tester) {
+    t.beforeEach(() => {
+      t.spyOn(GmailApp, 'sendEmail');
+    });
+
     t.describe('paymentThanksEmail', () => {
       t.it('formats large numbers with comma', () => {
         const {nonHtmlBody, htmlBody} =

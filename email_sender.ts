@@ -2,15 +2,7 @@ import Config from "./config";
 import BalanceSheet from "./balance_sheet";
 
 export default class EmailSender {
-  static sendPaymentThanks(
-        amount: number = Config.get().rentConfig.monthlyAmount) {
-    const {to, subject, nonHtmlBody, cc, bcc, name, htmlBody} =
-        EmailSender.getPaymentThanksParams(amount);
-    GmailApp.sendEmail(to, subject, nonHtmlBody, {cc, bcc, name, htmlBody});
-  }
-
-  /** Separate method for testing. */
-  static getPaymentThanksParams(amount: number): SendEmailParams {
+  static sendPaymentThanks(amount: number) {
     const config = Config.get();
     const balanceNum = BalanceSheet.getBalance();
 
@@ -32,15 +24,16 @@ export default class EmailSender {
         HtmlService.createTemplateFromFile('email_template_payment');
     template.templateParams = templateParams;
 
-    return {
-      to: config.customerEmails.join(', '),
-      subject: 'Received your payment - Thanks!',
-      nonHtmlBody,
-      bcc: config.emailBCCs.join(', '),
-      cc: config.emailCCs.join(', '),
-      name: config.emailDisplayName,
-      htmlBody: template.evaluate().getContent(),
-    };
+    GmailApp.sendEmail(
+        config.customerEmails.join(', '),
+        'Received your payment - Thanks!',
+        nonHtmlBody,
+        {
+          bcc: config.emailBCCs.join(', '),
+          cc: config.emailCCs.join(', '),
+          name: config.emailDisplayName,
+          htmlBody: template.evaluate().getContent(),
+        });
   }
 }
 

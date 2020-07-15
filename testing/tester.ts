@@ -129,6 +129,10 @@ export class Tester {
     return spy;
   }
 
+  matcher(argsMatcher: (...any) => boolean) {
+    return new SpyMatcher(argsMatcher);
+  }
+
   getTestResults(): TestResult {
     return {
       successCount: this.currentDescriptionContext.successCount,
@@ -274,6 +278,10 @@ class Expectation<T> {
     }
   }
 
+  toHaveBeenCalledWidth(...expectedParams: unknown[]) {
+
+  }
+
   private throw(message: string): never {
     throw new Error(message);
   }
@@ -374,4 +382,8 @@ enum SpyActionType {
   CALL_THROUGH,
   DO_NOTHING,
   FAKE,
+}
+
+class SpyMatcher {
+  constructor(readonly argsMatcher: (...any) => boolean) {}
 }
