@@ -34,7 +34,7 @@ export class CellData {
 
   string(): string {
     if (this.isBlank() || typeof this.data !== 'string') {
-      throw new Error('Expected string');
+      throw new Error(`Expected string in cell ${this.getCellString()}`);
     }
     return this.data as string;
   }
@@ -50,8 +50,12 @@ export class CellData {
 
   number(): number {
     if (this.isBlank() || typeof this.data !== 'number') {
-      throw new Error('Expected number');
+      throw new Error(`Expected number in cell ${this.getCellString()}`);
     }
     return this.data as number;
+  }
+
+  private getCellString(): string {
+    return `${this.range.getSheet().getName()}!${this.range.getA1Notation()}`;
   }
 }

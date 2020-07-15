@@ -9,7 +9,7 @@ type SendEmailParameters = Parameters<typeof GmailApp.sendEmail>;
 export default class EmailSenderTest implements Test{
   readonly name: string = 'EmailSenderTest';
 
-  assertWithSendEmailParams(
+  private assertWithSendEmailParams(
       t: Tester, matcher: (params: SendEmailParameters) => boolean) {
     t.expect(GmailApp.sendEmail).toHaveBeenCalledLike(
       t.matcher((args: unknown[]) => matcher(args as SendEmailParameters)));
@@ -38,7 +38,7 @@ export default class EmailSenderTest implements Test{
 
       const RED_BALANCE_STRING = 'style="color: #b34;"';
 
-      t.describe('positive balance', () => {
+      t.describe('with positive balance', () => {
         t.beforeEach(() => {
           t.spyOn(BalanceSheet, 'getBalance').and.returnValue(100);
         });

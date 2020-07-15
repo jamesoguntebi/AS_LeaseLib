@@ -30,7 +30,7 @@ export default class Config {
 
     let rentConfig: RentConfig;
     const rentMonthlyAmountCellData = getCellData('rent monthly amount');
-    const rentMonthlyDueDateCellData = getCellData('rent monthly due date');
+    const rentMonthlyDueDateCellData = getCellData('rent monthly due day');
     if (!rentMonthlyAmountCellData.isBlank() ||
         !rentMonthlyDueDateCellData.isBlank()) {
       rentConfig = {

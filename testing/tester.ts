@@ -6,8 +6,7 @@ export class Tester {
 
   // Empty state allows beforeEach and afterEach, hence one context starting in
   // the stack.
-  private currentDescriptionContext: DescriptionContext =
-      {successCount: 0, failureCount: 0, output: [], spies: []};
+  private currentDescriptionContext = this.getEmptyDescriptionContext();
   private descriptionContextStack: DescriptionContext[] =
       [this.currentDescriptionContext];
 
@@ -26,12 +25,16 @@ export class Tester {
       throw new Error('Illegal context for describe()');
     }
 
-    this.currentDescriptionContext =
-        {successCount: 0, failureCount: 0, output: [], spies: []};
+    this.currentDescriptionContext = this.getEmptyDescriptionContext();
     this.descriptionContextStack.push(this.currentDescriptionContext);
     this.indent();
 
     testFn();
+
+    Logger.log('running afterAll()');
+    for (const afterAll of this.currentDescriptionContext.beforeAlls) {
+      afterAll();
+    }
 
     this.dedent();
 
@@ -55,24 +58,32 @@ export class Tester {
     for (const spy of spies) spy.reset();
   }
 
+  beforeAll(beforeFn: () => void): void {
+    if (this.isInsideUnit) {
+      throw new Error('Illegal context for beforeAll()');
+    }
+    this.currentDescriptionContext.beforeAlls.push(beforeFn);
+  }
+
   beforeEach(beforeFn: () => void): void {
     if (this.isInsideUnit) {
       throw new Error('Illegal context for beforeEach()');
     }
-    if (this.currentDescriptionContext.beforeEach) {
-      throw new Error('This description context already has beforeEach()');
-    }
-    this.currentDescriptionContext.beforeEach = beforeFn;
+    this.currentDescriptionContext.beforeEaches.push(beforeFn);
   }
 
   afterEach(afterFn: () => void): void {
     if (this.isInsideUnit) {
       throw new Error('Illegal context for beforeEach()');
     }
-    if (this.currentDescriptionContext.afterEach) {
-      throw new Error('This description context already has afterEach()');
+    this.currentDescriptionContext.afterEaches.push(afterFn);
+  }
+
+  afterAll(afterFn: () => void): void {
+    if (this.isInsideUnit) {
+      throw new Error('Illegal context for afterAll()');
     }
-    this.currentDescriptionContext.afterEach = afterFn;
+    this.currentDescriptionContext.afterAlls.push(afterFn);
   }
 
   it(unitTestName: string, testFn: () => void): void {
@@ -81,12 +92,23 @@ export class Tester {
           'Cannot nest it() units. Use a describe() for the outer.');
     }
 
-    for (const context of this.descriptionContextStack) context.beforeEach?.();
+    if (!this.currentDescriptionContext.successCount &&
+        !this.currentDescriptionContext.failureCount) {
+      Logger.log('running beforeAll()');
+      for (const beforeAll of this.currentDescriptionContext.beforeAlls) {
+        beforeAll();
+      }
+    }
+
+    for (const beforeEach of this.currentDescriptionContext.beforeEaches) {
+      beforeEach();
+    }
 
     this.isInsideUnit = true;
 
     const startTime = Date.now();
     try {
+      Logger.log('running it() test');
       testFn();
       if (this.verbose) {
         this.output(`✓ ${unitTestName} (in ${Date.now() - startTime} ms)`);
@@ -107,7 +129,9 @@ export class Tester {
     this.isInsideUnit = false;
 
     for (const context of this.descriptionContextStack) {
-      context.afterEach?.();
+      for (const afterEach of this.currentDescriptionContext.afterEaches) {
+        afterEach();
+      }
       for (const spy of context.spies) spy.clearCalls();
     };
   }
@@ -155,11 +179,26 @@ export class Tester {
           Array(this.indentation + 1).join(' ') + line);
     });
   }
+
+  private getEmptyDescriptionContext(): DescriptionContext {
+    return {
+      beforeAlls: [],
+      beforeEaches: [],
+      afterEaches: [],
+      afterAlls: [],
+      successCount: 0,
+      failureCount: 0,
+      output: [],
+      spies: [],
+    };
+  }
 }
 
 export interface DescriptionContext {
-  beforeEach?: () => void,
-  afterEach?: () => void,
+  beforeAlls: Array<() => void>,
+  beforeEaches: Array<() => void>,
+  afterEaches: Array<() => void>,
+  afterAlls: Array<() => void>,
   successCount: number,
   failureCount: number,
   output: string[];
@@ -307,6 +346,12 @@ class Expectation<T> {
     });
     if (!someCallMatches) {
       throw new Error(`No calls of ${spy} matched the expectation.`);
+    }
+  }
+
+  toBeUndefined() {
+    if (this.actual !== undefined) {
+      throw new Error(`Expected ${this.actual} to be undefined.`);
     }
   }
 
