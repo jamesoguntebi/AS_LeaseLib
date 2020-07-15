@@ -37,16 +37,6 @@ export default class EmailSender {
   }
 }
 
-interface SendEmailParams {
-  to: string;
-  subject: string;
-  nonHtmlBody: string,
-  cc?: string,
-  bcc?: string,
-  name: string;
-  htmlBody: string,
-}
-
 /** Keep in sync with email_template_payment.html. */
 interface PaymentEmailTemplateParams {
   balance: string,

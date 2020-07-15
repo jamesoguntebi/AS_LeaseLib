@@ -187,10 +187,10 @@ export default class EmailCheckerTest implements Test {
     subject: 'We deposited your Zelle payment',
     from: 'email@transfers.ally.com',
     plainBody: 'We have successfully deposited the $100.00 ' + 
-        'Zelle® payment from Gandalf',
+        `Zelle® payment from ${Config.DEFAULT.searchQuery.searchName}`,
   }
   private static readonly VENMO_MESSAGE: GmailMessageParams = {
-    subject: 'Gandalf paid you $100.00',
+    subject: `${Config.DEFAULT.searchQuery.searchName} paid you $100.00`,
     from: 'venmo@venmo.com',
   }
 }

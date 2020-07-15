@@ -17,6 +17,8 @@ export default class Config {
     LOAN_INTEREST_RATE: 'loan interest rate',
   }
 
+  static readonly DEFAULT = Config.getRentConfigForTest();
+
   static get(): ConfigParams {
     const configSheet = JasSpreadsheet.findSheet('config');
     const valueColumn = JasSpreadsheet.findColumn('value', configSheet);

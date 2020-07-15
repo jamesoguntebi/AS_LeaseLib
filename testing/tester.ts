@@ -129,7 +129,7 @@ export class Tester {
     return spy;
   }
 
-  matcher(argsMatcher: (...any) => boolean) {
+  matcher(argsMatcher: (args: unknown[]) => boolean) {
     return new SpyMatcher(argsMatcher);
   }
 
@@ -255,6 +255,28 @@ class Expectation<T> {
     throw new Error('Can only check containment of arrays and strings.');
   }
 
+  toNotContain(expectedContents: unknown) {
+    if (typeof this.actual === 'string') {
+      if (typeof expectedContents !== 'string') {
+        throw new Error(`Cannot check containment in a string. Got ${
+            typeof expectedContents}`)
+      }
+      if (this.actual.includes(expectedContents)) {
+        throw new Error(`Found '${expectedContents}' in '${this.actual}'.`);
+      }
+      return;
+    }
+
+    if (typeof Array.isArray(this.actual)) {
+      if ((this.actual as unknown as any[]).includes(expectedContents)) {
+        throw new Error(`Found '${expectedContents}' in '${this.actual}'.`);
+      }
+      return;
+    }
+
+    throw new Error('Can only check containment of arrays and strings.');
+  }
+
   toHaveBeenCalled() {
     const spy = Spy.assertSpy(this.actual);
     if (!spy.getCalls().length) {
@@ -278,8 +300,14 @@ class Expectation<T> {
     }
   }
 
-  toHaveBeenCalledWidth(...expectedParams: unknown[]) {
-
+  toHaveBeenCalledLike(spyMatcher: SpyMatcher) {
+    const spy = Spy.assertSpy(this.actual);
+    const someCallMatches = spy.getCalls().some((callArgs: unknown[]) => {
+      return spyMatcher.argsMatcher(callArgs);
+    });
+    if (!someCallMatches) {
+      throw new Error(`No calls of ${spy} matched the expectation.`);
+    }
   }
 
   private throw(message: string): never {
