@@ -17,7 +17,7 @@ export default class Config {
     LOAN_INTEREST_RATE: 'loan interest rate',
   }
 
-  static get(): LeaseConfig {
+  static get(): ConfigParams {
     const configSheet = JasSpreadsheet.findSheet('config');
     const valueColumn = JasSpreadsheet.findColumn('value', configSheet);
 
@@ -86,7 +86,7 @@ export default class Config {
     }
   }
 
-  static validate(config: LeaseConfig = Config.get()): LeaseConfig {
+  static validate(config: ConfigParams = Config.get()): ConfigParams {
     if (!config.rentConfig && !config.loanConfig) {
       throw new Error('No renter or borrower config defined.')
     }
@@ -132,10 +132,10 @@ export default class Config {
     return s as PaymentType;
   }
 
-  static getLoanConfigForTest(override?: Partial<LeaseConfig>, overrides: {
+  static getLoanConfigForTest(override?: Partial<ConfigParams>, overrides: {
     loanConfig?: Partial<LoanConfig>,
     searchQuery?: Partial<SearchQuery>,
-  } = {}): LeaseConfig {
+  } = {}): ConfigParams {
     return Config.getConfigForTest({
       loanConfig: {
         interestRate: 0.05,
@@ -146,10 +146,10 @@ export default class Config {
     }, overrides);
   }
 
-  static getRentConfigForTest(override?: Partial<LeaseConfig>, overrides: {
+  static getRentConfigForTest(override?: Partial<ConfigParams>, overrides: {
     rentConfig?: Partial<RentConfig>,
     searchQuery?: Partial<SearchQuery>,
-  } = {}): LeaseConfig {
+  } = {}): ConfigParams {
     return Config.getConfigForTest({
       rentConfig: {
         monthlyAmount: 3600,
@@ -161,9 +161,9 @@ export default class Config {
   }
 
   /** Only to be called from getRentConfigForTest or getLoanConfigForTest. */
-  private static getConfigForTest(override: Partial<LeaseConfig>, overrides: {
+  private static getConfigForTest(override: Partial<ConfigParams>, overrides: {
     searchQuery?: Partial<SearchQuery>,
-  } = {}): LeaseConfig {
+  } = {}): ConfigParams {
     return Config.validate({
       customerDisplayName: 'Gandalf the White',
       customerEmails: ['mithrandir@gmail.com', 'thewhiterider@gmail.com'],
@@ -182,7 +182,7 @@ export default class Config {
   }
 }
 
-export interface LeaseConfig {
+export interface ConfigParams {
   customerDisplayName: string;
   customerEmails: string[];
   emailCCs: string[];

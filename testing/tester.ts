@@ -1,4 +1,4 @@
-import { FakeGmailApp, GmailAppParams } from "./fakes";
+import Config, { ConfigParams } from "../config";
 
 export class Tester {
   private static readonly INDENT_PER_LEVEL = 2;
@@ -15,24 +15,10 @@ export class Tester {
 
   constructor(private readonly verbose: boolean) {}
 
-  withGmailFake(gmailAppParams: GmailAppParams) {
-    for (const prop in GmailApp) {
-      if (typeof GmailApp[prop] === 'function') {
-        const spy = this.spyOn(GmailApp, prop as keyof typeof GmailApp);
-
-        if (prop === 'getUserLabelByName') {
-          spy.and.callFake(FakeGmailApp.getUserLabelByName);
-        }
-      }
-    }
-    this.populateGmail(gmailAppParams);
-  }
-
-  populateGmail(gmailAppParams: GmailAppParams) {
-    if (!Spy.isSpy(GmailApp.getUserLabelByName)) {
-      throw('Spy on GmailApp before populating fake data.');
-    }
-    FakeGmailApp.setData(gmailAppParams);
+  setConfig(config: ConfigParams) {
+    const spy = Spy.isSpy(Config.get) ?
+        Spy.assertSpy(Config.get) : this.spyOn(Config, 'get');
+    spy.and.returnValue(config);
   }
 
   describe(description: string, testFn: () => void): void {
@@ -110,8 +96,7 @@ export class Tester {
       this.output(`✗ ${unitTestName} (in ${Date.now() - startTime} ms)`);
       this.indent();
       if (e instanceof Error) {
-        this.output(e.name === Expectation.ERROR_NAME ?
-            e.message : (e.stack || e.message));
+        this.output(e.stack || e.message);
       } else {
         this.output('Exception during test execution. No error object.')
       }
@@ -184,8 +169,6 @@ export interface TestResult {
 }
 
 class Expectation<T> {
-  static readonly ERROR_NAME = '__expectation_error__';
-
   constructor(private readonly actual: T) {}
 
   toEqual(expected: T) {
@@ -282,10 +265,17 @@ class Expectation<T> {
     }
   }
 
+  toHaveBeenCalledTimes(expected: number) {
+    const spy = Spy.assertSpy(this.actual);
+    const actual = spy.getCalls().length;
+    if (actual !== expected) {
+      throw new Error(`${spy} was called ${actual} times instead of ${
+          expected} times.`);
+    }
+  }
+
   private throw(message: string): never {
-    const error = new Error(message);
-    error.name = Expectation.ERROR_NAME;
-    throw error;
+    throw new Error(message);
   }
 
   private augmentAndThrow(e: Error, expectationMsg: string): never {

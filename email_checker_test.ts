@@ -4,10 +4,15 @@ import EmailChecker from "./email_checker";
 import { FakeGmailApp, GmailMessageParams } from "./testing/fakes";
 import BalanceSheet from "./balance_sheet";
 import EmailSender from "./email_sender";
-import Config from "./config";
+import Config, { PaymentType } from "./config";
 
 export default class EmailCheckerTest implements Test {
   readonly name = 'EmailCheckerTest';
+
+  private setConfigWithPaymentTypes(t: Tester, ...paymentTypes: PaymentType[]) {
+    t.setConfig(Config.getLoanConfigForTest(
+        undefined, {searchQuery: {paymentTypes}}));
+  }
 
   run(t: Tester) {
     t.beforeEach(() => {
@@ -15,12 +20,12 @@ export default class EmailCheckerTest implements Test {
           .callFake(FakeGmailApp.getUserLabelByName);
       t.spyOn(BalanceSheet, 'addPayment');
       t.spyOn(EmailSender, 'sendPaymentThanks');
-      t.spyOn(Config, 'get').and.returnValue(Config.getLoanConfigForTest());
     });
 
     t.describe('checkedLabeledEmails', () => {
       t.describe('with invalid pending email', () => {
         t.beforeEach(() => {
+          this.setConfigWithPaymentTypes(t, 'Zelle', 'Venmo');
           FakeGmailApp.setData({labels: [
             {
               name: EmailChecker.PENDING_LABEL_NAME,
@@ -31,7 +36,6 @@ export default class EmailCheckerTest implements Test {
         });
 
         t.it('throws on assertNoPendingThreads', () => {
-          // When emails are checked.
           EmailChecker.checkedLabeledEmails();
           t.expect(EmailSender.sendPaymentThanks).toNotHaveBeenCalled();
           t.expect(BalanceSheet.addPayment).toNotHaveBeenCalled();
@@ -43,6 +47,7 @@ export default class EmailCheckerTest implements Test {
 
       t.describe('with valid Zelle email', () => {
         t.beforeEach(() => {
+          this.setConfigWithPaymentTypes(t, 'Zelle', 'Venmo');
           FakeGmailApp.setData({labels: [
             {
               name: EmailChecker.PENDING_LABEL_NAME,
@@ -55,17 +60,34 @@ export default class EmailCheckerTest implements Test {
         });
 
         t.it('handles the email', () => {
-          // When emails are checked.
           EmailChecker.checkedLabeledEmails();
 
           t.expect(EmailSender.sendPaymentThanks).toHaveBeenCalled();
           t.expect(BalanceSheet.addPayment).toHaveBeenCalled();
           t.expect(() => EmailChecker.assertNoPendingThreads()).toNotThrow();
+          t.expect(FakeGmailApp.getUserLabelByName(EmailChecker.DONE_LABEL_NAME)
+              .getThreads().length).toEqual(1);
+        });
+
+        t.describe('with Venmo-only Config', () => {
+          t.beforeEach(() => {
+            this.setConfigWithPaymentTypes(t, 'Venmo');
+          });
+  
+          t.it('does nothing', () => {
+            EmailChecker.checkedLabeledEmails();
+  
+            t.expect(EmailSender.sendPaymentThanks).toNotHaveBeenCalled();
+            t.expect(BalanceSheet.addPayment).toNotHaveBeenCalled();
+            t.expect(FakeGmailApp.getUserLabelByName(EmailChecker.DONE_LABEL_NAME)
+                .getThreads().length).toEqual(0);
+          });
         });
       });
 
       t.describe('with valid Venmo email', () => {
         t.beforeEach(() => {
+          this.setConfigWithPaymentTypes(t, 'Zelle', 'Venmo');
           FakeGmailApp.setData({labels: [
             {
               name: EmailChecker.PENDING_LABEL_NAME,
@@ -78,12 +100,84 @@ export default class EmailCheckerTest implements Test {
         });
 
         t.it('handles the email', () => {
-          // When emails are checked.
           EmailChecker.checkedLabeledEmails();
 
           t.expect(EmailSender.sendPaymentThanks).toHaveBeenCalled();
           t.expect(BalanceSheet.addPayment).toHaveBeenCalled();
           t.expect(() => EmailChecker.assertNoPendingThreads()).toNotThrow();
+          t.expect(FakeGmailApp.getUserLabelByName(EmailChecker.DONE_LABEL_NAME)
+              .getThreads().length).toEqual(1);
+        });
+
+        t.describe('with Zelle-only Config', () => {
+          t.beforeEach(() => {
+            this.setConfigWithPaymentTypes(t, 'Zelle');
+          });
+  
+          t.it('does nothing', () => {
+            EmailChecker.checkedLabeledEmails();
+  
+            t.expect(EmailSender.sendPaymentThanks).toNotHaveBeenCalled();
+            t.expect(BalanceSheet.addPayment).toNotHaveBeenCalled();
+            t.expect(FakeGmailApp.getUserLabelByName(EmailChecker.DONE_LABEL_NAME)
+                .getThreads().length).toEqual(0);
+          });
+        });
+      });
+
+      t.describe('with two valid emails in one thread', () => {
+        t.beforeEach(() => {
+          this.setConfigWithPaymentTypes(t, 'Zelle', 'Venmo');
+          FakeGmailApp.setData({labels: [
+            {
+              name: EmailChecker.PENDING_LABEL_NAME,
+              threads: [
+                {
+                  messages: [
+                    EmailCheckerTest.VENMO_MESSAGE,
+                    EmailCheckerTest.VENMO_MESSAGE,
+                  ],
+                },
+              ],
+            },
+            {name: EmailChecker.DONE_LABEL_NAME},
+          ]});
+        });
+
+        t.it('handles both emails', () => {
+          EmailChecker.checkedLabeledEmails();
+
+          t.expect(EmailSender.sendPaymentThanks).toHaveBeenCalledTimes(2);
+          t.expect(BalanceSheet.addPayment).toHaveBeenCalledTimes(2);
+          t.expect(() => EmailChecker.assertNoPendingThreads()).toNotThrow();
+          t.expect(FakeGmailApp.getUserLabelByName(EmailChecker.DONE_LABEL_NAME)
+              .getThreads().length).toEqual(1);
+        });
+      });
+
+      t.describe('with valid emails in two threads', () => {
+        t.beforeEach(() => {
+          this.setConfigWithPaymentTypes(t, 'Zelle', 'Venmo');
+          FakeGmailApp.setData({labels: [
+            {
+              name: EmailChecker.PENDING_LABEL_NAME,
+              threads: [
+                {messages: [EmailCheckerTest.VENMO_MESSAGE]},
+                {messages: [EmailCheckerTest.ZELLE_MESSAGE]},
+              ],
+            },
+            {name: EmailChecker.DONE_LABEL_NAME},
+          ]});
+        });
+
+        t.it('handles both emails', () => {
+          EmailChecker.checkedLabeledEmails();
+
+          t.expect(EmailSender.sendPaymentThanks).toHaveBeenCalledTimes(2);
+          t.expect(BalanceSheet.addPayment).toHaveBeenCalledTimes(2);
+          t.expect(() => EmailChecker.assertNoPendingThreads()).toNotThrow();
+          t.expect(FakeGmailApp.getUserLabelByName(EmailChecker.DONE_LABEL_NAME)
+              .getThreads().length).toEqual(2);
         });
       });
     });

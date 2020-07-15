@@ -22,7 +22,7 @@ export class FakeGmailApp {
   }
 }
 
-export interface GmailAppParams {
+interface GmailAppParams {
   labels?: GmailLabelParams[];
 }
 
