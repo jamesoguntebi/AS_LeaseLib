@@ -14,6 +14,7 @@ P0:
   - generate typescript types declaration:
     https://www.typescriptlang.org/docs/handbook/declaration-files/publishing.html
 - update README
+- fix afterAll and configtest
 
 P1:
 - unit tests
@@ -30,6 +31,8 @@ P1:
 - better trigger versioning
 - Move client projects off of dev mode to versioned library
 - More comments everywhere
+- Validate email address format
+- Only show 'See balance sheet' in email if at least link href is in Config
 
 P2:
 - option to add partial payment

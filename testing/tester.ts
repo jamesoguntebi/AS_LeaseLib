@@ -31,7 +31,6 @@ export class Tester {
 
     testFn();
 
-    Logger.log('running afterAll()');
     for (const afterAll of this.currentDescriptionContext.beforeAlls) {
       afterAll();
     }
@@ -94,7 +93,6 @@ export class Tester {
 
     if (!this.currentDescriptionContext.successCount &&
         !this.currentDescriptionContext.failureCount) {
-      Logger.log('running beforeAll()');
       for (const beforeAll of this.currentDescriptionContext.beforeAlls) {
         beforeAll();
       }
@@ -108,7 +106,6 @@ export class Tester {
 
     const startTime = Date.now();
     try {
-      Logger.log('running it() test');
       testFn();
       if (this.verbose) {
         this.output(`✓ ${unitTestName} (in ${Date.now() - startTime} ms)`);
@@ -238,10 +235,14 @@ class Expectation<T> {
       this.throw('Expectation is not a function');
     }
 
+    const DO_NOT_CATCH = String(Math.random());
     try {
       this.actual();
-      this.throw('Expected function to throw.');
+      throw new Error(DO_NOT_CATCH);
     } catch (e) {
+      if (e.message === DO_NOT_CATCH) {
+        throw new Error('Expected function to throw.');
+      }
       if (expectedErrorMessage) {
         const errorContent = e.stack || e.message || '';
         if (!errorContent.toLowerCase().includes(

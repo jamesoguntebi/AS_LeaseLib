@@ -56,9 +56,6 @@ export default class Config {
         getCellData('payment types').string().split(/,|\n/)
             .map(pt => pt.trim())
             .map(pt => Config.assertIsPaymentType(pt));
-    if (!paymentTypes.length) {
-      throw new Error('At least one payment type is required in Config.');
-    }
 
     return Config.validate({
       customerDisplayName: getCellData('customer display name').string(),
@@ -112,6 +109,15 @@ export default class Config {
 
     if (!config.searchQuery.paymentTypes.length) {
       throw new Error('At least one payment type is required in Config.');
+    }
+    if (!config.customerDisplayName) {
+      throw new Error('Customer display name is required in Config.');
+    }
+    if (!config.customerEmails.length) {
+      throw new Error('At least one customer email is required in Config.');
+    }
+    if (!config.emailDisplayName) {
+      throw new Error('Email display name is required in Config.');
     }
 
     return config;
