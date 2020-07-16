@@ -98,8 +98,8 @@ export class Tester {
       }
     }
 
-    for (const beforeEach of this.currentDescriptionContext.beforeEaches) {
-      beforeEach();
+    for (const context of this.descriptionContextStack) {
+      for (const beforeEach of context.beforeEaches) beforeEach();
     }
 
     this.isInsideUnit = true;
@@ -126,11 +126,9 @@ export class Tester {
     this.isInsideUnit = false;
 
     for (const context of this.descriptionContextStack) {
-      for (const afterEach of this.currentDescriptionContext.afterEaches) {
-        afterEach();
-      }
+      for (const afterEach of context.afterEaches) afterEach();
       for (const spy of context.spies) spy.clearCalls();
-    };
+    }
   }
 
   expect<T>(actual: T): Expectation<T> {

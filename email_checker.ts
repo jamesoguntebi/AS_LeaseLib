@@ -27,13 +27,10 @@ export default class EmailChecker {
   ]);
 
   static checkLabeledEmailsForAllSheets() {
-    Logger.log(`Checking for labeled emails in all sheets`);
-
     const pendingLabel =
         EmailChecker.assertLabel(EmailChecker.PENDING_LABEL_NAME);
     const pendingThreads = pendingLabel.getThreads();
     if (!pendingThreads.length) {
-      Logger.log(`Stopping because there are no labeled emails.`);
       return;
     }
 
@@ -52,10 +49,6 @@ export default class EmailChecker {
     }
     const doneLabel =
         EmailChecker.assertLabel(EmailChecker.DONE_LABEL_NAME);
-
-    Logger.log(`Checking for labeled emails in label '${
-        pendingLabel.getName()}' with spreadsheed id: ${
-        _JasLibContext.spreadsheetId}`);
 
     for (const thread of pendingThreads) {
       for (const message of thread.getMessages()) {

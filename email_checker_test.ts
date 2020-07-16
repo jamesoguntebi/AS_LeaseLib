@@ -22,8 +22,7 @@ export default class EmailCheckerTest implements Test {
       t.spyOn(BalanceSheet, 'addPayment');
       t.spyOn(EmailSender, 'sendPaymentThanks');
 
-      // Don't call the function for every registered sheet, only
-      // call it once.
+      // Don't call the function for every registered sheet, only call it once.
       t.spyOn(ClientSheetManager, 'forEach').and.callFake(
           (fn: Function) => fn());
     });
