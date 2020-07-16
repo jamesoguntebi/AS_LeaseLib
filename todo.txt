@@ -37,6 +37,7 @@ P1:
   the template
   - might be a problem with merged ranges
 - mark L tests and make running them optional
+- tsconfig
 
 P2:
 - option to add partial payment
