@@ -1,36 +1,27 @@
 import JasSpreadsheet from "./jas_spreadsheet";
 import JasRange, { CellData } from "./jas_range";
 
-type Sheet = GoogleAppsScript.Spreadsheet.Sheet;
-
 export default class Config {
   static readonly PaymentTypeStrings: Record<string, string> = {
     Zelle: 'Zelle',
     Venmo: 'Venmo',
   }
 
-  /**
-   * Allows callers to refer to a specific field for requesting it's range A1
-   * location. The value is the lookup to find the row.
-   */
-  static readonly Fields: Record<string, string> = {
-    LOAN_INTEREST_RATE: 'loan interest rate',
-  }
-
   static readonly DEFAULT = Config.getRentConfigForTest();
 
   static get(): ConfigParams {
+    const F = Config.FIELD;
     const configSheet = JasSpreadsheet.findSheet('config');
     const valueColumn = JasSpreadsheet.findColumn('value', configSheet);
 
-    const getCellData = (configName: string) => {
-      const configRow = JasSpreadsheet.findRow(configName, configSheet);
+    const getCellData = (configField: ConfigField) => {
+      const configRow = JasSpreadsheet.findRow(configField, configSheet);
       return new CellData(configSheet.getRange(configRow, valueColumn));
     };
 
     let rentConfig: RentConfig;
-    const rentMonthlyAmountCellData = getCellData('rent monthly amount');
-    const rentMonthlyDueDateCellData = getCellData('rent monthly due day');
+    const rentMonthlyAmountCellData = getCellData(F.rentConfig_monthlyAmount);
+    const rentMonthlyDueDateCellData = getCellData(F.rentConfig_dueDayOfMonth);
     if (!rentMonthlyAmountCellData.isBlank() ||
         !rentMonthlyDueDateCellData.isBlank()) {
       rentConfig = {
@@ -40,10 +31,9 @@ export default class Config {
     }
 
     let loanConfig: LoanConfig;
-    const loanInterestRateCellData =
-        getCellData(Config.Fields.LOAN_INTEREST_RATE);
+    const loanInterestRateCellData = getCellData(F.loanConfig_interestRate);
     const loanMonthlyInterestDayCellData =
-        getCellData('loan monthly interest day');
+        getCellData(F.loanConfig_interestDayOfMonth);
     if (!loanInterestRateCellData.isBlank() ||
         !loanMonthlyInterestDayCellData.isBlank()) {
       loanConfig = {
@@ -53,36 +43,33 @@ export default class Config {
     }
 
     const paymentTypes =
-        getCellData('payment types').string().split(/,|\n/)
+        getCellData(F.searchQuery_paymentTypes)
+            .string().split(/,|\n/)
             .map(pt => pt.trim())
             .map(pt => Config.assertIsPaymentType(pt));
 
     return Config.validate({
-      customerDisplayName: getCellData('customer display name').string(),
-      customerEmails: getCellData('customer emails').stringArray(),
-      emailCCs: getCellData('email cc').stringArray(),
-      emailBCCs: getCellData('email bcc').stringArray(),
-      emailDisplayName: getCellData('email display name').string(),
-      linkToSheetHref: getCellData('link to sheet href').string(),
-      linkToSheetText: getCellData('link to sheet text').string(),
+      customerDisplayName: getCellData(F.customerDisplayName).string(),
+      customerEmails: getCellData(F.customerEmails).stringArray(),
+      emailCCs: getCellData(F.emailCCs).stringArray(),
+      emailBCCs: getCellData(F.emailBCCs).stringArray(),
+      emailDisplayName: getCellData(F.emailDisplayName).string(),
+      linkToSheetHref: getCellData(F.linkToSheetHref).string(),
+      linkToSheetText: getCellData(F.linkToSheetText).string(),
       loanConfig,
       rentConfig,
       searchQuery: {
         paymentTypes,
-        searchName: getCellData('gmail search name').string(),
+        searchName: getCellData(F.searchQuery_searchName).string(),
       },
     });
   }
 
-  static getFixedCellNotation(field: ConfigField) {
+  static getFixedCellNotation(field: ConfigField): string {
     const configSheet = JasSpreadsheet.findSheet('config');
     const valueColumn = JasSpreadsheet.findColumn('value', configSheet);
-
-    if (field === Config.Fields.LOAN_INTEREST_RATE) {
-      const row = JasSpreadsheet.findRow(field, configSheet);
-      return JasRange.getFixedA1Notation(
-          configSheet.getRange(row, valueColumn));
-    }
+    const row = JasSpreadsheet.findRow(field, configSheet);
+    return JasRange.getFixedA1Notation(configSheet.getRange(row, valueColumn));
   }
 
   static validate(config: ConfigParams = Config.get()): ConfigParams {
@@ -110,17 +97,33 @@ export default class Config {
     if (!config.searchQuery.paymentTypes.length) {
       throw new Error('At least one payment type is required in Config.');
     }
+    if (!config.searchQuery.searchName) {
+      throw new Error('Search query name required in Config.');
+    }
     if (!config.customerDisplayName) {
       throw new Error('Customer display name is required in Config.');
     }
     if (!config.customerEmails.length) {
       throw new Error('At least one customer email is required in Config.');
     }
+    if (!config.customerEmails.every(Config.isEmail)) {
+      throw new Error('Invalid email format for customer emails in Config.');
+    }
     if (!config.emailDisplayName) {
       throw new Error('Email display name is required in Config.');
     }
+    if (!config.emailCCs.every(Config.isEmail)) {
+      throw new Error('Invalid email format for email cc in Config.');
+    }
+    if (!config.emailBCCs.every(Config.isEmail)) {
+      throw new Error('Invalid email format for email bcc in Config.');
+    }
 
     return config;
+  }
+
+  private static isEmail(s: string): boolean {
+    return /\S+@\S+\.\S+/.test(s);
   }
 
   private static validateDayOfMonth(day: number) {
@@ -177,7 +180,7 @@ export default class Config {
       customerEmails: ['mithrandir@gmail.com', 'thewhiterider@gmail.com'],
       emailCCs: ['legolas@gmail.com', 'aragorn@gmail.com'],
       emailBCCs: ['saruman@gmail.com', 'radagast@gmail.com'],
-      emailDisplayName: 'Gandalf',
+      emailDisplayName: 'Bank of Middle Earth Bot',
       linkToSheetHref: 'https://bankofmiddleearth.com/loans/gandalf',
       linkToSheetText: 'bankofmiddleearth.com/loans/gandalf',
       searchQuery: {
@@ -188,8 +191,26 @@ export default class Config {
       ...override,
     });
   }
+
+  // Keep in sync with ConfigParams below.
+  static readonly FIELD: Record<string, string> = {
+    customerDisplayName: 'customer display name',
+    customerEmails: 'customer emails',
+    emailCCs: 'email cc',
+    emailBCCs: 'email bcc',
+    emailDisplayName: 'email display name',
+    linkToSheetHref: 'link to sheet href',
+    linkToSheetText: 'link to sheet text',
+    loanConfig_interestRate: 'loan interest rate',
+    loanConfig_interestDayOfMonth: 'loan monthly interest day',
+    rentConfig_monthlyAmount: 'rent monthly amount',
+    rentConfig_dueDayOfMonth: 'rent monthly due day',
+    searchQuery_paymentTypes: 'payment types',
+    searchQuery_searchName: 'gmail search name',
+  }
 }
 
+  // Keep in sync with FIELD above.
 export interface ConfigParams {
   customerDisplayName: string;
   customerEmails: string[];
@@ -218,5 +239,5 @@ interface SearchQuery {
   searchName: string;
 }
 
-export type ConfigField = keyof typeof Config.Fields;
+export type ConfigField = keyof typeof Config.FIELD;
 export type PaymentType = keyof typeof Config.PaymentTypeStrings;

@@ -31,7 +31,7 @@ export class Tester {
 
     testFn();
 
-    for (const afterAll of this.currentDescriptionContext.beforeAlls) {
+    for (const afterAll of this.currentDescriptionContext.afterAlls) {
       afterAll();
     }
 
@@ -212,7 +212,9 @@ class Expectation<T> {
   constructor(private readonly actual: T) {}
 
   toEqual(expected: T) {
-    const fail = () => this.throw(`Expected ${expected}, got ${this.actual}.`);
+    const fail = () => {
+      throw new Error(`Expected ${expected}, got ${this.actual}.`);
+    };
 
     if (Array.isArray(expected) && Array.isArray(this.actual)) {
       const end = Math.max(expected.length, this.actual.length);
@@ -227,12 +229,19 @@ class Expectation<T> {
       return;
     }
 
+    if (this.isPOJO(this.actual) && this.isPOJO(expected)) {
+      for (const key in this.actual) {
+        new Expectation(this.actual[key]).toEqual(expected[key]);
+      }
+      return;
+    }
+
     if (this.actual !== expected) fail();
   }
 
   toThrow(expectedErrorMessage?: string) {
     if (typeof this.actual !== 'function') {
-      this.throw('Expectation is not a function');
+      throw new Error('Expectation is not a function');
     }
 
     const DO_NOT_CATCH = String(Math.random());
@@ -256,7 +265,7 @@ class Expectation<T> {
 
   toNotThrow() {
     if (typeof this.actual !== 'function') {
-      this.throw('Expectation is not a function');
+      throw new Error('Expectation is not a function');
     }
 
     try {
@@ -266,7 +275,7 @@ class Expectation<T> {
       if (e instanceof Error) {
         this.augmentAndThrow(e, expectationMsg);
       } else {
-        this.throw(expectationMsg);
+        throw new Error(expectationMsg);
       }
     }
   }
@@ -365,6 +374,17 @@ class Expectation<T> {
     e.stack = `${expectationMsg}\n${e.stack}`;
     throw e;
   }
+
+  private isPOJO(arg: unknown) {
+    if (arg == null || typeof arg !== 'object') {
+      return false;
+    }
+    const proto = Object.getPrototypeOf(arg);
+    // Prototype may be null if you used `Object.create(null)`
+    // Checking `proto`'s constructor is safe because `getPrototypeOf()`
+    // explicitly crosses the boundary from object data to object metadata.
+    return !proto || proto.constructor.name === 'Object';
+  };
 }
 
 class Spy<TObj, TProp extends keyof TObj> {

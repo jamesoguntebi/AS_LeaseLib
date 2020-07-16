@@ -72,7 +72,7 @@ export default class BalanceSheet {
     } else {
       const prevBal = previousBalanceCellA1;
       const interestRate =
-          Config.getFixedCellNotation(Config.Fields.LOAN_INTEREST_RATE);
+          Config.getFixedCellNotation(Config.FIELD.loanConfig_interestRate);
       setCell(
           'transaction',
           `= if (${prevBal} >= 0, - ${prevBal} * ${interestRate} / 12, 0)`);

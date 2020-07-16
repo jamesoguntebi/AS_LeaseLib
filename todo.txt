@@ -33,6 +33,10 @@ P1:
 - More comments everywhere
 - Validate email address format
 - Only show 'See balance sheet' in email if at least link href is in Config
+- Set the header rows of Balance Sheet and Config to be imported ranges from
+  the template
+  - might be a problem with merged ranges
+- mark L tests and make running them optional
 
 P2:
 - option to add partial payment
