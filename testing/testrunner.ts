@@ -1,9 +1,10 @@
-import JasRangeTest from "../jas_range_test";
-import { Tester } from "./tester";
-import JasSpreadsheetTest from "../jas_spreadsheet_test";
+import BalanceSheetTest from "../balance_sheet_test";
 import EmailSenderTest from "../email_sender_test";
 import EmailCheckerTest from "../email_checker_test";
 import ConfigTest from "../config_test";
+import JasRangeTest from "../jas_range_test";
+import JasSpreadsheetTest from "../jas_spreadsheet_test";
+import { Tester } from "./tester";
 
 export default class TestRunner {
   private static readonly LEASE_TEMPLATE_SPREADSHEET_ID =
@@ -17,6 +18,7 @@ export default class TestRunner {
     _JasLibContext.spreadsheetId = spreadsheetId;
 
     let testClasses: Array<new() => Test> = [
+      BalanceSheetTest,
       ConfigTest,
       EmailCheckerTest,
       EmailSenderTest,

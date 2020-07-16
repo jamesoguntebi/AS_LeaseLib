@@ -42,6 +42,7 @@ P2:
 - option to add partial payment
 - use dropdown list to select payment types in sheet config
 - allow disabling outgoing emails in the config
+- Add config for the payment label in balance sheet. e.g. "Car payment"
 
 P3:
 - integrate with Plaid to *maybe* get Zelle Ids  

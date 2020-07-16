@@ -22,7 +22,7 @@ export default class BalanceSheet {
     if (config.rentConfig?.dueDayOfMonth === currentDayOfMonth) {
       BalanceSheet.insertRow({
         date: new Date(),
-        description: 'Rent Due',
+        description: 'Rent due',
         transaction: -config.rentConfig.monthlyAmount,
       });
       Logger.log(`Added 'Rent Due' transaction!`);
@@ -30,7 +30,7 @@ export default class BalanceSheet {
       if (config.loanConfig.interestRate > 0) {
         BalanceSheet.insertRow({
           date: new Date(),
-          description: 'Monthly Interest',
+          description: 'Monthly interest',
           transaction: 'interest',
         });
         Logger.log(`Added 'Monthly Interest' transaction!`);
@@ -45,12 +45,12 @@ export default class BalanceSheet {
   static addPayment(amount: number, date: Date) {
     BalanceSheet.insertRow({
       date,
-      description: Config.get().rentConfig ? 'Rent Payment' : 'Loan Payment',
+      description: Config.get().rentConfig ? 'Rent payment' : 'Loan payment',
       transaction: amount,
     });
   }
 
-  private static insertRow(balanceRow: BalanceRow) {
+  static insertRow(balanceRow: BalanceRow) {
     const sheet = JasSpreadsheet.findSheet('balance');
     const headerRow = sheet.getFrozenRows();
     sheet.insertRowAfter(headerRow);
@@ -85,7 +85,7 @@ export default class BalanceSheet {
   }
 }
 
-interface BalanceRow {
+export interface BalanceRow {
   date: Date,
   description: string,
   transaction: number | 'interest',
