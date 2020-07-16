@@ -20,10 +20,7 @@ export function maybeAddRentOrInterestTransaction() {
 }
 
 export function checkedLabeledEmails() {
-  return Executrix.run(() => {
-    ClientSheetManager.forEach(EmailChecker.checkedLabeledEmails);
-    EmailChecker.assertNoPendingThreads();
-  });
+  return Executrix.run(() => EmailChecker.checkLabeledEmailsForAllSheets());
 }
 
 export function template_maybeAddRentOrInterestTransaction() {

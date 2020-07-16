@@ -5,6 +5,7 @@ import { FakeGmailApp, GmailMessageParams } from "./testing/fakes";
 import BalanceSheet from "./balance_sheet";
 import EmailSender from "./email_sender";
 import Config, { PaymentType } from "./config";
+import ClientSheetManager from "./client_sheet_manager";
 
 export default class EmailCheckerTest implements Test {
   readonly name = 'EmailCheckerTest';
@@ -20,9 +21,14 @@ export default class EmailCheckerTest implements Test {
           .callFake(FakeGmailApp.getUserLabelByName);
       t.spyOn(BalanceSheet, 'addPayment');
       t.spyOn(EmailSender, 'sendPaymentThanks');
+
+      // Don't call the function for every registered sheet, only
+      // call it once.
+      t.spyOn(ClientSheetManager, 'forEach').and.callFake(
+          (fn: Function) => fn());
     });
 
-    t.describe('checkedLabeledEmails', () => {
+    t.describe('checkLabeledEmailsForAllSheets', () => {
       t.describe('with invalid pending email', () => {
         t.beforeEach(() => {
           this.setConfigWithPaymentTypes(t, 'Zelle', 'Venmo');
@@ -36,7 +42,7 @@ export default class EmailCheckerTest implements Test {
         });
 
         t.it('throws on assertNoPendingThreads', () => {
-          EmailChecker.checkedLabeledEmails();
+          EmailChecker.checkLabeledEmailsForAllSheets();
           t.expect(EmailSender.sendPaymentThanks).toNotHaveBeenCalled();
           t.expect(BalanceSheet.addPayment).toNotHaveBeenCalled();
 
@@ -60,7 +66,7 @@ export default class EmailCheckerTest implements Test {
         });
 
         t.it('handles the email', () => {
-          EmailChecker.checkedLabeledEmails();
+          EmailChecker.checkLabeledEmailsForAllSheets();
 
           t.expect(EmailSender.sendPaymentThanks).toHaveBeenCalled();
           t.expect(BalanceSheet.addPayment).toHaveBeenCalled();
@@ -75,7 +81,7 @@ export default class EmailCheckerTest implements Test {
           });
   
           t.it('does nothing', () => {
-            EmailChecker.checkedLabeledEmails();
+            EmailChecker.checkLabeledEmailsForAllSheets();
   
             t.expect(EmailSender.sendPaymentThanks).toNotHaveBeenCalled();
             t.expect(BalanceSheet.addPayment).toNotHaveBeenCalled();
@@ -100,7 +106,7 @@ export default class EmailCheckerTest implements Test {
         });
 
         t.it('handles the email', () => {
-          EmailChecker.checkedLabeledEmails();
+          EmailChecker.checkLabeledEmailsForAllSheets();
 
           t.expect(EmailSender.sendPaymentThanks).toHaveBeenCalled();
           t.expect(BalanceSheet.addPayment).toHaveBeenCalled();
@@ -115,7 +121,7 @@ export default class EmailCheckerTest implements Test {
           });
   
           t.it('does nothing', () => {
-            EmailChecker.checkedLabeledEmails();
+            EmailChecker.checkLabeledEmailsForAllSheets();
   
             t.expect(EmailSender.sendPaymentThanks).toNotHaveBeenCalled();
             t.expect(BalanceSheet.addPayment).toNotHaveBeenCalled();
@@ -145,7 +151,7 @@ export default class EmailCheckerTest implements Test {
         });
 
         t.it('handles both emails', () => {
-          EmailChecker.checkedLabeledEmails();
+          EmailChecker.checkLabeledEmailsForAllSheets();
 
           t.expect(EmailSender.sendPaymentThanks).toHaveBeenCalledTimes(2);
           t.expect(BalanceSheet.addPayment).toHaveBeenCalledTimes(2);
@@ -171,7 +177,7 @@ export default class EmailCheckerTest implements Test {
         });
 
         t.it('handles both emails', () => {
-          EmailChecker.checkedLabeledEmails();
+          EmailChecker.checkLabeledEmailsForAllSheets();
 
           t.expect(EmailSender.sendPaymentThanks).toHaveBeenCalledTimes(2);
           t.expect(BalanceSheet.addPayment).toHaveBeenCalledTimes(2);

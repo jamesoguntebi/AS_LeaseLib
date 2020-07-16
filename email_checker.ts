@@ -1,9 +1,11 @@
-import Config, { PaymentType } from "./config";
 import BalanceSheet from "./balance_sheet";
+import ClientSheetManager from "./client_sheet_manager";
+import Config, { PaymentType } from "./config";
 import EmailSender from "./email_sender";
 
 type GmailLabel = GoogleAppsScript.Gmail.GmailLabel;
 type GmailMessage = GoogleAppsScript.Gmail.GmailMessage;
+type GmailThread = GoogleAppsScript.Gmail.GmailThread;
 
 export default class EmailChecker {
   static readonly PENDING_LABEL_NAME = 'AS Payment Process Pending';
@@ -24,14 +26,38 @@ export default class EmailChecker {
     ['Zelle', EmailChecker.parseZelleMessage],
   ]);
 
-  /** Searches among labeled emails. */
-  static checkedLabeledEmails() {
+  static checkLabeledEmailsForAllSheets() {
+    Logger.log(`Checking for labeled emails in all sheets`);
+
     const pendingLabel =
         EmailChecker.assertLabel(EmailChecker.PENDING_LABEL_NAME);
+    const pendingThreads = pendingLabel.getThreads();
+    if (!pendingThreads.length) {
+      Logger.log(`Stopping because there are no labeled emails.`);
+      return;
+    }
+
+    ClientSheetManager.forEach(
+        () => EmailChecker.checkedLabeledEmails(pendingLabel, pendingThreads));    
+  }
+
+  /** Searches among labeled emails. */
+  static checkedLabeledEmails(
+      pendingLabel?: GmailLabel, pendingThreads?: GmailThread[]) {
+    if (!pendingLabel) {
+      pendingLabel = EmailChecker.assertLabel(EmailChecker.PENDING_LABEL_NAME);
+    }
+    if (!pendingThreads) {
+      pendingThreads = pendingLabel.getThreads();
+    }
     const doneLabel =
         EmailChecker.assertLabel(EmailChecker.DONE_LABEL_NAME);
 
-    for (const thread of pendingLabel.getThreads()) {
+    Logger.log(`Checking for labeled emails in label '${
+        pendingLabel.getName()}' with spreadsheed id: ${
+        _JasLibContext.spreadsheetId}`);
+
+    for (const thread of pendingThreads) {
       for (const message of thread.getMessages()) {
         for (const paymentType of Config.get().searchQuery.paymentTypes) {
           const parser = EmailChecker.PARSERS.get(paymentType);

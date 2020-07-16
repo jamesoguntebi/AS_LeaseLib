@@ -7,6 +7,8 @@ export default class ClientSheetManager {
    * @param fn 
    */
   static forEach(fn: (_: string) => void) {
+    const storedSpreadsheetId = _JasLibContext.spreadsheetId;
+
     const spreadsheetIds = ClientSheetManager.getAll();
     Logger.log(`Registered clients: ${JSON.stringify(spreadsheetIds)}`);
     for (const spreadsheetId of spreadsheetIds) {
@@ -17,7 +19,8 @@ export default class ClientSheetManager {
       // a safeguard to prevent cross-talk between client sheets.
       Utilities.sleep(500);
     }
-    _JasLibContext.spreadsheetId = '';
+
+    _JasLibContext.spreadsheetId = storedSpreadsheetId;
   }
 
   static register(spreadsheetId: string) {
