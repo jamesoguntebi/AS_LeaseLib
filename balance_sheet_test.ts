@@ -131,104 +131,90 @@ export default class BalanceSheetTest implements Test {
      * This test operates on a real sheet. So it is difficult to clean up.
      */
     t.describe('insertRow', () => {
-      const spreadsheet = JasSpreadsheet.getSpreadsheet();
-      let originalBalanceSheet: Sheet;
-      let currentBalanceSheet: Sheet;
-      const initialBalance = 500;
-      
+      const spreadsheet = JasSpreadsheet.getSpreadsheet()
+      let originalBalanceSheet: Sheet
+      let sheet: Sheet
+      const initialBalance = 500
+
       t.beforeAll(() => {
-        originalBalanceSheet = JasSpreadsheet.findSheet('balance');
+        originalBalanceSheet = JasSpreadsheet.findSheet('balance')
         // This name should not match query 'balance':
-        originalBalanceSheet.setName('__test_backup__');
-      });
+        originalBalanceSheet.setName('__test_backup__')
+      })
 
       t.beforeEach(() => {
-        spreadsheet.setActiveSheet(originalBalanceSheet);
-        currentBalanceSheet = spreadsheet.duplicateActiveSheet();
-        currentBalanceSheet.setName('Balance');
-        
-        const balanceColumn =
-            JasSpreadsheet.findColumn('balance', currentBalanceSheet);
-        const firstDataRow = currentBalanceSheet.getFrozenRows() + 1;
-        currentBalanceSheet.getRange(firstDataRow, balanceColumn).setValue(
-            initialBalance);
+        spreadsheet.setActiveSheet(originalBalanceSheet)
+        sheet = spreadsheet.duplicateActiveSheet()
+        sheet.setName('Balance')
 
-        t.expect(BalanceSheet.getBalance()).toEqual(initialBalance);
-      });
+        const balanceColumn = JasSpreadsheet.findColumn('balance', sheet)
+        const firstDataRow = sheet.getFrozenRows() + 1
+        sheet.getRange(firstDataRow, balanceColumn).setValue(initialBalance)
+
+        t.expect(BalanceSheet.getBalance()).toEqual(initialBalance)
+
+        t.setConfig(Config.getLoanConfigForTest())
+      })
 
       t.afterEach(() => {
-        spreadsheet.deleteSheet(currentBalanceSheet);
-      });
+        spreadsheet.deleteSheet(sheet)
+      })
 
       t.afterAll(() => {
-        originalBalanceSheet.setName('Balance');
-      });
+        originalBalanceSheet.setName('Balance')
+      })
 
       const expectNewRowValues = (
-        transaction: number | string,
+        transaction: number,
         balance: number,
         description: string
       ) => {
-        const columns = [
-          JasSpreadsheet.findColumn('transaction', currentBalanceSheet),
-          JasSpreadsheet.findColumn('balance', currentBalanceSheet),
-          JasSpreadsheet.findColumn('description', currentBalanceSheet),
-        ];
-        const dataRow = currentBalanceSheet.getFrozenRows() + 1;
-
-        if (typeof transaction === 'number') {
-          t.expect(
-            new CellData(
-              currentBalanceSheet.getRange(dataRow, columns[0])
-            ).number()
-          ).toEqual(transaction)
-        } else {
-
+        const checkSpecs = [
+          { colName: 'transaction', expectedValue: transaction },
+          { colName: 'balance', expectedValue: balance },
+          { colName: 'description', expectedValue: description },
+        ]
+        const dataRow = sheet.getFrozenRows() + 1
+        for (const { colName, expectedValue } of checkSpecs) {
+          const column = JasSpreadsheet.findColumn(colName, sheet)
+          t.expect(sheet.getRange(dataRow, column).getValue()).toEqual(
+            expectedValue
+          )
         }
-
-        t.expect(
-          new CellData(
-            currentBalanceSheet.getRange(dataRow, columns[1])
-          ).number()
-        ).toEqual(balance);
-
-        t.expect(
-          new CellData(
-            currentBalanceSheet.getRange(dataRow, columns[2])
-          ).string()
-        ).toEqual(description);
-      };
+      }
 
       t.it('increases rent', () => {
         BalanceSheet.insertRow({
           date: new Date(),
           transaction: -450,
           description: 'Partial rent due',
-        });
+        })
 
-        expectNewRowValues(-450, 950, 'Partial rent due');
-      });
+        expectNewRowValues(-450, 950, 'Partial rent due')
+      })
 
       t.it('decreases rent', () => {
         BalanceSheet.insertRow({
           date: new Date(),
           transaction: 450,
           description: 'Rent payment',
-        });
+        })
 
-        expectNewRowValues(450, 50, 'Rent payment');
-      });
+        expectNewRowValues(450, 50, 'Rent payment')
+      })
 
-      // t.it('Adds interest', () => {
-      //   BalanceSheet.insertRow({
-      //     date: new Date(),
-      //     transaction: 'interest',
-      //     description: 'Interest due',
-      //   });
+      t.it('adds interest', () => {
+        BalanceSheet.insertRow({
+          date: new Date(),
+          transaction: 'interest',
+          description: 'Interest',
+        })
 
-      //   const expectedInterest = initialBalance * Config.get().lo
-      //   expectNewRowValues(450, 50, 'Rent payment');
-      // });
-    });
+        const expectedInterest =
+          (-initialBalance * Config.get().loanConfig.interestRate) / 12
+        const expectedBalance = initialBalance - expectedInterest
+        expectNewRowValues(expectedInterest, expectedBalance, 'Interest')
+      })
+    })
   }
 }

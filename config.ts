@@ -1,5 +1,5 @@
 import JasSpreadsheet from "./jas_spreadsheet";
-import JasRange, { CellData } from "./jas_range";
+import { CellData } from "./jas_range";
 
 export default class Config {
   static readonly PaymentTypeStrings: Record<string, string> = {
@@ -63,13 +63,6 @@ export default class Config {
         searchName: getCellData(F.searchQuery_searchName).string(),
       },
     });
-  }
-
-  static getFixedCellNotation(field: ConfigField): string {
-    const configSheet = JasSpreadsheet.findSheet('config');
-    const valueColumn = JasSpreadsheet.findColumn('value', configSheet);
-    const row = JasSpreadsheet.findRow(field, configSheet);
-    return JasRange.getFixedA1Notation(configSheet.getRange(row, valueColumn));
   }
 
   static validate(config: ConfigParams = Config.get()): ConfigParams {

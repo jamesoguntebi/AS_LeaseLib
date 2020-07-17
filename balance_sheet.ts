@@ -70,8 +70,10 @@ export default class BalanceSheet {
       setCell('transaction', balanceRow.transaction);
     } else {
       const prevBal = previousBalanceCellA1;
-      const interestRate =
-          Config.getFixedCellNotation(Config.FIELD.loanConfig_interestRate);
+      if (!Config.get().loanConfig) {
+        throw new Error('Cannot add interest for non-loan configs.');
+      }
+      const interestRate = Config.get().loanConfig.interestRate;
       setCell(
           'transaction',
           `= if (${prevBal} >= 0, - ${prevBal} * ${interestRate} / 12, 0)`);
