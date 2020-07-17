@@ -2,7 +2,6 @@ import Config from "./config";
 import JasSpreadsheet from "./jas_spreadsheet";
 import { CellData } from "./jas_range";
 
-
 export default class BalanceSheet {
   static getBalance(): number { 
     const sheet = JasSpreadsheet.findSheet('balance');

@@ -1,7 +1,11 @@
-import Config, { ConfigParams } from "./config";
+import Config from "./config";
 import { Test } from "./testing/testrunner";
 import { Tester } from "./testing/tester";
 import BalanceSheet, { BalanceRow } from "./balance_sheet";
+import JasSpreadsheet from "./jas_spreadsheet";
+import { CellData } from "./jas_range";
+
+type Sheet = GoogleAppsScript.Spreadsheet.Sheet;
 
 export default class BalanceSheetTest implements Test {
   readonly name = 'BalanceSheetTest';
@@ -121,6 +125,110 @@ export default class BalanceSheetTest implements Test {
           });
         });
       }
+    });
+
+    /**
+     * This test operates on a real sheet. So it is difficult to clean up.
+     */
+    t.describe('insertRow', () => {
+      const spreadsheet = JasSpreadsheet.getSpreadsheet();
+      let originalBalanceSheet: Sheet;
+      let currentBalanceSheet: Sheet;
+      const initialBalance = 500;
+      
+      t.beforeAll(() => {
+        originalBalanceSheet = JasSpreadsheet.findSheet('balance');
+        // This name should not match query 'balance':
+        originalBalanceSheet.setName('__test_backup__');
+      });
+
+      t.beforeEach(() => {
+        spreadsheet.setActiveSheet(originalBalanceSheet);
+        currentBalanceSheet = spreadsheet.duplicateActiveSheet();
+        currentBalanceSheet.setName('Balance');
+        
+        const balanceColumn =
+            JasSpreadsheet.findColumn('balance', currentBalanceSheet);
+        const firstDataRow = currentBalanceSheet.getFrozenRows() + 1;
+        currentBalanceSheet.getRange(firstDataRow, balanceColumn).setValue(
+            initialBalance);
+
+        t.expect(BalanceSheet.getBalance()).toEqual(initialBalance);
+      });
+
+      t.afterEach(() => {
+        spreadsheet.deleteSheet(currentBalanceSheet);
+      });
+
+      t.afterAll(() => {
+        originalBalanceSheet.setName('Balance');
+      });
+
+      const expectNewRowValues = (
+        transaction: number | string,
+        balance: number,
+        description: string
+      ) => {
+        const columns = [
+          JasSpreadsheet.findColumn('transaction', currentBalanceSheet),
+          JasSpreadsheet.findColumn('balance', currentBalanceSheet),
+          JasSpreadsheet.findColumn('description', currentBalanceSheet),
+        ];
+        const dataRow = currentBalanceSheet.getFrozenRows() + 1;
+
+        if (typeof transaction === 'number') {
+          t.expect(
+            new CellData(
+              currentBalanceSheet.getRange(dataRow, columns[0])
+            ).number()
+          ).toEqual(transaction)
+        } else {
+
+        }
+
+        t.expect(
+          new CellData(
+            currentBalanceSheet.getRange(dataRow, columns[1])
+          ).number()
+        ).toEqual(balance);
+
+        t.expect(
+          new CellData(
+            currentBalanceSheet.getRange(dataRow, columns[2])
+          ).string()
+        ).toEqual(description);
+      };
+
+      t.it('increases rent', () => {
+        BalanceSheet.insertRow({
+          date: new Date(),
+          transaction: -450,
+          description: 'Partial rent due',
+        });
+
+        expectNewRowValues(-450, 950, 'Partial rent due');
+      });
+
+      t.it('decreases rent', () => {
+        BalanceSheet.insertRow({
+          date: new Date(),
+          transaction: 450,
+          description: 'Rent payment',
+        });
+
+        expectNewRowValues(450, 50, 'Rent payment');
+      });
+
+      // t.it('Adds interest', () => {
+      //   BalanceSheet.insertRow({
+      //     date: new Date(),
+      //     transaction: 'interest',
+      //     description: 'Interest due',
+      //   });
+
+      //   const expectedInterest = initialBalance * Config.get().lo
+      //   expectNewRowValues(450, 50, 'Rent payment');
+      // });
     });
   }
 }

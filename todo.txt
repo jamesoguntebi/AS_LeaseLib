@@ -10,7 +10,7 @@ P0:
   - correctly named sheets, maybe columns
   - probably better to run some unit tests against the sheet
   - require validation when registering sheet
-- refactor out general AS lib
+- refactor our general AS lib
   - generate typescript types declaration:
     https://www.typescriptlang.org/docs/handbook/declaration-files/publishing.html
 - update README
@@ -38,6 +38,8 @@ P1:
   - might be a problem with merged ranges
 - mark L tests and make running them optional
 - tsconfig
+- Allow inserting row at correct date in balance sheet using date passed in to
+  insertRow()
 
 P2:
 - option to add partial payment

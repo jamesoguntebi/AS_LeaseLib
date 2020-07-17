@@ -1,6 +1,11 @@
 type Sheet = GoogleAppsScript.Spreadsheet.Sheet;
+type Spreadsheet = GoogleAppsScript.Spreadsheet.Spreadsheet;
 
 export default class JasSpreadsheet {
+  static getSpreadsheet(): Spreadsheet {
+    return SpreadsheetApp.openById(_JasLibContext.spreadsheetId);
+  }
+
   static findSheet(name: string): Sheet {
     const spreadsheet = SpreadsheetApp.openById(_JasLibContext.spreadsheetId);
 
