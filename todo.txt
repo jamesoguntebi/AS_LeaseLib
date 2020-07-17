@@ -10,7 +10,7 @@ P0:
   - correctly named sheets, maybe columns
   - probably better to run some unit tests against the sheet
   - require validation when registering sheet
-- refactor our general AS lib
+- refactor out general AS lib
   - generate typescript types declaration:
     https://www.typescriptlang.org/docs/handbook/declaration-files/publishing.html
 - update README
