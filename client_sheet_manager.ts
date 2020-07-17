@@ -1,3 +1,5 @@
+import Config from "./config";
+
 export default class ClientSheetManager {
   private static readonly PROPERTY_NAME = 'REGISTERED_CLIENTS';
 
@@ -24,6 +26,23 @@ export default class ClientSheetManager {
   }
 
   static register(spreadsheetId: string) {
+    const storedSpreadsheetId = _JasLibContext.spreadsheetId;
+
+    try {
+      _JasLibContext.spreadsheetId = spreadsheetId;
+      Config.get(); // This will validate that the Config sheet.
+    } catch (e) {
+      Logger.log('Validation of new sheet failed with error:');
+      if (e instanceof Error) {
+        Logger.log(e.stack || e.message);
+      } else {
+        Logger.log('Unknown error.');
+      }
+      return;
+    } finally {
+      _JasLibContext.spreadsheetId = storedSpreadsheetId;
+    }
+
     const registeredSet = new Set(ClientSheetManager.getAll());
     if (registeredSet.has(spreadsheetId)) return;
 
@@ -47,7 +66,7 @@ export default class ClientSheetManager {
     Logger.log(`Library is removing client sheet ${spreadsheetId}`);
   }
 
-  private static getAll(): RegisteredClientsValue {
+  private static getAll(): string[] {
     const propertyValue = PropertiesService.getScriptProperties().getProperty(
         ClientSheetManager.PROPERTY_NAME);
     if (!propertyValue) return [];
@@ -65,8 +84,5 @@ export default class ClientSheetManager {
       Logger.log('Failure to parse stored client sheet id list.');
       throw e;
     }
-    return [];
   }
 }
-
-type RegisteredClientsValue = string[];

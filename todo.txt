@@ -14,7 +14,7 @@ P0:
   - generate typescript types declaration:
     https://www.typescriptlang.org/docs/handbook/declaration-files/publishing.html
 - update README
-- fix afterAll and configtest
+- add BalanceSheet validation when registering new Spreahsheets
 
 P1:
 - unit tests
@@ -74,6 +74,7 @@ P0:
 - restructure triggers
   - only the lib has triggers
   - scripts that depend on the lib register
+- fix afterAll and configtest
 
 P1:
 - add option to add a full payment
