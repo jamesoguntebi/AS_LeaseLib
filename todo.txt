@@ -10,28 +10,19 @@ P0:
   - correctly named sheets, maybe columns
   - probably better to run some unit tests against the sheet
   - require validation when registering sheet
+    - add BalanceSheet validation
 - refactor out general AS lib
   - generate typescript types declaration:
     https://www.typescriptlang.org/docs/handbook/declaration-files/publishing.html
 - update README
-- add BalanceSheet validation when registering new Spreahsheets
 
 P1:
 - unit tests
-    - setConfigForTest
-    - see how costly it is to use a temp sheet for all test runs
-        - pass (t: Tester) in constructor, not run()
-        - can call t.withTempSheet() in constructor or t.withGmailFake
-        - beforeEach and afterEach are arrays of functions
-        - DescriptionContext class
-        - 
-- For every 5 minute 'check labeled Emails', first check if there are any
-    labeled emails, then open every spreadsheet.
+    - DescriptionContext class
+    - test the Tester
 - read all emails, and ask admin to verify emails that should be parsed
-- better trigger versioning
 - Move client projects off of dev mode to versioned library
 - More comments everywhere
-- Validate email address format
 - Only show 'See balance sheet' in email if at least link href is in Config
 - Set the header rows of Balance Sheet and Config to be imported ranges from
   the template
@@ -75,6 +66,8 @@ P0:
   - only the lib has triggers
   - scripts that depend on the lib register
 - fix afterAll and configtest
+- For every 5 minute 'check labeled Emails', first check if there are any
+    labeled emails, then open every spreadsheet.
 
 P1:
 - add option to add a full payment
@@ -85,6 +78,12 @@ P1:
 - Ensure email search ignores case
 - Only make balace red in email for rent, not for loans
 - implement unit test framework
+- unit tests
+    - setConfigForTest
+    - see how costly it is to use a temp sheet for all test runs
+        - beforeEach and afterEach are arrays of functions
+- better trigger versioning
+- Validate email address format
 
 P2:
 - instead of checking emails, let manual step be to label emails. script do the

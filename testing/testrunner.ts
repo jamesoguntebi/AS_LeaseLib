@@ -5,6 +5,7 @@ import ConfigTest from "../config_test";
 import JasRangeTest from "../jas_range_test";
 import JasSpreadsheetTest from "../jas_spreadsheet_test";
 import { Tester } from "./tester";
+import ClientSheetManagerTest from "../client_sheet_manager_test";
 
 export default class TestRunner {
   private static readonly LEASE_TEMPLATE_SPREADSHEET_ID =
@@ -19,6 +20,7 @@ export default class TestRunner {
 
     let testClasses: Array<new() => Test> = [
       BalanceSheetTest,
+      ClientSheetManagerTest,
       ConfigTest,
       EmailCheckerTest,
       EmailSenderTest,

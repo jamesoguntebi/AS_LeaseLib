@@ -10,6 +10,19 @@ export default class BalanceSheet {
     return new CellData(sheet.getRange(firstDataRow, balanceColumn)).number();
   }
 
+  /** Throws on validation failure. */
+  static validateActiveSheet() {
+    // Assert the sheet exists, there is a balance column, and a data row with
+    // any number in it for the balance.
+    BalanceSheet.getBalance();
+
+    // Assert the other columns exist.
+    const sheet = JasSpreadsheet.findSheet('balance');
+    JasSpreadsheet.findColumn('date', sheet);
+    JasSpreadsheet.findColumn('description', sheet);
+    JasSpreadsheet.findColumn('transaction', sheet);
+  }
+
   /**
    * Adds a rent due transaction today the balance sheet if today is Rent Due
    * day.

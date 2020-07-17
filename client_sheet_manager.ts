@@ -1,4 +1,5 @@
 import Config from "./config";
+import BalanceSheet from "./balance_sheet";
 
 export default class ClientSheetManager {
   private static readonly PROPERTY_NAME = 'REGISTERED_CLIENTS';
@@ -26,25 +27,22 @@ export default class ClientSheetManager {
   }
 
   static register(spreadsheetId: string) {
+    const registeredSet = new Set(ClientSheetManager.getAll());
+    if (registeredSet.has(spreadsheetId)) return;
+
     const storedSpreadsheetId = _JasLibContext.spreadsheetId;
 
     try {
       _JasLibContext.spreadsheetId = spreadsheetId;
       Config.get(); // This will validate that the Config sheet.
+      BalanceSheet.validateActiveSheet();
     } catch (e) {
       Logger.log('Validation of new sheet failed with error:');
-      if (e instanceof Error) {
-        Logger.log(e.stack || e.message);
-      } else {
-        Logger.log('Unknown error.');
-      }
+      Logger.log(e instanceof Error ? e.stack || e.message : 'Unknown error');
       return;
     } finally {
       _JasLibContext.spreadsheetId = storedSpreadsheetId;
     }
-
-    const registeredSet = new Set(ClientSheetManager.getAll());
-    if (registeredSet.has(spreadsheetId)) return;
 
     registeredSet.add(spreadsheetId);
     PropertiesService.getScriptProperties().setProperty(

@@ -98,21 +98,21 @@ export class Tester {
       }
     }
 
+    const startTime = Date.now();
+
     for (const context of this.descriptionContextStack) {
       for (const beforeEach of context.beforeEaches) beforeEach();
     }
 
     this.isInsideUnit = true;
+    let success: boolean;
 
-    const startTime = Date.now();
     try {
       testFn();
-      if (this.verbose) {
-        this.output(`✓ ${unitTestName} (in ${Date.now() - startTime} ms)`);
-      };
+      success = true;
       this.currentDescriptionContext.successCount++;
     } catch (e) {
-      this.output(`✗ ${unitTestName} (in ${Date.now() - startTime} ms)`);
+      success = false;
       this.indent();
       if (e instanceof Error) {
         this.output(e.stack || e.message);
@@ -129,6 +129,11 @@ export class Tester {
       for (const afterEach of context.afterEaches) afterEach();
       for (const spy of context.spies) spy.clearCalls();
     }
+
+    if (this.verbose || !success) {
+      const s = success ? '✓' : '✗';
+      this.output(`${s} ${unitTestName} (in ${Date.now() - startTime} ms)`);
+    };
   }
 
   expect<T>(actual: T): Expectation<T> {
@@ -215,19 +220,11 @@ class Expectation<T> {
     };
 
     if (Array.isArray(expected) && Array.isArray(this.actual)) {
-      const end = Math.max(expected.length, this.actual.length);
-      let pass = true;
-      for (let i = 0; i < end; i++) {
-        if (this.actual[i] !== expected[i]) {
-          pass = false;
-          break;
-        }
-      }
-      if (!pass) fail();
+      if (!Expectation.arrayEquals(expected, this.actual)) fail();
       return;
     }
 
-    if (this.isPOJO(this.actual) && this.isPOJO(expected)) {
+    if (Expectation.isPOJO(this.actual) && Expectation.isPOJO(expected)) {
       for (const key in this.actual) {
         new Expectation(this.actual[key]).toEqual(expected[key]);
       }
@@ -254,8 +251,10 @@ class Expectation<T> {
         const errorContent = e.stack || e.message || '';
         if (!errorContent.toLowerCase().includes(
                 expectedErrorMessage.toLowerCase())) {
-          this.augmentAndThrow(
-              e, `Expected error to include '${expectedErrorMessage}'`);
+                  Expectation.augmentAndThrow(
+                    e,
+                    `Expected error to include '${expectedErrorMessage}'`
+                  )
         }
       }
     }
@@ -271,7 +270,7 @@ class Expectation<T> {
     } catch (e) {
       const expectationMsg = 'Expected function not to throw.';
       if (e instanceof Error) {
-        this.augmentAndThrow(e, expectationMsg);
+        Expectation.augmentAndThrow(e, expectationMsg);
       } else {
         throw new Error(expectationMsg);
       }
@@ -357,23 +356,29 @@ class Expectation<T> {
     }
   }
 
+  toHaveBeenCalledWith(...expectedArgs: unknown[]) {
+    const spy = Spy.assertSpy(this.actual);
+    const someCallMatches = spy.getCalls().some((callArgs: unknown[]) => {
+      return Expectation.arrayEquals(expectedArgs, callArgs);
+    });
+    if (!someCallMatches) {
+      throw new Error(`No calls of ${spy} matched the expectation.`);
+    }
+  }
+
   toBeUndefined() {
     if (this.actual !== undefined) {
       throw new Error(`Expected ${this.actual} to be undefined.`);
     }
   }
 
-  private throw(message: string): never {
-    throw new Error(message);
-  }
-
-  private augmentAndThrow(e: Error, expectationMsg: string): never {
+  private static augmentAndThrow(e: Error, expectationMsg: string): never {
     e.message = `${expectationMsg}\n${e.message}`;
     e.stack = `${expectationMsg}\n${e.stack}`;
     throw e;
   }
 
-  private isPOJO(arg: unknown) {
+  private static isPOJO(arg: unknown) {
     if (arg == null || typeof arg !== 'object') {
       return false;
     }
@@ -382,7 +387,13 @@ class Expectation<T> {
     // Checking `proto`'s constructor is safe because `getPrototypeOf()`
     // explicitly crosses the boundary from object data to object metadata.
     return !proto || proto.constructor.name === 'Object';
-  };
+  }
+
+  private static arrayEquals(arr1: unknown[], arr2: unknown[]): boolean {
+    if (arr1.length !== arr2.length) return false;
+    const end = Math.max(arr1.length, arr2.length);
+    return arr1.every((el, i) => el === arr2[i]);
+  }
 }
 
 class Spy<TObj, TProp extends keyof TObj> {
