@@ -89,7 +89,7 @@ export default class BalanceSheetTest implements Test {
             t.it(testString, () => {
               BalanceSheet.maybeAddRentOrInterestTransaction();
               if (replaceDate) {
-                t.expect(BalanceSheet.insertRow).toNotHaveBeenCalled();
+                t.expect(BalanceSheet.insertRow).not.toHaveBeenCalled();
               } else {
                 this.expectInsertRowToHaveBeenCalledLike(
                   t,
@@ -253,7 +253,7 @@ export default class BalanceSheetTest implements Test {
       });
 
       t.it('accepts untampered template spreadsheet', () => {
-        t.expect(() => BalanceSheet.validateActiveSheet()).toNotThrow();
+        t.expect(() => BalanceSheet.validateActiveSheet()).not.toThrow();
       });
 
       t.it('throws for no data row', () => {

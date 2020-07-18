@@ -241,26 +241,26 @@ export interface TestResult {
 }
 
 class Expectation<T> {
-  constructor(private readonly actual: T) {}
+  /** The inverse of this expectation. */
+  readonly not: Expectation<T>;
+  readonly notString: string;
+
+  constructor(
+    private readonly actual: T,
+    private readonly isInverse = false,
+    notSource?: Expectation<T>
+  ) {
+    this.not = notSource ?? new Expectation(actual, !this.isInverse, this);
+    this.notString = this.isInverse ? 'not ' : '';
+  }
 
   toEqual(expected: T) {
-    const fail = () => {
+    const equals = Expectation.equals(this.actual, expected);
+    if (equals && this.isInverse) {
+      throw new Error(`Expected anything but ${expected}.`);
+    } else if (!equals && !this.isInverse) {
       throw new Error(`Expected ${expected}, got ${this.actual}.`);
-    };
-
-    if (Array.isArray(expected) && Array.isArray(this.actual)) {
-      if (!Expectation.arrayEquals(expected, this.actual)) fail();
-      return;
     }
-
-    if (Expectation.isPOJO(this.actual) && Expectation.isPOJO(expected)) {
-      for (const key in this.actual) {
-        new Expectation(this.actual[key]).toEqual(expected[key]);
-      }
-      return;
-    }
-
-    if (this.actual !== expected) fail();
   }
 
   toThrow(expectedErrorMessage?: string) {
@@ -268,40 +268,38 @@ class Expectation<T> {
       throw new Error('Expectation is not a function');
     }
 
+    const errorMatchesMessage = (e: unknown): boolean => {
+      if (!(e instanceof Error) || !expectedErrorMessage) return false;
+
+      const errorContent = e.stack || e.message || '';
+      return errorContent
+        .toLowerCase()
+        .includes(expectedErrorMessage.toLowerCase());
+    };
+
     const DO_NOT_CATCH = String(Math.random());
     try {
       this.actual();
-      throw new Error(DO_NOT_CATCH);
+      if (!this.isInverse) throw new Error(DO_NOT_CATCH);
     } catch (e) {
-      if (e.message === DO_NOT_CATCH) {
+      if (!this.isInverse && e.message === DO_NOT_CATCH) {
         throw new Error('Expected function to throw.');
       }
-      if (expectedErrorMessage) {
-        const errorContent = e.stack || e.message || '';
-        if (!errorContent.toLowerCase().includes(
-                expectedErrorMessage.toLowerCase())) {
-                  Expectation.augmentAndThrow(
-                    e,
-                    `Expected error to include '${expectedErrorMessage}'`
-                  )
+
+      if (!expectedErrorMessage) {
+        const expectationMsg = `Expected function ${this.notString}to throw.`;
+        if (e instanceof Error) {
+          Expectation.augmentAndThrow(e, expectationMsg);
+        } else {
+          throw new Error(expectationMsg);
         }
       }
-    }
-  }
 
-  toNotThrow() {
-    if (typeof this.actual !== 'function') {
-      throw new Error('Expectation is not a function');
-    }
-
-    try {
-      this.actual();
-    } catch (e) {
-      const expectationMsg = 'Expected function not to throw.';
-      if (e instanceof Error) {
-        Expectation.augmentAndThrow(e, expectationMsg);
-      } else {
-        throw new Error(expectationMsg);
+      if (this.isInverse === errorMatchesMessage(e)) {
+        Expectation.augmentAndThrow(
+          e,
+          `Expected error ${this.notString}to include '${expectedErrorMessage}'`
+        );
       }
     }
   }
@@ -309,42 +307,26 @@ class Expectation<T> {
   toContain(expectedContents: unknown) {
     if (typeof this.actual === 'string') {
       if (typeof expectedContents !== 'string') {
-        throw new Error(`Cannot check containment in a string. Got ${
-            typeof expectedContents}`)
-      }
-      if (!this.actual.includes(expectedContents)) {
         throw new Error(
-          `Did not find '${expectedContents}' in '${this.actual}'.`);
+          `Cannot check containment in a string. Got ${typeof expectedContents}`
+        );
+      }
+      if (this.isInverse === this.actual.includes(expectedContents)) {
+        throw new Error(
+          `Expected ${this.actual} ${this.notString}to contain '${expectedContents}'.`
+        );
       }
       return;
     }
 
     if (typeof Array.isArray(this.actual)) {
-      if (!(this.actual as unknown as any[]).includes(expectedContents)) {
+      if (
+        this.isInverse ===
+        ((this.actual as unknown) as any[]).includes(expectedContents)
+      ) {
         throw new Error(
-          `Did not find '${expectedContents}' in '${this.actual}'.`);
-      }
-      return;
-    }
-
-    throw new Error('Can only check containment of arrays and strings.');
-  }
-
-  toNotContain(expectedContents: unknown) {
-    if (typeof this.actual === 'string') {
-      if (typeof expectedContents !== 'string') {
-        throw new Error(`Cannot check containment in a string. Got ${
-            typeof expectedContents}`)
-      }
-      if (this.actual.includes(expectedContents)) {
-        throw new Error(`Found '${expectedContents}' in '${this.actual}'.`);
-      }
-      return;
-    }
-
-    if (typeof Array.isArray(this.actual)) {
-      if ((this.actual as unknown as any[]).includes(expectedContents)) {
-        throw new Error(`Found '${expectedContents}' in '${this.actual}'.`);
+          `Expected ${this.actual} ${this.notString}to contain '${expectedContents}'.`
+        );
       }
       return;
     }
@@ -354,24 +336,22 @@ class Expectation<T> {
 
   toHaveBeenCalled() {
     const spy = Spy.assertSpy(this.actual);
-    if (!spy.getCalls().length) {
-      throw new Error(`Expected ${spy} to have been called.`);
-    }
-  }
-
-  toNotHaveBeenCalled() {
-    const spy = Spy.assertSpy(this.actual);
-    if (spy.getCalls().length) {
-      throw new Error(`Expected ${spy} to not have been called.`);
+    if (this.isInverse === !!spy.getCalls().length) {
+      throw new Error(`Expected ${spy} ${this.notString}to have been called.`);
     }
   }
 
   toHaveBeenCalledTimes(expected: number) {
     const spy = Spy.assertSpy(this.actual);
     const actual = spy.getCalls().length;
-    if (actual !== expected) {
-      throw new Error(`${spy} was called ${actual} times instead of ${
-          expected} times.`);
+    if (this.isInverse === (actual === expected)) {
+      throw new Error(
+        `Expected ${spy} ${
+          this.notString
+        }to have been called ${expected} times.${
+          this.isInverse ? '' : ` Called ${actual} times.`
+        }`
+      );
     }
   }
 
@@ -380,8 +360,11 @@ class Expectation<T> {
     const someCallMatches = spy.getCalls().some((callArgs: unknown[]) => {
       return spyMatcher.argsMatcher(callArgs);
     });
-    if (!someCallMatches) {
-      throw new Error(`No calls of ${spy} matched the expectation.`);
+    if (this.isInverse === someCallMatches) {
+      throw new Error(
+        `Expected ${spy} ${this.notString}to have been called ` +
+          `according to this matcher.`
+      );
     }
   }
 
@@ -390,14 +373,19 @@ class Expectation<T> {
     const someCallMatches = spy.getCalls().some((callArgs: unknown[]) => {
       return Expectation.arrayEquals(expectedArgs, callArgs);
     });
-    if (!someCallMatches) {
-      throw new Error(`No calls of ${spy} matched the expectation.`);
+    if (this.isInverse === someCallMatches) {
+      throw new Error(
+        `Expected ${spy} ${this.notString}to have been called ` +
+          `with the given parameters.`
+      );
     }
   }
 
   toBeUndefined() {
-    if (this.actual !== undefined) {
-      throw new Error(`Expected ${this.actual} to be undefined.`);
+    if (this.isInverse === (this.actual === undefined)) {
+      throw new Error(
+        `Expected ${this.actual} ${this.notString}to be undefined.`
+      );
     }
   }
 
@@ -407,7 +395,7 @@ class Expectation<T> {
     throw e;
   }
 
-  private static isPOJO(arg: unknown) {
+  private static isPOJO(arg: unknown): arg is Record<string, unknown> {
     if (arg == null || typeof arg !== 'object') {
       return false;
     }
@@ -418,10 +406,33 @@ class Expectation<T> {
     return !proto || proto.constructor.name === 'Object';
   }
 
+  private static equals<U>(a: U, b: U): boolean {
+    if (Array.isArray(a) && Array.isArray(b)) {
+      return Expectation.arrayEquals(a, b);
+    }
+
+    if (Expectation.isPOJO(a) && Expectation.isPOJO(b)) {
+      return Expectation.pojoEquals(a, b);
+    }
+
+    return a === b;
+  }
+
   private static arrayEquals(arr1: unknown[], arr2: unknown[]): boolean {
     if (arr1.length !== arr2.length) return false;
     const end = Math.max(arr1.length, arr2.length);
-    return arr1.every((el, i) => el === arr2[i]);
+    return arr1.every((el, i) => Expectation.equals(arr1, arr2));
+  }
+
+  private static pojoEquals(
+    obj1: Record<string, unknown>,
+    obj2: Record<string, unknown>
+  ): boolean {
+    if (Object.keys(obj1).length !== Object.keys(obj2).length) return false;
+    for (const key in obj1) {
+      if (!Expectation.equals(obj1[key], obj2[key])) return false;
+    }
+    return true;
   }
 }
 

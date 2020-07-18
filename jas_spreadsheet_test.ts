@@ -10,12 +10,12 @@ export default class JasSpreadsheetTest implements Test {
   run(t: Tester) {
     t.describe('findSheet', () => {
       t.it('finds present sheet', () => {
-        t.expect(() => JasSpreadsheet.findSheet('balance')).toNotThrow();
+        t.expect(() => JasSpreadsheet.findSheet('balance')).not.toThrow();
       });
 
       t.it('does fuzzy matching, ignoring case', () => {
-        t.expect(() => JasSpreadsheet.findSheet('BAL')).toNotThrow();
-        t.expect(() => JasSpreadsheet.findSheet('CONFI')).toNotThrow();
+        t.expect(() => JasSpreadsheet.findSheet('BAL')).not.toThrow();
+        t.expect(() => JasSpreadsheet.findSheet('CONFI')).not.toThrow();
       });
 
       t.it('throws for absent sheet', () => {
@@ -49,13 +49,13 @@ export default class JasSpreadsheetTest implements Test {
 
       t.it('finds present column', () => {
         t.expect(() => JasSpreadsheet.findColumn('description', sheet))
-            .toNotThrow();
+            .not.toThrow();
       });
 
       t.it('does fuzzy matching, ignoring case', () => {
-        t.expect(() => JasSpreadsheet.findColumn('DESCR', sheet)).toNotThrow();
+        t.expect(() => JasSpreadsheet.findColumn('DESCR', sheet)).not.toThrow();
         t.expect(() => JasSpreadsheet.findColumn('TRANSACT', sheet))
-            .toNotThrow();
+            .not.toThrow();
       });
 
       t.it('throws for absent column', () => {
@@ -74,12 +74,12 @@ export default class JasSpreadsheetTest implements Test {
 
       t.it('finds present row', () => {
         t.expect(() => JasSpreadsheet.findRow('interest rate', sheet))
-            .toNotThrow();
+            .not.toThrow();
       });
 
       t.it('does fuzzy matching, ignoring case', () => {
-        t.expect(() => JasSpreadsheet.findRow('PAYMENT T', sheet)).toNotThrow();
-        t.expect(() => JasSpreadsheet.findRow('EMAIL DIS', sheet)).toNotThrow();
+        t.expect(() => JasSpreadsheet.findRow('PAYMENT T', sheet)).not.toThrow();
+        t.expect(() => JasSpreadsheet.findRow('EMAIL DIS', sheet)).not.toThrow();
       });
 
       t.it('throws for absent row', () => {

@@ -42,8 +42,8 @@ export default class EmailCheckerTest implements Test {
 
         t.it('throws on assertNoPendingThreads', () => {
           EmailChecker.checkLabeledEmailsForAllSheets();
-          t.expect(EmailSender.sendPaymentThanks).toNotHaveBeenCalled();
-          t.expect(BalanceSheet.addPayment).toNotHaveBeenCalled();
+          t.expect(EmailSender.sendPaymentThanks).not.toHaveBeenCalled();
+          t.expect(BalanceSheet.addPayment).not.toHaveBeenCalled();
 
           t.expect(() => EmailChecker.assertNoPendingThreads())
               .toThrow('Failed to parse labeled threads');
@@ -69,7 +69,7 @@ export default class EmailCheckerTest implements Test {
 
           t.expect(EmailSender.sendPaymentThanks).toHaveBeenCalled();
           t.expect(BalanceSheet.addPayment).toHaveBeenCalled();
-          t.expect(() => EmailChecker.assertNoPendingThreads()).toNotThrow();
+          t.expect(() => EmailChecker.assertNoPendingThreads()).not.toThrow();
           t.expect(FakeGmailApp.getUserLabelByName(EmailChecker.DONE_LABEL_NAME)
               .getThreads().length).toEqual(1);
         });
@@ -82,8 +82,8 @@ export default class EmailCheckerTest implements Test {
           t.it('does nothing', () => {
             EmailChecker.checkLabeledEmailsForAllSheets();
   
-            t.expect(EmailSender.sendPaymentThanks).toNotHaveBeenCalled();
-            t.expect(BalanceSheet.addPayment).toNotHaveBeenCalled();
+            t.expect(EmailSender.sendPaymentThanks).not.toHaveBeenCalled();
+            t.expect(BalanceSheet.addPayment).not.toHaveBeenCalled();
             t.expect(FakeGmailApp.getUserLabelByName(EmailChecker.DONE_LABEL_NAME)
                 .getThreads().length).toEqual(0);
           });
@@ -109,7 +109,7 @@ export default class EmailCheckerTest implements Test {
 
           t.expect(EmailSender.sendPaymentThanks).toHaveBeenCalled();
           t.expect(BalanceSheet.addPayment).toHaveBeenCalled();
-          t.expect(() => EmailChecker.assertNoPendingThreads()).toNotThrow();
+          t.expect(() => EmailChecker.assertNoPendingThreads()).not.toThrow();
           t.expect(FakeGmailApp.getUserLabelByName(EmailChecker.DONE_LABEL_NAME)
               .getThreads().length).toEqual(1);
         });
@@ -122,8 +122,8 @@ export default class EmailCheckerTest implements Test {
           t.it('does nothing', () => {
             EmailChecker.checkLabeledEmailsForAllSheets();
   
-            t.expect(EmailSender.sendPaymentThanks).toNotHaveBeenCalled();
-            t.expect(BalanceSheet.addPayment).toNotHaveBeenCalled();
+            t.expect(EmailSender.sendPaymentThanks).not.toHaveBeenCalled();
+            t.expect(BalanceSheet.addPayment).not.toHaveBeenCalled();
             t.expect(FakeGmailApp.getUserLabelByName(EmailChecker.DONE_LABEL_NAME)
                 .getThreads().length).toEqual(0);
           });
@@ -154,7 +154,7 @@ export default class EmailCheckerTest implements Test {
 
           t.expect(EmailSender.sendPaymentThanks).toHaveBeenCalledTimes(2);
           t.expect(BalanceSheet.addPayment).toHaveBeenCalledTimes(2);
-          t.expect(() => EmailChecker.assertNoPendingThreads()).toNotThrow();
+          t.expect(() => EmailChecker.assertNoPendingThreads()).not.toThrow();
           t.expect(FakeGmailApp.getUserLabelByName(EmailChecker.DONE_LABEL_NAME)
               .getThreads().length).toEqual(1);
         });
@@ -180,7 +180,7 @@ export default class EmailCheckerTest implements Test {
 
           t.expect(EmailSender.sendPaymentThanks).toHaveBeenCalledTimes(2);
           t.expect(BalanceSheet.addPayment).toHaveBeenCalledTimes(2);
-          t.expect(() => EmailChecker.assertNoPendingThreads()).toNotThrow();
+          t.expect(() => EmailChecker.assertNoPendingThreads()).not.toThrow();
           t.expect(FakeGmailApp.getUserLabelByName(EmailChecker.DONE_LABEL_NAME)
               .getThreads().length).toEqual(2);
         });

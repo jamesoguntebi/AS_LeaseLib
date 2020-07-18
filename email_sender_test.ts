@@ -69,7 +69,7 @@ export default class EmailSenderTest implements Test{
                         if (expectRed) {
                           expectation.toContain(RED_BALANCE_STRING);
                         } else {
-                          expectation.toNotContain(RED_BALANCE_STRING);
+                          expectation.not.toContain(RED_BALANCE_STRING);
                         }
                         return true;
                       });

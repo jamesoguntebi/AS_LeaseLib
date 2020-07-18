@@ -32,6 +32,7 @@ P1:
 - Allow inserting row at correct date in balance sheet using date passed in to
   insertRow()
 - implement expectation.not
+- global.d.ts
 
 P2:
 - option to add partial payment

@@ -115,3 +115,40 @@ export interface GmailMessageParams {
   plainBody?: string;
   subject?: string;
 }
+
+
+export class FakeProperties {
+  private readonly properties = new Map<string, string>();
+
+  deleteAllProperties() {
+    this.properties.clear();
+    return this;
+  }
+  deleteProperty(key: string) {
+    this.properties.delete(key);
+    return this;
+  }
+  getKeys() {
+    return Array.from(this.properties.keys());
+  }
+  getProperties(): Record<string, string> {
+    const obj: Record<string, string> = {};
+    for (const [key, value] of this.properties) {
+      obj[key] = value;
+    }
+    return obj;
+  }
+  getProperty(key: string): string {
+    return this.properties.get(key);
+  }
+  setProperties(properties: Record<string, string>, deleteAllOthers?: boolean) {
+    deleteAllOthers ?? this.properties.clear();
+
+    for (const key in properties) {
+      this.properties.set(key, properties[key]);
+    }
+  }
+  setProperty(key: string, value: string) {
+    this.properties.set(key, value);
+  }
+}
