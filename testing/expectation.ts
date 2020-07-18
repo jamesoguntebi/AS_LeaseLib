@@ -1,4 +1,5 @@
 import Spy from "./spy";
+import Util from "./util";
 
 export default class Expectation<T> {
   /** The inverse of this expectation. */
@@ -15,7 +16,7 @@ export default class Expectation<T> {
   }
 
   toEqual(expected: T) {
-    const equals = Expectation.equals(this.actual, expected);
+    const equals = Util.equals(this.actual, expected);
     if (equals && this.isInverse) {
       throw new Error(`Expected anything but ${expected}.`);
     } else if (!equals && !this.isInverse) {
@@ -137,7 +138,7 @@ export default class Expectation<T> {
   toHaveBeenCalledWith(...expectedArgs: unknown[]) {
     const spy = Spy.assertSpy(this.actual);
     const someCallMatches = spy.getCalls().some((callArgs: unknown[]) => {
-      return Expectation.arrayEquals(expectedArgs, callArgs);
+      return Util.arrayEquals(expectedArgs, callArgs);
     });
     if (this.isInverse === someCallMatches) {
       throw new Error(
@@ -160,51 +161,7 @@ export default class Expectation<T> {
     e.stack = `${expectationMsg}\n${e.stack}`;
     throw e;
   }
-
-  private static isPOJO(arg: unknown): arg is Pojo {
-    if (arg == null || typeof arg !== 'object') {
-      return false;
-    }
-    const proto = Object.getPrototypeOf(arg);
-    // Prototype may be null if you used `Object.create(null)`
-    // Checking `proto`'s constructor is safe because `getPrototypeOf()`
-    // explicitly crosses the boundary from object data to object metadata.
-    return !proto || proto.constructor.name === 'Object';
-  }
-
-  private static equals<U>(a: U, b: U): boolean {
-    if (Array.isArray(a) && Array.isArray(b)) {
-      return Expectation.arrayEquals(a, b);
-    }
-    if (Expectation.isPOJO(a) && Expectation.isPOJO(b)) {
-      return Expectation.pojoEquals(a, b);
-    }
-    return a === b;
-  }
-
-  private static arrayEquals(arr1: unknown[], arr2: unknown[]): boolean {
-    if (arr1.length !== arr2.length) return false;
-    return arr1.every((el, i) => Expectation.equals(el, arr2[i]));
-  }
-
-  private static pojoEquals(obj1: Pojo, obj2: Pojo): boolean {
-    // Remove keys that have undefined values.
-    const clearUndefinedValues = (obj: Pojo) => {
-      for (const key in obj) if (obj[key] === undefined) delete obj[key];
-    };
-    clearUndefinedValues(obj1);
-    clearUndefinedValues(obj2);
-
-    if (Object.keys(obj1).length !== Object.keys(obj2).length) return false;
-
-    for (const key in obj1) {
-      if (!Expectation.equals(obj1[key], obj2[key])) return false;
-    }
-    return true;
-  }
 }
-
-type Pojo = Record<string, unknown>;
 
 export class SpyMatcher {
   constructor(readonly argsMatcher: (args: unknown[]) => boolean) {}

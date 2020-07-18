@@ -67,10 +67,6 @@ export class SpyAction {
     this.actionType = SpyActionType.CALL_THROUGH;
   }
 
-  stub() {
-    this.actionType = SpyActionType.DO_NOTHING;
-  }
-
   callFake(fakeFn: Function) {
     this.actionType = SpyActionType.FAKE;
     this.fakeCall = fakeFn;

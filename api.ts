@@ -1,7 +1,6 @@
 import BalanceSheet from "./balance_sheet";
 import EmailChecker from "./email_checker";
 import ClientSheetManager from "./client_sheet_manager";
-import TestRunner, { TestRunnerParams } from "./testing/testrunner";
 import { LibContext } from "./lib_context";
 
 const LEASE_TEMPLATE_SPREADSHEET_ID =
@@ -45,13 +44,6 @@ export function registerClientSheet(spreadsheetId: string) {
 export function unregisterClientSheet(spreadsheetId: string) {
   return Executrix.run(
       () => ClientSheetManager.unregister(spreadsheetId));
-}
-
-export function runTests(params: TestRunnerParams | string = {}) {
-  if (typeof params === 'string') {
-    params = {testClassNames: params.split(',')};
-  }
-  return Executrix.run(() => TestRunner.run(params as TestRunnerParams));
 }
 
 export function testing(spreadsheetId: string) {

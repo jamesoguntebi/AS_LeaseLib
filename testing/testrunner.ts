@@ -7,6 +7,28 @@ import JasSpreadsheetTest from "../jas_spreadsheet_test";
 import { Tester } from "./tester";
 import ClientSheetManagerTest from "../client_sheet_manager_test";
 
+export function runTests(params: TestRunnerParams | string = {}) {
+  if (typeof params === 'string') {
+    params = {testClassNames: params.split(',')};
+  }
+  TestRunner.run(params as TestRunnerParams);
+}
+
+export function runTestsAndHideFailures(
+    params: TestRunnerParams | string = {}) {
+  if (typeof params === 'string') {
+    params = {testClassNames: params.split(','), verbose: false};
+  }
+  TestRunner.run(params as TestRunnerParams);
+}
+
+export function runTestsWithLogs(params: TestRunnerParams | string = {}) {
+  if (typeof params === 'string') {
+    params = {testClassNames: params.split(','), suppressLogs: false};
+  }
+  TestRunner.run(params as TestRunnerParams);
+}
+
 export default class TestRunner {
   private static readonly LEASE_TEMPLATE_SPREADSHEET_ID =
       '1e-xDkyts6jt_2JPGS5i1hX4opVJ9niQ9f0y8YtAvTlw';
