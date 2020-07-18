@@ -166,13 +166,3 @@ class FakeProperties {
     this.properties.set(key, value);
   }
 }
-
-
-
-
-
-
-
-
-//DriveApp.getFileById(spreadsheet.getId()).setTrashed(true);
-
