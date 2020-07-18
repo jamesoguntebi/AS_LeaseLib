@@ -1,13 +1,11 @@
 export default class Spy<TObj, TProp extends keyof TObj> {
-  static isSpy(object: unknown): boolean {
-    return !!object[Spy.MARKER];
+  static isSpy(object: unknown): object is Spy<any, any> {
+    return !!(object as {[Spy.MARKER]?: unknown})[Spy.MARKER];
   }
 
   static assertSpy(object: unknown): Spy<any, any> {
-    const spy = object[Spy.MARKER] as Spy<any, any> | undefined;
-    if (!spy)
-      throw new Error('Object is not a spy.');
-    return spy;
+    if (!Spy.isSpy(object)) throw new Error('Object is not a spy.');
+    return object;
   }
 
   private static readonly MARKER = '__jas_spy__';
@@ -20,7 +18,7 @@ export default class Spy<TObj, TProp extends keyof TObj> {
     this.storedProperty = object[property];
     this.and = new SpyAction(this.storedProperty as unknown as Function);
 
-    const newFunctionProperty = ((...params) => {
+    const newFunctionProperty = ((...params: unknown[]) => {
       this.calls.push(params);
       return this.and.call(params);
     }) as unknown as TObj[TProp];
@@ -42,8 +40,8 @@ export default class Spy<TObj, TProp extends keyof TObj> {
   }
 
   toString() {
-    const objectString = this.object.constructor.name === 'Function' ?
-      this.object['name'] : this.object.constructor.name;
+    const objectString = this.object['constructor'].name === 'Function' ?
+        this.object['name'] : this.object['constructor'].name;
     return `${objectString}.${this.property}`;
   }
 }
@@ -61,7 +59,7 @@ export class SpyAction {
       case SpyActionType.DO_NOTHING:
         break;
       case SpyActionType.FAKE:
-        return this.fakeCall(...params);
+        return this.fakeCall!(...params);
     }
   }
 

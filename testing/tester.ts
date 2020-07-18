@@ -48,8 +48,12 @@ export class Tester {
     this.dedent();
 
     // Remove the description context, and handle its statistics and output.
+    const lastDescriptionContext = this.descriptionContextStack.pop();
+    if (!lastDescriptionContext) {
+      throw new Error('There should have been a description context here.');
+    }
     const {successCount, failureCount, output: lastContextOutput, spies} =
-        this.descriptionContextStack.pop();
+        lastDescriptionContext;
 
     this.currentDescriptionContext =
         this.descriptionContextStack[this.descriptionContextStack.length - 1]; 
@@ -132,7 +136,7 @@ export class Tester {
     }
 
     let success: boolean;
-    let failureOutput: string;
+    let failureOutput: string|undefined;
 
     try {
       this.isInsideUnit = true;

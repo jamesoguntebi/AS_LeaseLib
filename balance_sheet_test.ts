@@ -221,7 +221,7 @@ export default class BalanceSheetTest implements Test {
         });
 
         const expectedInterest =
-          (-initialBalance * Config.get().loanConfig.interestRate) / 12;
+          (-initialBalance * Config.get().loanConfig!.interestRate) / 12;
         const expectedBalance = initialBalance - expectedInterest;
         expectNewRowValues(expectedInterest, expectedBalance, 'Interest');
       });

@@ -29,7 +29,7 @@ export default class Expectation<T> {
     }
 
     const errorMatchesExpectedMessage = (e: unknown): boolean => {
-      if (!(e instanceof Error)) return false;
+      if (!(e instanceof Error) || !expectedErrorMessage) return false;
       return (e.stack || e.message || '')
         .toLowerCase()
         .includes(expectedErrorMessage.toLowerCase());
@@ -207,5 +207,5 @@ export default class Expectation<T> {
 type Pojo = Record<string, unknown>;
 
 export class SpyMatcher {
-  constructor(readonly argsMatcher: (...args: unknown[]) => boolean) {}
+  constructor(readonly argsMatcher: (args: unknown[]) => boolean) {}
 }

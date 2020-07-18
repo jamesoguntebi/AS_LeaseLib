@@ -71,7 +71,7 @@ export default class EmailCheckerTest implements Test {
           t.expect(BalanceSheet.addPayment).toHaveBeenCalled();
           t.expect(() => EmailChecker.assertNoPendingThreads()).not.toThrow();
           t.expect(FakeGmailApp.getUserLabelByName(EmailChecker.DONE_LABEL_NAME)
-              .getThreads().length).toEqual(1);
+              ?.getThreads().length).toEqual(1);
         });
 
         t.describe('with Venmo-only Config', () => {
@@ -85,7 +85,7 @@ export default class EmailCheckerTest implements Test {
             t.expect(EmailSender.sendPaymentThanks).not.toHaveBeenCalled();
             t.expect(BalanceSheet.addPayment).not.toHaveBeenCalled();
             t.expect(FakeGmailApp.getUserLabelByName(EmailChecker.DONE_LABEL_NAME)
-                .getThreads().length).toEqual(0);
+                ?.getThreads().length).toEqual(0);
           });
         });
       });
@@ -111,7 +111,7 @@ export default class EmailCheckerTest implements Test {
           t.expect(BalanceSheet.addPayment).toHaveBeenCalled();
           t.expect(() => EmailChecker.assertNoPendingThreads()).not.toThrow();
           t.expect(FakeGmailApp.getUserLabelByName(EmailChecker.DONE_LABEL_NAME)
-              .getThreads().length).toEqual(1);
+              ?.getThreads().length).toEqual(1);
         });
 
         t.describe('with Zelle-only Config', () => {
@@ -125,7 +125,7 @@ export default class EmailCheckerTest implements Test {
             t.expect(EmailSender.sendPaymentThanks).not.toHaveBeenCalled();
             t.expect(BalanceSheet.addPayment).not.toHaveBeenCalled();
             t.expect(FakeGmailApp.getUserLabelByName(EmailChecker.DONE_LABEL_NAME)
-                .getThreads().length).toEqual(0);
+                ?.getThreads().length).toEqual(0);
           });
         });
       });
@@ -156,7 +156,7 @@ export default class EmailCheckerTest implements Test {
           t.expect(BalanceSheet.addPayment).toHaveBeenCalledTimes(2);
           t.expect(() => EmailChecker.assertNoPendingThreads()).not.toThrow();
           t.expect(FakeGmailApp.getUserLabelByName(EmailChecker.DONE_LABEL_NAME)
-              .getThreads().length).toEqual(1);
+              ?.getThreads().length).toEqual(1);
         });
       });
 
@@ -182,7 +182,7 @@ export default class EmailCheckerTest implements Test {
           t.expect(BalanceSheet.addPayment).toHaveBeenCalledTimes(2);
           t.expect(() => EmailChecker.assertNoPendingThreads()).not.toThrow();
           t.expect(FakeGmailApp.getUserLabelByName(EmailChecker.DONE_LABEL_NAME)
-              .getThreads().length).toEqual(2);
+              ?.getThreads().length).toEqual(2);
         });
       });
     });
