@@ -62,7 +62,8 @@ export class Tester {
           '', indentedDescription, ...lastContextOutput);
     }
 
-    for (const spy of spies) spy.reset();
+    // Reset spies in reverse order: First in, first out.
+    for (const spy of spies.reverse()) spy.reset();
   }
 
   xdescribe(description: string, testFn: () => void): void {
@@ -128,26 +129,26 @@ export class Tester {
       for (const beforeEach of context.beforeEaches) beforeEach();
     }
 
-    this.isInsideUnit = true;
+
     let success: boolean;
+    let failureOutput: string;
 
     try {
+      this.isInsideUnit = true;
       testFn();
       success = true;
       this.currentDescriptionContext.successCount++;
     } catch (e) {
       success = false;
       this.indent();
-      if (e instanceof Error) {
-        this.output(e.stack || e.message);
-      } else {
-        this.output('Exception during test execution. No error object.')
-      }
+      failureOutput = e instanceof Error ?
+          e.stack || e.message :
+          'Exception during test execution. No error object.';
       this.dedent();
       this.currentDescriptionContext.failureCount++;
+    } finally {
+      this.isInsideUnit = false;
     }
-
-    this.isInsideUnit = false;
 
     for (const context of this.descriptionContextStack) {
       for (const afterEach of context.afterEaches) afterEach();
@@ -158,6 +159,7 @@ export class Tester {
       const s = success ? '✓' : '✗';
       this.output(`${s} ${unitTestName} (in ${Date.now() - startTime} ms)`);
     };
+    if (failureOutput) this.output(failureOutput);
   }
 
   xit(unitTestName: string, testFn: () => void): void {
@@ -185,7 +187,13 @@ export class Tester {
     return new SpyMatcher(argsMatcher);
   }
 
-  getTestResults(): TestResult {
+  finish(): TestResult {
+    // Finish the root description context. Reset spies in reverse order: First
+    // in, first out.
+    const {afterAlls, spies} = this.currentDescriptionContext;
+    for (const afterAll of afterAlls) afterAll();
+    for (const spy of spies.reverse()) spy.reset();
+
     return {
       successCount: this.currentDescriptionContext.successCount,
       failureCount: this.currentDescriptionContext.failureCount,
@@ -268,38 +276,44 @@ class Expectation<T> {
       throw new Error('Expectation is not a function');
     }
 
-    const errorMatchesMessage = (e: unknown): boolean => {
-      if (!(e instanceof Error) || !expectedErrorMessage) return false;
-
-      const errorContent = e.stack || e.message || '';
-      return errorContent
+    const errorMatchesExpectedMessage = (e: unknown): boolean => {
+      if (!(e instanceof Error)) return false;
+      return (e.stack || e.message || '')
         .toLowerCase()
         .includes(expectedErrorMessage.toLowerCase());
     };
 
-    const DO_NOT_CATCH = String(Math.random());
-    try {
-      this.actual();
-      if (!this.isInverse) throw new Error(DO_NOT_CATCH);
-    } catch (e) {
-      if (!this.isInverse && e.message === DO_NOT_CATCH) {
-        throw new Error('Expected function to throw.');
+    const fail = (e: unknown, prefixMessage: string) => {
+      if (e instanceof Error) {
+        Expectation.augmentAndThrow(e, prefixMessage);
+      } else {
+        throw new Error(prefixMessage);
       }
+    };
 
-      if (!expectedErrorMessage) {
-        const expectationMsg = `Expected function ${this.notString}to throw.`;
-        if (e instanceof Error) {
-          Expectation.augmentAndThrow(e, expectationMsg);
-        } else {
-          throw new Error(expectationMsg);
+    if (!this.isInverse) {
+      const DO_NOT_CATCH = String(Math.random());
+      try {
+        this.actual();
+        throw new Error(DO_NOT_CATCH);
+      } catch (e) {
+        if (e.message === DO_NOT_CATCH) {
+          throw new Error('Expected function to throw.');
+        }
+        if (expectedErrorMessage && !errorMatchesExpectedMessage(e)) {
+          fail(e, `Expected error to include '${expectedErrorMessage}'`);
         }
       }
-
-      if (this.isInverse === errorMatchesMessage(e)) {
-        Expectation.augmentAndThrow(
-          e,
-          `Expected error ${this.notString}to include '${expectedErrorMessage}'`
-        );
+    } else {
+      try {
+        this.actual();
+      } catch (e) {
+        if (!expectedErrorMessage) {
+          fail(e, 'Expected function not to throw.');
+        }
+        if (errorMatchesExpectedMessage(e)) {
+          fail(e, `Expected error not to include '${expectedErrorMessage}'`);
+        }
       }
     }
   }
@@ -395,7 +409,7 @@ class Expectation<T> {
     throw e;
   }
 
-  private static isPOJO(arg: unknown): arg is Record<string, unknown> {
+  private static isPOJO(arg: unknown): arg is Pojo {
     if (arg == null || typeof arg !== 'object') {
       return false;
     }
@@ -410,31 +424,35 @@ class Expectation<T> {
     if (Array.isArray(a) && Array.isArray(b)) {
       return Expectation.arrayEquals(a, b);
     }
-
     if (Expectation.isPOJO(a) && Expectation.isPOJO(b)) {
       return Expectation.pojoEquals(a, b);
     }
-
     return a === b;
   }
 
   private static arrayEquals(arr1: unknown[], arr2: unknown[]): boolean {
     if (arr1.length !== arr2.length) return false;
-    const end = Math.max(arr1.length, arr2.length);
-    return arr1.every((el, i) => Expectation.equals(arr1, arr2));
+    return arr1.every((el, i) => Expectation.equals(el, arr2[i]));
   }
 
-  private static pojoEquals(
-    obj1: Record<string, unknown>,
-    obj2: Record<string, unknown>
-  ): boolean {
+  private static pojoEquals(obj1: Pojo, obj2: Pojo): boolean {
+    // Remove keys that have undefined values.
+    const clearUndefinedValues = (obj: Pojo) => {
+      for (const key in obj) if (obj[key] === undefined) delete obj[key];
+    };
+    clearUndefinedValues(obj1);
+    clearUndefinedValues(obj2);
+
     if (Object.keys(obj1).length !== Object.keys(obj2).length) return false;
+
     for (const key in obj1) {
       if (!Expectation.equals(obj1[key], obj2[key])) return false;
     }
     return true;
   }
 }
+
+type Pojo = Record<string, unknown>;
 
 class Spy<TObj, TProp extends keyof TObj> {
   private static readonly MARKER = '__jas_spy__';

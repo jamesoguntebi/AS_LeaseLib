@@ -33,6 +33,7 @@ P1:
   insertRow()
 - implement expectation.not
 - global.d.ts
+- suppress logs during tests
 
 P2:
 - option to add partial payment

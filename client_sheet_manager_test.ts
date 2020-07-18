@@ -18,10 +18,7 @@ export default class ClientSheetManagerTest implements Test {
     let forceConfigSheetInvalid = false;
     let forceBalanceSheetInvalid = false;
 
-    t.beforeEach(() => {
-      const fakeProperties = new FakeProperties();
-      t.spyOn(PropertiesService, 'getScriptProperties').and
-          .callFake(() => fakeProperties);
+    t.beforeAll(() => {
       t.spyOn(Config, 'get').and.callFake(() => {
         if (forceConfigSheetInvalid) throw new Error('Config is invalid');
       });
@@ -32,6 +29,12 @@ export default class ClientSheetManagerTest implements Test {
       });
       t.spyOn(SpreadsheetApp, 'flush');
       t.spyOn(Utilities, 'sleep');
+    });
+
+    t.beforeEach(() => {
+      const fakeProperties = new FakeProperties();
+      t.spyOn(PropertiesService, 'getScriptProperties').and
+          .callFake(() => fakeProperties);
     });
 
     t.describe('regsiter', () => {

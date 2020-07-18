@@ -13,6 +13,7 @@ export default class TestRunner {
 
   static run({
     spreadsheetId = TestRunner.LEASE_TEMPLATE_SPREADSHEET_ID,
+    suppressLogs = true,
     verbose = true,
     testClassNames = undefined,
   }: TestRunnerParams) {
@@ -36,6 +37,14 @@ export default class TestRunner {
       }
     }
 
+    // Suppress logs inside tests.
+    const storedLogFn = Logger.log;
+    if (suppressLogs) {
+      Logger.log = (data: any): typeof Logger => {
+        return Logger;
+      };
+    }
+
     let successTotal = 0;
     let failureTotal = 0;
     const outputTotal = ['Testing...\n'];
@@ -46,7 +55,7 @@ export default class TestRunner {
       const test = new testClass();
       const tester = new Tester(verbose);
       test.run(tester);
-      const {successCount, failureCount, output} = tester.getTestResults();
+      const {successCount, failureCount, output} = tester.finish();
       successTotal += successCount;
       failureTotal += failureCount;
       const runTime = `(in ${Date.now() - testStartTime} ms)`;
@@ -65,7 +74,20 @@ export default class TestRunner {
         `(in ${Date.now() - startTime} ms)`);
     outputTotal.push('');
 
-    Logger.log(outputTotal.join('\n'));
+    if (suppressLogs) Logger.log = storedLogFn;
+
+    if (outputTotal.length < 100) {
+      Logger.log(outputTotal.join('\n'));
+    } else {
+      const pages = Math.ceil(outputTotal.length / 100);
+      let page = 1;
+      while (outputTotal.length) {
+        Logger.log([
+          `Testing ... page ${page++}/${pages}`,
+          ...outputTotal.splice(0, 100)
+        ].join('\n'));
+      }
+    }
   }
   
   private static getStats(success: number, failure: number): string {
@@ -80,6 +102,7 @@ export interface Test {
 
 export interface TestRunnerParams {
   spreadsheetId?: string;
-  verbose?: boolean;
+  suppressLogs?: boolean;
   testClassNames?: string[];
+  verbose?: boolean;
 }
