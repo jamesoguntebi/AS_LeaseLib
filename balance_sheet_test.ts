@@ -44,7 +44,7 @@ export default class BalanceSheetTest implements Test {
     ];
 
     t.describe('maybeAddRentOrInterestTransaction', () => {
-      t.beforeEach(() => t.spyOn(BalanceSheet, 'insertRow'));
+      t.beforeAll(() => t.spyOn(BalanceSheet, 'insertRow'));
 
       const configSpecs = [
         {
@@ -62,8 +62,8 @@ export default class BalanceSheetTest implements Test {
       for (const typeObj of configSpecs) {
         for (const replaceDate of [true, false]) {
           const dateString = replaceDate
-            ? `not on transaction day`
-            : `on transaction day`;
+              ? `not on transaction day`
+              : `on transaction day`;
           const {
             configType,
             config,
@@ -107,7 +107,7 @@ export default class BalanceSheetTest implements Test {
     });
 
     t.describe('addPayment', () => {
-      t.beforeEach(() => t.spyOn(BalanceSheet, 'insertRow'));
+      t.beforeAll(() => t.spyOn(BalanceSheet, 'insertRow'));
 
       const configSpecs = [
         {

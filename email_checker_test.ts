@@ -16,7 +16,7 @@ export default class EmailCheckerTest implements Test {
   }
 
   run(t: Tester) {
-    t.beforeEach(() => {
+    t.beforeAll(() => {
       t.spyOn(GmailApp, 'getUserLabelByName').and
           .callFake(FakeGmailApp.getUserLabelByName);
       t.spyOn(BalanceSheet, 'addPayment');

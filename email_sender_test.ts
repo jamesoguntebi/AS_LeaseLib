@@ -16,13 +16,13 @@ export default class EmailSenderTest implements Test{
   }
 
   run(t: Tester) {
-    t.beforeEach(() => {
+    t.beforeAll(() => {
       t.setConfig(Config.getLoanConfigForTest());
       t.spyOn(GmailApp, 'sendEmail');
     });
 
     t.describe('paymentThanksEmail', () => {
-      t.beforeEach(() => {
+      t.beforeAll(() => {
         t.spyOn(BalanceSheet, 'getBalance').and.returnValue(100);
       });
 
@@ -52,7 +52,7 @@ export default class EmailSenderTest implements Test{
         for (const {type: configType, config} of configSepcs) {
           t.describe(`when showing ${balanceType} balance for ${configType}`,
               () => {
-                t.beforeEach(() => {
+                t.beforeAll(() => {
                   t.setConfig(config);
                   t.spyOn(BalanceSheet, 'getBalance').and.returnValue(balance);
                 });
@@ -79,9 +79,7 @@ export default class EmailSenderTest implements Test{
       }
 
       t.describe('for config fields', () => {
-        t.beforeEach(() => {
-          t.setConfig(Config.DEFAULT);
-        });
+        t.beforeAll(() => t.setConfig(Config.DEFAULT));
 
         t.it('uses them', () => {
           EmailSender.sendPaymentThanks(1);
