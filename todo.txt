@@ -31,6 +31,7 @@ P1:
 - tsconfig
 - Allow inserting row at correct date in balance sheet using date passed in to
   insertRow()
+- implement expectation.not
 
 P2:
 - option to add partial payment
@@ -68,6 +69,7 @@ P0:
 - fix afterAll and configtest
 - For every 5 minute 'check labeled Emails', first check if there are any
     labeled emails, then open every spreadsheet.
+- All product code tested!!! 
 
 P1:
 - add option to add a full payment
@@ -84,6 +86,7 @@ P1:
         - beforeEach and afterEach are arrays of functions
 - better trigger versioning
 - Validate email address format
+- implement xit and xdescribe
 
 P2:
 - instead of checking emails, let manual step be to label emails. script do the

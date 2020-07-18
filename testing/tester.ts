@@ -25,11 +25,19 @@ export class Tester {
       throw new Error('Illegal context for describe()');
     }
 
+    // If the current descriptionContext didn't execute it's beforeAlls yet
+    // (because it had no it()s), execute them now.
+    this.maybeExecuteBeforeAlls();
+
     this.currentDescriptionContext = this.getEmptyDescriptionContext();
     this.descriptionContextStack.push(this.currentDescriptionContext);
     this.indent();
 
     testFn();
+
+    // If no it()s were called in this context, still call the beforeAlls, to
+    // match any cleanup in afterAlls.
+    this.maybeExecuteBeforeAlls();
 
     for (const afterAll of this.currentDescriptionContext.afterAlls) {
       afterAll();
@@ -55,6 +63,10 @@ export class Tester {
     }
 
     for (const spy of spies) spy.reset();
+  }
+
+  xdescribe(description: string, testFn: () => void): void {
+    this.output(`\n${description} (skipped)`);
   }
 
   beforeAll(beforeFn: () => void): void {
@@ -85,18 +97,30 @@ export class Tester {
     this.currentDescriptionContext.afterAlls.push(afterFn);
   }
 
+  maybeExecuteBeforeAlls() {
+    // It's a little tricky to tell when to call the beforeAlls, so we need to
+    // make sure the are called only once.
+    // - before the first it() in this describe()
+    // - at the start of the first contained describe() (if there are no it()s)
+    // - before the afterAlls() in this describe() if neither of the other two
+    //   happen
+    if (!this.currentDescriptionContext.successCount &&
+        !this.currentDescriptionContext.failureCount &&
+        !this.currentDescriptionContext.beforeAllsCalled) {
+      for (const beforeAll of this.currentDescriptionContext.beforeAlls) {
+        beforeAll();
+      }
+      this.currentDescriptionContext.beforeAllsCalled = true;
+    }
+  }
+
   it(unitTestName: string, testFn: () => void): void {
     if (this.isInsideUnit) {
       throw new Error(
           'Cannot nest it() units. Use a describe() for the outer.');
     }
 
-    if (!this.currentDescriptionContext.successCount &&
-        !this.currentDescriptionContext.failureCount) {
-      for (const beforeAll of this.currentDescriptionContext.beforeAlls) {
-        beforeAll();
-      }
-    }
+    this.maybeExecuteBeforeAlls();
 
     const startTime = Date.now();
 
@@ -134,6 +158,10 @@ export class Tester {
       const s = success ? '✓' : '✗';
       this.output(`${s} ${unitTestName} (in ${Date.now() - startTime} ms)`);
     };
+  }
+
+  xit(unitTestName: string, testFn: () => void): void {
+    this.output(`○ ${unitTestName} (skipped)`);
   }
 
   expect<T>(actual: T): Expectation<T> {
@@ -199,6 +227,7 @@ export interface DescriptionContext {
   beforeEaches: Array<() => void>,
   afterEaches: Array<() => void>,
   afterAlls: Array<() => void>,
+  beforeAllsCalled?: boolean;
   successCount: number,
   failureCount: number,
   output: string[];

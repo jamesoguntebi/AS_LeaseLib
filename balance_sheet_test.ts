@@ -228,27 +228,70 @@ export default class BalanceSheetTest implements Test {
     });
 
     t.describe('validateActiveSheet', () => {
-      const baseSpreadsheet = JasSpreadsheet.getSpreadsheet();
-      let spreadsheet: Spreadsheet;
+      const spreadsheet = JasSpreadsheet.getSpreadsheet();
+      let originalBalanceSheet: Sheet;
       let sheet: Sheet;
 
+      t.beforeAll(() => {
+        originalBalanceSheet = JasSpreadsheet.findSheet('balance');
+        // This name should not match query 'balance':
+        originalBalanceSheet.setName('__test_backup__');
+      });
+
       t.beforeEach(() => {
-        spreadsheet = baseSpreadsheet.copy('AS_LeaseLib Test Sheet');
-        _JasLibContext.spreadsheetId = spreadsheet.getId();
-        sheet = JasSpreadsheet.findSheet('balance');
+        spreadsheet.setActiveSheet(originalBalanceSheet);
+        sheet = spreadsheet.duplicateActiveSheet();
+        sheet.setName('Balance');
       });
 
       t.afterEach(() => {
-        DriveApp.getFileById(spreadsheet.getId()).setTrashed(true);
+        spreadsheet.deleteSheet(sheet);
       });
 
       t.afterAll(() => {
-        _JasLibContext.spreadsheetId = baseSpreadsheet.getId();
+        originalBalanceSheet.setName('Balance');
+      });
+
+      t.it('accepts untampered template spreadsheet', () => {
+        t.expect(() => BalanceSheet.validateActiveSheet()).toNotThrow();
+      });
+
+      t.it('throws for no data row', () => {
+        // It is illegal to delete all unfrozen rows, so insert a blank row at
+        // the end before doing so.
+        sheet.insertRowAfter(sheet.getLastRow());
+        sheet.deleteRows(
+            sheet.getFrozenRows() + 1,
+            sheet.getLastRow() - sheet.getFrozenRows() - 1);
+        t.expect(() => BalanceSheet.validateActiveSheet()).toThrow();
+      });
+
+      t.it('throws for invalid last balance cell', () => {
+        const balanceColumn = JasSpreadsheet.findColumn('balance', sheet);
+        const firstDataRow = sheet.getFrozenRows() + 1;
+        sheet.getRange(firstDataRow, balanceColumn).setValue('start balance');
+        t.expect(() => BalanceSheet.validateActiveSheet()).toThrow();
       });
 
       t.describe('when checking columns', () => {
         t.it('throws for missing date', () => {
-          sheet.deleteColumn();
+          sheet.deleteColumn(JasSpreadsheet.findColumn('date', sheet));
+          t.expect(() => BalanceSheet.validateActiveSheet()).toThrow();
+        });
+
+        t.it('throws for missing transaction', () => {
+          sheet.deleteColumn(JasSpreadsheet.findColumn('transaction', sheet));
+          t.expect(() => BalanceSheet.validateActiveSheet()).toThrow();
+        });
+
+        t.it('throws for missing balance', () => {
+          sheet.deleteColumn(JasSpreadsheet.findColumn('balance', sheet));
+          t.expect(() => BalanceSheet.validateActiveSheet()).toThrow();
+        });
+
+        t.it('throws for missing description', () => {
+          sheet.deleteColumn(JasSpreadsheet.findColumn('description', sheet));
+          t.expect(() => BalanceSheet.validateActiveSheet()).toThrow();
         });
       });
     });
