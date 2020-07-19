@@ -17,7 +17,7 @@ export default class SpyTest extends SimpleTest {
 
   private createSpy(targetFn?: Function):
       {spy: Spy<any, any>, spiedFn: Function} {
-    const object = {isASpy: () => {}};
+    const object = {isASpy: targetFn ? targetFn : () => {}};
     return {spy: new Spy(object, 'isASpy'), spiedFn: object.isASpy};
   }
 
@@ -91,27 +91,25 @@ export default class SpyTest extends SimpleTest {
   }
 
   testAndCallThrough() {
-    let name = 'Gandalf the Grey';
-    const upgrade = () => name = 'Gandalf the White';
+    const upgrade = (color: string) => `Gandalf the ${color}`;
     const {spy, spiedFn} = this.createSpy(upgrade);
     spy.and.callThrough();
 
-    spiedFn();
+    const upgraded = spiedFn('White');
 
     if (spy.getCalls().length !== 1) this.fail();
-    if (name !== 'Gandalf the White') this.fail();
+    if (upgraded !== 'Gandalf the White') this.fail();
   }
 
   testAndCallFake() {
-    let name = 'Gandalf the Grey';
-    const upgrade = () => name = 'Gandalf the White';
+    const upgrade = (color: string) => `Gandalf the ${color}`;
     const {spy, spiedFn} = this.createSpy(upgrade);
-    spy.and.callFake(() => name = 'Mithrandir');
+    spy.and.callFake((color: string) => `Saruman the ${color}`);
 
-    spiedFn();
+    const faked = spiedFn('White');
 
     if (spy.getCalls().length !== 1) this.fail();
-    if (name !== 'Mithrandir') this.fail();
+    if (faked !== 'Saruman the White') this.fail();
   }
 
   testAndReturnValue() {
