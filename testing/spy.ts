@@ -1,11 +1,11 @@
 export default class Spy<TObj, TProp extends keyof TObj> {
-  static isSpy(object: unknown): object is Spy<any, any> {
+  static isSpy(object: unknown): object is {[Spy.MARKER]: Spy<any, any>} {
     return !!(object as {[Spy.MARKER]?: unknown})[Spy.MARKER];
   }
 
   static assertSpy(object: unknown): Spy<any, any> {
     if (!Spy.isSpy(object)) throw new Error('Object is not a spy.');
-    return object;
+    return object[Spy.MARKER];
   }
 
   private static readonly MARKER = '__jas_spy__';

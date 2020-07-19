@@ -1,6 +1,11 @@
+/**
+ * This file name needs an underscore before it to force it to be first
+ * alphabetically. https://github.com/google/clasp/issues/72
+ */
+
 /** For testing the test framework. */
 export default abstract class SimpleTest {
-  private readonly output = [];
+  protected readonly output = [];
   private successes = 0;
   private failures = 0;
 
@@ -8,7 +13,13 @@ export default abstract class SimpleTest {
     this.output.push(name);
   }
 
-  abstract run(): void;
+  run() {
+    for (const key of Object.getOwnPropertyNames(this.constructor.prototype)) {
+      if (key.startsWith('test') && typeof this[key] === 'function') {
+        this.runUnit(key, this[key]);
+      }
+    }
+  }
 
   finish(): string[] {
     this.output.push(`  ${this.successes + this.failures} run, ${
@@ -21,7 +32,7 @@ export default abstract class SimpleTest {
    *     be bound to `this`, allowing callers to conviently call
    *     `runUnit('description', this.test1)`.
    */
-  protected runUnit(testName: string, testFn: () => void) {
+  private runUnit(testName: string, testFn: () => void) {
     try {
       testFn.call(this);
       this.output.push(`  ✓ ${testName}`);

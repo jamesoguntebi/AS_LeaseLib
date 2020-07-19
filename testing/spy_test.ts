@@ -1,18 +1,10 @@
 import Spy from "./spy";
-import SimpleTest from "./simple_test";
+import SimpleTest from "./_simple_test";
 import Util from "./util";
 
 export default class SpyTest extends SimpleTest {
   constructor() {
     super('SpyTest');
-  }
-
-  run() {
-    for (const key of Object.getOwnPropertyNames(this.constructor.prototype)) {
-      if (key.startsWith('test') && typeof this[key] === 'function') {
-        this.runUnit(key, this[key]);
-      }
-    }
   }
 
   private createSpy(targetFn?: Function):

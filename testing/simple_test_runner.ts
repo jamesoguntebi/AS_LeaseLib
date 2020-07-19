@@ -1,5 +1,6 @@
-import SimpleTest from "./simple_test";
+import SimpleTest from "./_simple_test";
 import SpyTest from "./spy_test";
+import ExpectationTest from "./expectation_test";
 
 export function runFrameworkTests(): string {
   return SimpleTestRunner.run();
@@ -8,6 +9,7 @@ export function runFrameworkTests(): string {
 export default class SimpleTestRunner {
   static run(): string {
     const tests: SimpleTest[] = [
+      new ExpectationTest(),
       new SpyTest(),
     ];
 
