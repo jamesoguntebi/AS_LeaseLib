@@ -1,6 +1,6 @@
 import SimpleTest from "./_simple_test";
 import Spy from "./spy";
-import Expectation from "./expectation";
+import Expectation, { SpyMatcher } from "./expectation";
 
 export default class ExpectationTest extends SimpleTest {
   constructor() {
@@ -109,5 +109,98 @@ export default class ExpectationTest extends SimpleTest {
         () => new Expectation(notCalledSpyFn).not.toHaveBeenCalled());
     this.failIfNotThrows(
         () => new Expectation(calledSpyFn).not.toHaveBeenCalled());
+  }
+
+  testToHaveBeenCalledTimes() {
+    const {spiedFn} = this.createSpy();
+    spiedFn();
+    spiedFn();
+
+    this.failIfThrows(() => new Expectation(spiedFn).toHaveBeenCalledTimes(2));
+    this.failIfNotThrows(
+        () => new Expectation(spiedFn).toHaveBeenCalledTimes(3));
+  }
+
+  testNotToHaveBeenCalledTimes() {
+    const {spiedFn} = this.createSpy();
+    spiedFn();
+    spiedFn();
+
+    this.failIfThrows(
+        () => new Expectation(spiedFn).not.toHaveBeenCalledTimes(3));
+    this.failIfNotThrows(
+        () => new Expectation(spiedFn).not.toHaveBeenCalledTimes(2));
+  }
+
+  testToHaveBeenCalledLike() {
+    const {spiedFn} = this.createSpy();
+    spiedFn('a');
+    spiedFn('b');
+
+    const aMatcher = new SpyMatcher((args: unknown[]) => args[0] === 'a');
+    const bMatcher = new SpyMatcher((args: unknown[]) => args[0] === 'b');
+    const cMatcher = new SpyMatcher((args: unknown[]) => args[0] === 'c');
+
+    this.failIfThrows(
+        () => new Expectation(spiedFn).toHaveBeenCalledLike(aMatcher));
+    this.failIfThrows(
+        () => new Expectation(spiedFn).toHaveBeenCalledLike(bMatcher));
+    this.failIfNotThrows(
+        () => new Expectation(spiedFn).toHaveBeenCalledLike(cMatcher));
+  }
+
+  testNotToHaveBeenCalledLike() {
+    const {spiedFn} = this.createSpy();
+    spiedFn('a');
+    spiedFn('b');
+
+    const aMatcher = new SpyMatcher((args: unknown[]) => args[0] === 'a');
+    const bMatcher = new SpyMatcher((args: unknown[]) => args[0] === 'b');
+    const cMatcher = new SpyMatcher((args: unknown[]) => args[0] === 'c');
+
+    this.failIfThrows(
+        () => new Expectation(spiedFn).not.toHaveBeenCalledLike(cMatcher));
+    this.failIfNotThrows(
+        () => new Expectation(spiedFn).not.toHaveBeenCalledLike(aMatcher));
+    this.failIfNotThrows(
+        () => new Expectation(spiedFn).not.toHaveBeenCalledLike(bMatcher));
+  }
+
+  testToHaveBeenCalledWith() {
+    const {spiedFn} = this.createSpy();
+    spiedFn('a');
+    spiedFn('b');
+
+    this.failIfThrows(() => new Expectation(spiedFn).toHaveBeenCalledWith('a'));
+    this.failIfThrows(() => new Expectation(spiedFn).toHaveBeenCalledWith('b'));
+    this.failIfNotThrows(
+        () => new Expectation(spiedFn).toHaveBeenCalledWith('c'));
+    this.failIfNotThrows(
+        () => new Expectation(spiedFn).toHaveBeenCalledWith('a', 'b'));
+  }
+
+  testNotToHaveBeenCalledWith() {
+    const {spiedFn} = this.createSpy();
+    spiedFn('a');
+    spiedFn('b');
+
+    this.failIfThrows(
+        () => new Expectation(spiedFn).not.toHaveBeenCalledWith('c'));
+    this.failIfNotThrows(
+        () => new Expectation(spiedFn).not.toHaveBeenCalledWith('a'));
+    this.failIfNotThrows(
+        () => new Expectation(spiedFn).not.toHaveBeenCalledWith('b'));
+  }
+
+  testToBeUndefined() {
+    let a: string, b: string = 'hi';
+    this.failIfThrows(() => new Expectation(a).toBeUndefined);
+    this.failIfNotThrows(() => new Expectation(b).toBeUndefined);
+  }
+
+  testNotToBeUndefined() {
+    let a: string, b: string = 'hi';
+    this.failIfThrows(() => new Expectation(b).not.toBeUndefined);
+    this.failIfNotThrows(() => new Expectation(a).not.toBeUndefined);
   }
 }
