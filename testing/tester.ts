@@ -2,7 +2,8 @@ import Config, { ConfigParams } from '../config';
 import Spy from './spy';
 import Expectation, { SpyMatcher } from './expectation';
 
-export class Tester {
+export default class Tester {
+  static readonly ERROR_NAME = 'TesterError';
   private static readonly INDENT_PER_LEVEL = 2;
   private indentation = Tester.INDENT_PER_LEVEL;
 
@@ -14,7 +15,7 @@ export class Tester {
 
   private isInsideUnit = false;
 
-  constructor(private readonly verbose: boolean) {}
+  constructor(private readonly verbose: boolean = true) {}
 
   setConfig(config: ConfigParams) {
     const spy = Spy.isSpy(Config.get) ?
@@ -24,7 +25,7 @@ export class Tester {
 
   describe(description: string, testFn: () => void): void {
     if (this.isInsideUnit) {
-      throw new Error('Illegal context for describe()');
+      this.throwTesterError('Illegal context for describe()');
     }
 
     // If the current descriptionContext didn't execute it's beforeAlls yet
@@ -50,7 +51,8 @@ export class Tester {
     // Remove the description context, and handle its statistics and output.
     const lastDescriptionContext = this.descriptionContextStack.pop();
     if (!lastDescriptionContext) {
-      throw new Error('There should have been a description context here.');
+      this.throwTesterError(
+          'There should have been a description context here.');
     }
     const {successCount, failureCount, output: lastContextOutput, spies} =
         lastDescriptionContext;
@@ -78,33 +80,33 @@ export class Tester {
 
   beforeAll(beforeFn: () => void): void {
     if (this.isInsideUnit) {
-      throw new Error('Illegal context for beforeAll()');
+      this.throwTesterError('Illegal context for beforeAll()');
     }
     this.currentDescriptionContext.beforeAlls.push(beforeFn);
   }
 
   beforeEach(beforeFn: () => void): void {
     if (this.isInsideUnit) {
-      throw new Error('Illegal context for beforeEach()');
+      this.throwTesterError('Illegal context for beforeEach()');
     }
     this.currentDescriptionContext.beforeEaches.push(beforeFn);
   }
 
   afterEach(afterFn: () => void): void {
     if (this.isInsideUnit) {
-      throw new Error('Illegal context for beforeEach()');
+      this.throwTesterError('Illegal context for beforeEach()');
     }
     this.currentDescriptionContext.afterEaches.push(afterFn);
   }
 
   afterAll(afterFn: () => void): void {
     if (this.isInsideUnit) {
-      throw new Error('Illegal context for afterAll()');
+      this.throwTesterError('Illegal context for afterAll()');
     }
     this.currentDescriptionContext.afterAlls.push(afterFn);
   }
 
-  maybeExecuteBeforeAlls() {
+  private maybeExecuteBeforeAlls() {
     // It's a little tricky to tell when to call the beforeAlls, so we need to
     // make sure the are called only once.
     // - before the first it() in this describe()
@@ -123,7 +125,7 @@ export class Tester {
 
   it(unitTestName: string, testFn: () => void): void {
     if (this.isInsideUnit) {
-      throw new Error(
+      this.throwTesterError(
           'Cannot nest it() units. Use a describe() for the outer.');
     }
 
@@ -144,6 +146,8 @@ export class Tester {
       success = true;
       this.currentDescriptionContext.successCount++;
     } catch (e) {
+      if (e.name === Tester.ERROR_NAME) throw e;
+
       success = false;
       this.indent();
       failureOutput = e instanceof Error ?
@@ -178,10 +182,10 @@ export class Tester {
   spyOn<TObj, TProp extends keyof TObj>(object: TObj, method: TProp):
       Spy<TObj, TProp> {
     if (this.isInsideUnit) {
-      throw new Error('Spies cannot be installed inside unit tests.');
+      this.throwTesterError('Spies cannot be installed inside unit tests.');
     }
     if (typeof object[method] !== 'function') {
-      throw new Error('Can only spy on functions');
+      this.throwTesterError('Can only spy on functions');
     }
     const spy = new Spy(object, method);
     this.currentDescriptionContext.spies.push(spy);
@@ -196,6 +200,7 @@ export class Tester {
     // Finish the root description context. Reset spies in reverse order: First
     // in, first out.
     const {afterAlls, spies} = this.currentDescriptionContext;
+    this.maybeExecuteBeforeAlls();
     for (const afterAll of afterAlls) afterAll();
     for (const spy of spies.reverse()) spy.reset();
 
@@ -232,6 +237,12 @@ export class Tester {
       output: [],
       spies: [],
     };
+  }
+
+  private throwTesterError(message: string) {
+    const error = new Error(message);
+    error.name = Tester.ERROR_NAME;
+    throw error;
   }
 }
 

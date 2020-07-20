@@ -4,7 +4,7 @@ import EmailCheckerTest from "../email_checker_test";
 import ConfigTest from "../config_test";
 import JasRangeTest from "../jas_range_test";
 import JasSpreadsheetTest from "../jas_spreadsheet_test";
-import { Tester } from "./tester";
+import Tester from "./tester";
 import ClientSheetManagerTest from "../client_sheet_manager_test";
 
 export function runTests(params: TestRunnerParams | string = {}) {

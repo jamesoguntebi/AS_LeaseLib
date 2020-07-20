@@ -3,10 +3,6 @@ import SimpleTest from "./_simple_test";
 import Util from "./util";
 
 export default class SpyTest extends SimpleTest {
-  constructor() {
-    super('SpyTest');
-  }
-
   private createSpy(targetFn?: Function):
       {spy: Spy<any, any>, spiedFn: Function} {
     const object = {isASpy: targetFn ? targetFn : () => {}};

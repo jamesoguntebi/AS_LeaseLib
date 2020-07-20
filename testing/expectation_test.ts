@@ -3,25 +3,6 @@ import Spy from "./spy";
 import Expectation, { SpyMatcher } from "./expectation";
 
 export default class ExpectationTest extends SimpleTest {
-  constructor() {
-    super('ExpectationTest');
-  }
-
-  private failIfThrows(fn: Function) {
-    try {
-      fn();
-    } catch {
-      this.fail();
-    }
-  }
-
-  private failIfNotThrows(fn: Function) {
-    try {
-      fn();
-      this.fail();
-    } catch {}
-  }
-
   private createSpy(targetFn?: Function):
       {spy: Spy<any, any>, spiedFn: Function} {
     const object = {isASpy: targetFn ? targetFn : () => {}};
@@ -194,13 +175,13 @@ export default class ExpectationTest extends SimpleTest {
 
   testToBeUndefined() {
     let a: string, b: string = 'hi';
-    this.failIfThrows(() => new Expectation(a).toBeUndefined);
-    this.failIfNotThrows(() => new Expectation(b).toBeUndefined);
+    this.failIfThrows(() => new Expectation(a).toBeUndefined());
+    this.failIfNotThrows(() => new Expectation(b).toBeUndefined());
   }
 
   testNotToBeUndefined() {
     let a: string, b: string = 'hi';
-    this.failIfThrows(() => new Expectation(b).not.toBeUndefined);
-    this.failIfNotThrows(() => new Expectation(a).not.toBeUndefined);
+    this.failIfThrows(() => new Expectation(b).not.toBeUndefined());
+    this.failIfNotThrows(() => new Expectation(a).not.toBeUndefined());
   }
 }

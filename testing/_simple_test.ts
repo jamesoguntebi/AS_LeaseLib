@@ -3,14 +3,16 @@
  * alphabetically. https://github.com/google/clasp/issues/72
  */
 
+import Tester from "./tester";
+
 /** For testing the test framework. */
 export default abstract class SimpleTest {
-  protected readonly output = [];
+  protected readonly output: string[] = [];
   private successes = 0;
   private failures = 0;
 
-  constructor(name: string) {
-    this.output.push(name);
+  constructor() {
+    this.output.push(this.constructor.name);
   }
 
   run() {
@@ -37,13 +39,37 @@ export default abstract class SimpleTest {
       testFn.call(this);
       this.output.push(`  ✓ ${testName}`);
       this.successes++;
-    } catch {
+    } catch (e) {
       this.output.push(`  ✗ ${testName}`);
       this.failures++;
     }
   }
 
+  /**
+   * Throws an error that the Tester class always catches and rethrows, so that
+   * when testing Tester, failures aren't suppressed. 
+   */
   protected fail() {
-    throw new Error();
+    const error = new Error();
+    error.name = Tester.ERROR_NAME;
+    throw error;
+  }
+
+  protected failIfThrows(fn: Function) {
+    try {
+      fn();
+    } catch {
+      this.fail();
+    }
+  }
+
+  protected failIfNotThrows(fn: Function) {
+    const DO_NOT_CATCH = String(Math.random());
+    try {
+      fn();
+      throw new Error(DO_NOT_CATCH);
+    } catch (e) {
+      if (e.message === DO_NOT_CATCH) this.fail();
+    }
   }
 }
