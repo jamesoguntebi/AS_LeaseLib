@@ -134,6 +134,27 @@ export default class TesterTest extends SimpleTest {
     if (failureCount !== 8) this.fail();
   }
 
+  testXdescribe() {
+    const t = new Tester();
+
+    t.it(`1`, this.createSuccess());
+    t.it(`2`, this.createSuccess());
+
+    t.xdescribe('level1', () => {
+      t.it(`1`, this.createFail());
+      t.it(`2`, this.createSuccess());
+
+      t.describe('level2', () => {
+        t.it(`1`, this.createFail());
+        t.it(`2`, this.createFail());
+      });
+    });
+
+    const {successCount, failureCount} = t.finish();
+    if (successCount !== 2) this.fail();
+    if (failureCount !== 0) this.fail();
+  }
+
   testBeforeAll() {
     const {calls} = this.doAllTestScenarios();
 
@@ -225,15 +246,55 @@ export default class TesterTest extends SimpleTest {
     });
   }
 
-  testIt() {
-
-  }
-
   testIt_illegalContext() {
     const t = new Tester();
 
     t.it('t1', () => {
       this.failIfNotThrows(() => t.it('t1.1', () => {}));
     });
+  }
+  
+  testXit() {
+    const t = new Tester();
+
+    t.xit(`1`, this.createSuccess());
+    t.it(`2`, this.createSuccess());
+
+    t.describe('level1', () => {
+      t.it(`1`, this.createFail());
+      t.xit(`2`, this.createSuccess());
+
+      t.describe('level2', () => {
+        t.xit(`1`, this.createFail());
+        t.it(`2`, this.createFail());
+      });
+    });
+
+    const {successCount, failureCount} = t.finish();
+    if (successCount !== 1) this.fail();
+    if (failureCount !== 2) this.fail();
+  }
+
+  testSpyOn() {
+    const t = new Tester();
+    const object = {targetFn: () => 'a'};
+
+    if (object.targetFn() !== 'a') this.fail();
+
+    t.spyOn(object, 'targetFn').and.returnValue('b');
+    if (object.targetFn() !== 'b') this.fail();
+
+    t.describe('d', () => {
+      if (object.targetFn() !== 'b') this.fail();
+
+      t.spyOn(object, 'targetFn').and.returnValue('c');
+      if (object.targetFn() !== 'c') this.fail();
+    });
+
+    if (object.targetFn() !== 'b') this.fail();
+
+    t.finish();
+
+    if (object.targetFn() !== 'a') this.fail();
   }
 }

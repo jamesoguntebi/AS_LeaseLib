@@ -94,7 +94,7 @@ export default class Tester {
 
   afterEach(afterFn: () => void): void {
     if (this.isInsideUnit) {
-      this.throwTesterError('Illegal context for beforeEach()');
+      this.throwTesterError('Illegal context for afterEach()');
     }
     this.currentDescriptionContext.afterEaches.push(afterFn);
   }
