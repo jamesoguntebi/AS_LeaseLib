@@ -1,5 +1,5 @@
 import { Test } from "./testing/testrunner";
-import { Tester } from "./testing/tester";
+import Tester from "./testing/tester";
 import Config, { ConfigParams, ConfigField } from "./config";
 import JasSpreadsheet from "./jas_spreadsheet";
 
@@ -84,23 +84,19 @@ export default class ConfigTest implements Test {
         }
       };
 
-      t.describe('after writing loan config', () => {
-        const config = Config.getLoanConfigForTest();
-        writeConfig(config);
+      const configSpecs = [
+        {name: 'loan', config: Config.getLoanConfigForTest()},
+        {name: 'rent', config: Config.getRentConfigForTest()},
+      ]
 
-        t.it('reads back the config', () => {
-          t.expect(Config.get()).toEqual(config);
+      for (const {name, config} of configSpecs) {
+        t.describe(`after writing ${name} config`, () => {
+          writeConfig(config);
+          t.it('reads back the config', () => {
+            t.expect(Config.get()).toEqual(config);
+          });
         });
-      });
-
-      t.describe('after writing rent config', () => {
-        const config = Config.getRentConfigForTest();
-        writeConfig(config);
-
-        t.it('reads back the config', () => {
-          t.expect(Config.get()).toEqual(config);
-        });
-      });
+      }
     });
 
     t.describe('validate throws for', () => {

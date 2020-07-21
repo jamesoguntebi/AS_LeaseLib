@@ -120,18 +120,15 @@ export default class BalanceSheetTest implements Test {
         },
       ];
 
-      for (const { configType, config, expectedDecription } of configSpecs) {
-        t.describe(`for ${configType}`, () => {
-          t.beforeEach(() => t.setConfig(config));
+      for (const {configType, config, expectedDecription} of configSpecs) {
+        t.it(`inserts a row for ${configType}`, () => {
+          t.setConfig(config);
+          BalanceSheet.addPayment(159, new Date());
 
-          t.it('inserts a row', () => {
-            BalanceSheet.addPayment(159, new Date());
-
-            this.expectInsertRowToHaveBeenCalledLike(t, (row: BalanceRow) => {
-              t.expect(row.description).toEqual(expectedDecription);
-              t.expect(row.transaction).toEqual(159);
-              return true;
-            });
+          this.expectInsertRowToHaveBeenCalledLike(t, (row: BalanceRow) => {
+            t.expect(row.description).toEqual(expectedDecription);
+            t.expect(row.transaction).toEqual(159);
+            return true;
           });
         });
       }
