@@ -1,6 +1,6 @@
 import Config from './config';
 import { Test } from './testing/testrunner';
-import { Tester } from './testing/tester';
+import Tester from './testing/tester';
 import BalanceSheet, { BalanceRow } from './balance_sheet';
 import JasSpreadsheet from './jas_spreadsheet';
 

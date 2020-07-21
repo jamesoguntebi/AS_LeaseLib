@@ -201,6 +201,21 @@ export default class ConfigTest implements Test {
                 {emailBCCs: ['alpha@beta.gamma', 'hello']}))
             .toThrow();
       });
+
+      t.it('invalid link to sheet href', () => {
+        t.expect(
+            () => Config.getLoanConfigForTest(
+                {linkToSheetHref: 'alpha@beta.gamma'}))
+            .toThrow();
+        t.expect(
+            () => Config.getLoanConfigForTest(
+                {linkToSheetHref: undefined}))
+            .not.toThrow();
+        t.expect(
+            () => Config.getLoanConfigForTest(
+                {linkToSheetHref: Config.DEFAULT.linkToSheetHref}))
+            .not.toThrow();
+      });
     });
   }
 }

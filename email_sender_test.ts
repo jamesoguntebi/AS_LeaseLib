@@ -1,5 +1,5 @@
 import { Test } from "./testing/testrunner";
-import { Tester } from "./testing/tester";
+import Tester from "./testing/tester";
 import EmailSender from "./email_sender";
 import Config from "./config";
 import BalanceSheet from "./balance_sheet";
@@ -96,6 +96,33 @@ export default class EmailSenderTest implements Test{
                     Config.DEFAULT.emailDisplayName);
                 return true;
               });
+        });
+
+        t.describe('link to balance sheet', () => {
+          t.describe('when linkToSheetHref is present', () => {
+            t.beforeAll(() => t.setConfig(Config.getLoanConfigForTest({
+              linkToSheetHref: Config.DEFAULT.linkToSheetHref,
+              linkToSheetText: 'Crazy conspicuous text',
+            })));
+
+            t.it('shows', () => {
+              EmailSender.sendPaymentThanks(1);
+              
+              this.expectSendMailToHaveBeenCalledLike(
+                t, (params: SendEmailParameters) => {
+                  t.expect(params[3].htmlBody).toContain('See balance sheet');
+                  t.expect(params[3].htmlBody).toContain(
+                      'Crazy conspicuous text');
+                  return true;
+                });
+            });
+
+            t.it('falls back to href when no text', () => {
+              // Enable spyOn within it()
+              // - new ItContext
+              // - simplify a bunch of tests to remove wrapping describe()
+            });
+          });
         });
       });
     });

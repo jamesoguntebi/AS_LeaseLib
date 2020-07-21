@@ -12,6 +12,7 @@ export function runTests(params: TestRunnerParams | string = {}) {
     params = {testClassNames: params.split(',')};
   }
   TestRunner.run(params as TestRunnerParams);
+  return Logger.getLog();
 }
 
 export function runTestsAndHideFailures(
@@ -20,6 +21,7 @@ export function runTestsAndHideFailures(
     params = {testClassNames: params.split(','), verbose: false};
   }
   TestRunner.run(params as TestRunnerParams);
+  return Logger.getLog();
 }
 
 export function runTestsWithLogs(params: TestRunnerParams | string = {}) {
@@ -27,6 +29,7 @@ export function runTestsWithLogs(params: TestRunnerParams | string = {}) {
     params = {testClassNames: params.split(','), suppressLogs: false};
   }
   TestRunner.run(params as TestRunnerParams);
+  return Logger.getLog();
 }
 
 export default class TestRunner {

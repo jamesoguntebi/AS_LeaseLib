@@ -1,6 +1,6 @@
 import JasRange, { CellData } from './jas_range';
 import JasSpreadsheet from './jas_spreadsheet';
-import { Tester } from './testing/tester';
+import Tester from './testing/tester';
 import { Test } from './testing/testrunner';
 
 type Range = GoogleAppsScript.Spreadsheet.Range;

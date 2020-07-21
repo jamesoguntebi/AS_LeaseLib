@@ -1,5 +1,5 @@
 import { Test } from "./testing/testrunner";
-import { Tester } from "./testing/tester";
+import Tester from "./testing/tester";
 import Config from "./config";
 import BalanceSheet from "./balance_sheet";
 import ClientSheetManager from "./client_sheet_manager";

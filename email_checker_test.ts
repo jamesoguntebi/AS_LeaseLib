@@ -1,5 +1,5 @@
 import { Test } from "./testing/testrunner";
-import { Tester } from "./testing/tester";
+import Tester from "./testing/tester";
 import EmailChecker from "./email_checker";
 import { FakeGmailApp, GmailMessageParams } from "./testing/fakes";
 import BalanceSheet from "./balance_sheet";

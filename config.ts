@@ -111,12 +111,19 @@ export default class Config {
     if (!config.emailBCCs.every(Config.isEmail)) {
       throw new Error('Invalid email format for email bcc in Config.');
     }
+    if (config.linkToSheetHref && !Config.isUrl(config.linkToSheetHref)) {
+      throw new Error('Invalid link to balance sheet.');
+    }
 
     return config;
   }
 
   private static isEmail(s: string): boolean {
     return /\S+@\S+\.\S+/.test(s);
+  }
+
+  private static isUrl(s: string): boolean {
+    return /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/.test(s);
   }
 
   private static validateDayOfMonth(day: number) {

@@ -14,7 +14,11 @@
   </strong>.
 </p>
 
-<p>
-  See balance sheet:
-  <a href="<?= templateParams.linkHref ?>"><?= templateParams.linkText ?></a>
-</p>
+<? if (templateParams.linkHref) { ?>
+  <p>
+    See balance sheet:
+    <a href="<?= templateParams.linkHref ?>">
+      <?= templateParams.linkText || templateParams.linkHref ?>
+    </a>
+  </p>
+<? } ?>>

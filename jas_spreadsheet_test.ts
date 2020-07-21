@@ -1,5 +1,5 @@
 import JasSpreadsheet from './jas_spreadsheet';
-import { Tester } from './testing/tester';
+import Tester from './testing/tester';
 import { Test } from './testing/testrunner';
 
 type Sheet = GoogleAppsScript.Spreadsheet.Sheet;
