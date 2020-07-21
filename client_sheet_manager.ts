@@ -61,7 +61,7 @@ export default class ClientSheetManager {
         ClientSheetManager.PROPERTY_NAME,
         JSON.stringify(Array.from(registeredSet)));
 
-    Logger.log(`Library is removing client sheet ${spreadsheetId}`);
+    Logger.log(`Library removed client sheet ${spreadsheetId}`);
   }
 
   private static getAll(): string[] {
