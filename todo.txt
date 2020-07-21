@@ -7,6 +7,9 @@
 
 P0:
 - ensure all client sheets have permissions
+- when checking an email fails, add a Failed Label
+- if updating Labels fails, add to Properties
+  - don't try to check emails for failed messages in Properties
 - refactor out general AS lib
   - generate typescript types declaration:
     https://www.typescriptlang.org/docs/handbook/declaration-files/publishing.html
@@ -16,20 +19,20 @@ P1:
 - read all emails, and ask admin to verify emails that should be parsed
 - Move client projects off of dev mode to versioned library
 - More comments everywhere
-- Set the header rows of Balance Sheet and Config to be imported ranges from
-  the template
-  - might be a problem with merged ranges
 - mark L tests and make running them optional
-- tsconfig
 - Allow inserting row at correct date in balance sheet using date passed in to
   insertRow()
-- global.d.ts
+- validate config on edit
+  - with a config valid checkbox!
+- figure out how to differentiate between two types of payments from one person
+  meant for two different spreadsheets
 
 P2:
 - option to add partial payment
 - use dropdown list to select payment types in sheet config
 - allow disabling outgoing emails in the config
 - Add config for the payment label in balance sheet. e.g. "Car payment"
+- Add a log in the spreadsheet, showing recent events
 
 P3:
 - integrate with Plaid to *maybe* get Zelle Ids  
@@ -39,6 +42,8 @@ P4
 - we get message date to use as transaction date. this date isn't always
   correct. in one example, email timestamp EST is day X at 2:43am, but
   message.getDate() is apparently day X-1
+- global.d.ts
+- tsconfig
 
 
   _____     ____    _   _   ______     
@@ -89,6 +94,9 @@ P1:
 - suppress logs during tests
 - implement expectation.not
 - Only show 'See balance sheet' in email if at least link href is in Config
+- Set the header rows of Balance Sheet and Config to be imported ranges from
+  the template
+  - might be a problem with merged ranges (not a problem)
 
 P2:
 - instead of checking emails, let manual step be to label emails. script do the

@@ -2,11 +2,17 @@
 
 ## Creating a new Client sheet
 
-1. Open the [template](https://docs.google.com/spreadsheets/d/1e-xDkyts6jt_2JPGS5i1hX4opVJ9niQ9f0y8YtAvTlw) and make a copy
+1. Open the [template](https://docs.google.com/spreadsheets/d/1e-xDkyts6jt_2JPGS5i1hX4opVJ9niQ9f0y8YtAvTlw)
+
+    1. Copying from another client sheet is actually better. This will copy
+       over the imported ranges
 
 2. Title the new Spreadsheet
 
 3. Update the 'Config' sheet
+
+    1. Add 'Show warning' protection to the entire Config sheet except the value
+       column.
 
 4. Open the Script Editor. 'Tools' -> 'Script Editor'
 
