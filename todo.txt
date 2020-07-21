@@ -6,6 +6,7 @@
     |_|     \____/  |_____/   \____/    (_)
 
 P0:
+- ensure all client sheets have permissions
 - refactor out general AS lib
   - generate typescript types declaration:
     https://www.typescriptlang.org/docs/handbook/declaration-files/publishing.html
@@ -15,7 +16,6 @@ P1:
 - read all emails, and ask admin to verify emails that should be parsed
 - Move client projects off of dev mode to versioned library
 - More comments everywhere
-- Only show 'See balance sheet' in email if at least link href is in Config
 - Set the header rows of Balance Sheet and Config to be imported ranges from
   the template
   - might be a problem with merged ranges
@@ -88,6 +88,7 @@ P1:
 - implement xit and xdescribe
 - suppress logs during tests
 - implement expectation.not
+- Only show 'See balance sheet' in email if at least link href is in Config
 
 P2:
 - instead of checking emails, let manual step be to label emails. script do the
