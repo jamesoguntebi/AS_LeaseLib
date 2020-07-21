@@ -70,7 +70,7 @@ export default class Config {
       throw new Error('No renter or borrower config defined.')
     }
     if (config.rentConfig && config.loanConfig) {
-      throw new Error('Both renter or borrower config defined.')
+      throw new Error('Both renter and borrower config defined.')
     }
 
     if (config.rentConfig) {
@@ -91,7 +91,7 @@ export default class Config {
       throw new Error('At least one payment type is required in Config.');
     }
     if (!config.searchQuery.searchName) {
-      throw new Error('Search query name required in Config.');
+      throw new Error('Search query name is required in Config.');
     }
     if (!config.customerDisplayName) {
       throw new Error('Customer display name is required in Config.');
@@ -113,6 +113,9 @@ export default class Config {
     }
     if (config.linkToSheetHref && !Config.isUrl(config.linkToSheetHref)) {
       throw new Error('Invalid link to balance sheet.');
+    }
+    if (config.linkToSheetText && !config.linkToSheetHref) {
+      throw new Error('Link text is useless without href.');
     }
 
     return config;

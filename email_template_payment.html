@@ -5,7 +5,8 @@
 <p>Hello <?= templateParams.customerDisplayName ?>,</p>
 
 <p>
-  Thank you for your recent payment of $<?= templateParams.paymentAmount ?>.
+  Thank you for your recent payment of
+  <strong>$<?= templateParams.paymentAmount ?></strong>.
   Your balance is now
   <strong <? if (templateParams.colorBalance) { ?>
             style="color: #b34;"
@@ -21,4 +22,4 @@
       <?= templateParams.linkText || templateParams.linkHref ?>
     </a>
   </p>
-<? } ?>>
+<? } ?>

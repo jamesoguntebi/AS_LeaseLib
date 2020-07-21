@@ -13,7 +13,7 @@ export default class Tester {
   private descriptionContextStack: DescriptionContext[] =
       [this.currentDescriptionContext];
 
-  private isInsideUnit = false;
+  private currentItContext: ItContext|null = null;
 
   constructor(private readonly verbose: boolean = true) {}
 
@@ -24,7 +24,7 @@ export default class Tester {
   }
 
   describe(description: string, testFn: () => void): void {
-    if (this.isInsideUnit) {
+    if (this.currentItContext) {
       this.throwTesterError('Illegal context for describe()');
     }
 
@@ -79,28 +79,28 @@ export default class Tester {
   }
 
   beforeAll(beforeFn: () => void): void {
-    if (this.isInsideUnit) {
+    if (this.currentItContext) {
       this.throwTesterError('Illegal context for beforeAll()');
     }
     this.currentDescriptionContext.beforeAlls.push(beforeFn);
   }
 
   beforeEach(beforeFn: () => void): void {
-    if (this.isInsideUnit) {
+    if (this.currentItContext) {
       this.throwTesterError('Illegal context for beforeEach()');
     }
     this.currentDescriptionContext.beforeEaches.push(beforeFn);
   }
 
   afterEach(afterFn: () => void): void {
-    if (this.isInsideUnit) {
+    if (this.currentItContext) {
       this.throwTesterError('Illegal context for afterEach()');
     }
     this.currentDescriptionContext.afterEaches.push(afterFn);
   }
 
   afterAll(afterFn: () => void): void {
-    if (this.isInsideUnit) {
+    if (this.currentItContext) {
       this.throwTesterError('Illegal context for afterAll()');
     }
     this.currentDescriptionContext.afterAlls.push(afterFn);
@@ -124,7 +124,7 @@ export default class Tester {
   }
 
   it(unitTestName: string, testFn: () => void): void {
-    if (this.isInsideUnit) {
+    if (this.currentItContext) {
       this.throwTesterError(
           'Cannot nest it() units. Use a describe() for the outer.');
     }
@@ -141,7 +141,7 @@ export default class Tester {
     let failureOutput: string|undefined;
 
     try {
-      this.isInsideUnit = true;
+      this.currentItContext = {spies: []};
       testFn();
       success = true;
       this.currentDescriptionContext.successCount++;
@@ -156,7 +156,8 @@ export default class Tester {
       this.dedent();
       this.currentDescriptionContext.failureCount++;
     } finally {
-      this.isInsideUnit = false;
+      for (const spy of this.currentItContext.spies) spy.reset();
+      this.currentItContext = null;
     }
 
     for (const context of this.descriptionContextStack) {
@@ -181,14 +182,17 @@ export default class Tester {
 
   spyOn<TObj, TProp extends keyof TObj>(object: TObj, method: TProp):
       Spy<TObj, TProp> {
-    if (this.isInsideUnit) {
-      this.throwTesterError('Spies cannot be installed inside unit tests.');
-    }
     if (typeof object[method] !== 'function') {
       this.throwTesterError('Can only spy on functions');
     }
     const spy = new Spy(object, method);
-    this.currentDescriptionContext.spies.push(spy);
+
+    if (this.currentItContext) {
+      this.currentItContext.spies.push(spy);
+    } else {
+      this.currentDescriptionContext.spies.push(spy);
+    }
+    
     return spy;
   }
 
@@ -255,6 +259,10 @@ export interface DescriptionContext {
   successCount: number,
   failureCount: number,
   output: string[];
+  spies: Spy<any, any>[];
+}
+
+export interface ItContext {
   spies: Spy<any, any>[];
 }
 

@@ -106,115 +106,114 @@ export default class ConfigTest implements Test {
     t.describe('validate throws for', () => {
       t.it('neither rent nor loan config', () => {
         t.expect(() => Config.getLoanConfigForTest({loanConfig: undefined}))
-            .toThrow();
+            .toThrow('No renter or borrower config');
       });
 
       t.it('both rent and loan config', () => {
         t.expect(
             () => Config.getLoanConfigForTest(
                 {rentConfig: Config.DEFAULT.rentConfig}))
-            .toThrow();
+            .toThrow('Both renter and borrower config');
       });
 
       t.it('negative day of month', () => {
         t.expect(
             () => Config.getLoanConfigForTest(
                 undefined, {loanConfig: {interestDayOfMonth: -10}}))
-            .toThrow();
+            .toThrow('Day of month');
 
         t.expect(
           () => Config.getRentConfigForTest(
               undefined, {rentConfig: {dueDayOfMonth: -1}}))
-          .toThrow();
+          .toThrow('Day of month');
       });
 
       t.it('day of month too high', () => {
         t.expect(
             () => Config.getLoanConfigForTest(
                 undefined, {loanConfig: {interestDayOfMonth: 29}}))
-            .toThrow();
+            .toThrow('Day of month');
 
         t.expect(
           () => Config.getRentConfigForTest(
               undefined, {rentConfig: {dueDayOfMonth: 100}}))
-          .toThrow();
+          .toThrow('Day of month');
       });
 
       t.it('invalid interest rate', () => {
         t.expect(
             () => Config.getLoanConfigForTest(
                 undefined, {loanConfig: {interestRate: -0.04}}))
-            .toThrow();
+            .toThrow('Interest rate');
 
         t.expect(
             () => Config.getLoanConfigForTest(
                 undefined, {loanConfig: {interestRate: 4.5}}))
-            .toThrow();
+            .toThrow('Interest rate');
       });
 
       t.it('no payment types', () => {
         t.expect(
             () => Config.getLoanConfigForTest(
                 undefined, {searchQuery: {paymentTypes: []}}))
-            .toThrow();
+            .toThrow('At least one payment type');
       });
 
       t.it('no search query name', () => {
         t.expect(
             () => Config.getLoanConfigForTest(
                 undefined, {searchQuery: {searchName: ''}}))
-            .toThrow();
+            .toThrow('Search query name is required');
       });
 
       t.it('no customer display name', () => {
         t.expect(() => Config.getLoanConfigForTest({customerDisplayName: ''}))
-            .toThrow();
+            .toThrow('Customer display name is required');
       });
 
       t.it('no customer emails', () => {
         t.expect(() => Config.getLoanConfigForTest({customerEmails: []}))
-            .toThrow();
+            .toThrow('At least one customer email is required');
       });
 
       t.it('invalid customer emails', () => {
         t.expect(
             () => Config.getLoanConfigForTest(
                 {customerEmails: ['alpha@beta.gamma', 'hello']}))
-            .toThrow();
+            .toThrow('Invalid email format');
       });
 
       t.it('no bot email display name', () => {
         t.expect(() => Config.getLoanConfigForTest({emailDisplayName: ''}))
-            .toThrow();
+            .toThrow('Email display name is required');
       });
 
       t.it('invalid email ccs', () => {
         t.expect(
             () => Config.getLoanConfigForTest(
                 {emailCCs: ['alpha@beta.gamma', 'hello']}))
-            .toThrow();
+            .toThrow('Invalid email format');
       });
 
       t.it('invalid email bccs', () => {
         t.expect(
             () => Config.getLoanConfigForTest(
                 {emailBCCs: ['alpha@beta.gamma', 'hello']}))
-            .toThrow();
+            .toThrow('Invalid email format');
       });
 
       t.it('invalid link to sheet href', () => {
         t.expect(
             () => Config.getLoanConfigForTest(
-                {linkToSheetHref: 'alpha@beta.gamma'}))
-            .toThrow();
+                {linkToSheetHref: 'not-a-url'}))
+            .toThrow('Invalid link');
+      });
+
+      t.it('link to sheet without href', () => {
         t.expect(
             () => Config.getLoanConfigForTest(
-                {linkToSheetHref: undefined}))
-            .not.toThrow();
-        t.expect(
-            () => Config.getLoanConfigForTest(
-                {linkToSheetHref: Config.DEFAULT.linkToSheetHref}))
-            .not.toThrow();
+                {linkToSheetText: 'balance sheet', linkToSheetHref: undefined}))
+            .toThrow('Link text is useless without href');
       });
     });
   }

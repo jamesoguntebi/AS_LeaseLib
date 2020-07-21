@@ -99,29 +99,48 @@ export default class EmailSenderTest implements Test{
         });
 
         t.describe('link to balance sheet', () => {
-          t.describe('when linkToSheetHref is present', () => {
-            t.beforeAll(() => t.setConfig(Config.getLoanConfigForTest({
-              linkToSheetHref: Config.DEFAULT.linkToSheetHref,
-              linkToSheetText: 'Crazy conspicuous text',
-            })));
-
-            t.it('shows', () => {
-              EmailSender.sendPaymentThanks(1);
+          t.it('shows when link config is present', () => {
+            t.setConfig(Config.DEFAULT);
+            EmailSender.sendPaymentThanks(1);
               
-              this.expectSendMailToHaveBeenCalledLike(
+            this.expectSendMailToHaveBeenCalledLike(
                 t, (params: SendEmailParameters) => {
                   t.expect(params[3].htmlBody).toContain('See balance sheet');
-                  t.expect(params[3].htmlBody).toContain(
-                      'Crazy conspicuous text');
                   return true;
                 });
-            });
+          });
 
-            t.it('falls back to href when no text', () => {
-              // Enable spyOn within it()
-              // - new ItContext
-              // - simplify a bunch of tests to remove wrapping describe()
-            });
+          t.it('falls back to href for display text', () => {
+            t.setConfig(
+                Config.getLoanConfigForTest({linkToSheetText: undefined}));
+            EmailSender.sendPaymentThanks(1);
+            const href = Config.get().linkToSheetHref;
+              
+            this.expectSendMailToHaveBeenCalledLike(
+                t, (params: SendEmailParameters) => {
+                  const {htmlBody} = params[3];
+                  t.expect(htmlBody).toContain('See balance sheet');
+                  t.expect(htmlBody).toContain(`${href}    </a>`);
+                  return true;
+                });
+            // Enable spyOn within it()
+            // - new ItContext
+            // - simplify a bunch of tests to remove wrapping describe()
+          });
+
+          t.it('hides when link config is not present', () => {
+            t.setConfig(Config.getLoanConfigForTest({
+              linkToSheetHref: undefined, 
+              linkToSheetText: undefined,
+            }));
+            EmailSender.sendPaymentThanks(1);
+              
+            this.expectSendMailToHaveBeenCalledLike(
+                t, (params: SendEmailParameters) => {
+                  const {htmlBody} = params[3];
+                  t.expect(htmlBody).not.toContain('See balance sheet');
+                  return true;
+                });
           });
         });
       });

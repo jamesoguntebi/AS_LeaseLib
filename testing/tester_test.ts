@@ -281,10 +281,24 @@ export default class TesterTest extends SimpleTest {
 
     if (object.targetFn() !== 'a') this.fail();
 
+    t.it('t1', () => {
+      t.spyOn(object, 'targetFn').and.returnValue('a1');
+      if (object.targetFn() !== 'a1') this.fail();
+    });
+
+    if (object.targetFn() !== 'a') this.fail();
+
     t.spyOn(object, 'targetFn').and.returnValue('b');
     if (object.targetFn() !== 'b') this.fail();
 
     t.describe('d', () => {
+      if (object.targetFn() !== 'b') this.fail();
+
+      t.it('t2', () => {
+        t.spyOn(object, 'targetFn').and.returnValue('b1');
+        if (object.targetFn() !== 'b1') this.fail();
+      });
+  
       if (object.targetFn() !== 'b') this.fail();
 
       t.spyOn(object, 'targetFn').and.returnValue('c');
