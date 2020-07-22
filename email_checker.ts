@@ -8,6 +8,9 @@ type GmailMessage = GoogleAppsScript.Gmail.GmailMessage;
 type GmailThread = GoogleAppsScript.Gmail.GmailThread;
 
 export default class EmailChecker {
+  // James Apps Script - Lease Lib - Email Checker -
+  // Processed email pending label update
+  private static readonly PROPERTY_KEY = 'jas_ll_ec_peplu';
   static readonly PENDING_LABEL_NAME = 'AS Payment Process Pending';
   static readonly DONE_LABEL_NAME = 'AS Payment Processed';
 
@@ -49,8 +52,13 @@ export default class EmailChecker {
     }
     const doneLabel =
         EmailChecker.assertLabel(EmailChecker.DONE_LABEL_NAME);
+    const alreadyProcessed =
+        EmailChecker.getAllProcessedEmailsPendingLabelUpdate();
+    let tryUpdateOldProcessedThreadLabels = false;
 
     for (const thread of pendingThreads) {
+      if (alreadyProcessed.has(thread.getId())) continue;
+
       for (const message of thread.getMessages()) {
         for (const paymentType of Config.get().searchQuery.paymentTypes) {
           const parser = EmailChecker.PARSERS.get(paymentType);
@@ -65,12 +73,41 @@ export default class EmailChecker {
             EmailSender.sendPaymentThanks(paymentAmount);
             Logger.log(
                 `Processed email with subject: '${message.getSubject()}'`);
-            thread.removeLabel(pendingLabel);
-            thread.addLabel(doneLabel);
+
+            try {
+              thread.removeLabel(pendingLabel);
+              thread.addLabel(doneLabel);
+
+              // This means that label updates worked. Try to update labels for
+              // awaiting threads.
+              tryUpdateOldProcessedThreadLabels = true;
+            } catch {
+              Logger.log(`Updating labels for thread with message subject ${
+                  message.getSubject()} failed.`);
+              EmailChecker.addProcessedEmailPendingLabelUpdate(thread.getId());
+            }
             break;
           }
         }
       }
+    }
+
+    if (tryUpdateOldProcessedThreadLabels) {
+      for (const threadId of alreadyProcessed) {
+        const thread = GmailApp.getThreadById(threadId);
+        try {
+          thread.removeLabel(pendingLabel);
+          thread.addLabel(doneLabel);
+          Logger.log('Updated labels for thread that failed label update ' +
+              'previously.');
+          alreadyProcessed.delete(threadId);
+        } catch {
+          Logger.log('Expected label update to succeed. But it failed.')
+        }
+      }
+      PropertiesService.getScriptProperties().setProperty(
+          EmailChecker.PROPERTY_KEY,
+          JSON.stringify(Array.from(alreadyProcessed)));
     }
   }
 
@@ -141,6 +178,33 @@ export default class EmailChecker {
     const label = GmailApp.getUserLabelByName(labelName);
     if (!label) throw new Error(`Gmail label ${labelName} not found.`);
     return label;
+  }
+
+  private static addProcessedEmailPendingLabelUpdate(threadId: string) {
+    const existingIds = EmailChecker.getAllProcessedEmailsPendingLabelUpdate();
+    existingIds.add(threadId);
+    PropertiesService.getScriptProperties().setProperty(
+        EmailChecker.PROPERTY_KEY, JSON.stringify(Array.from(existingIds)));
+  }
+
+  private static getAllProcessedEmailsPendingLabelUpdate(): Set<string> {
+    const propertyValue = PropertiesService.getScriptProperties().getProperty(
+        EmailChecker.PROPERTY_KEY);
+    if (!propertyValue) return new Set();
+
+    try {
+      const idList = JSON.parse(propertyValue);
+      if (idList instanceof Array &&
+        idList.every(id => typeof id === 'string')) {
+        return new Set(idList);
+      } else {
+        throw new Error(`Stored processed email thread id list has ` +
+            `incorrect format: ${propertyValue}`);
+      }
+    } catch (e) {
+      Logger.log('Failure to parse processed email thread id list.');
+      throw e;
+    }
   }
 }
 

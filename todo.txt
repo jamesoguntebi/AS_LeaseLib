@@ -7,9 +7,6 @@
 
 P0:
 - ensure all client sheets have permissions
-- when checking an email fails, add a Failed Label
-- if updating Labels fails, add to Properties
-  - don't try to check emails for failed messages in Properties
 - refactor out general AS lib
   - generate typescript types declaration:
     https://www.typescriptlang.org/docs/handbook/declaration-files/publishing.html
@@ -73,6 +70,9 @@ P0:
   - probably better to run some unit tests against the sheet (obsolete)
   - require validation when registering sheet
     - add BalanceSheet validation
+- when checking an email fails, add a Failed Label (obsolete)
+- if updating Labels fails, add to Properties
+  - don't try to check emails for failed messages in Properties
 
 P1:
 - add option to add a full payment
