@@ -10,6 +10,11 @@ P0:
 - refactor out general AS lib
   - generate typescript types declaration:
     https://www.typescriptlang.org/docs/handbook/declaration-files/publishing.html
+  - claspignore
+    - test files
+    - whatever else comes up in clasp --watch
+  - the imported library name in AS editor ui maybe must match the namespace name
+    - in TS declarations
 - update README
 
 P1:
