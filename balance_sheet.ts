@@ -1,13 +1,14 @@
 import Config from "./config";
-import JasSpreadsheet from "./jas_spreadsheet";
-import { CellData } from "./jas_range";
+import { SSLib } from "ss_api"
 
 export default class BalanceSheet {
   static getBalance(): number { 
-    const sheet = JasSpreadsheet.findSheet('balance');
+    const sheet = SSLib.JasSpreadsheet.findSheet(
+        'balance', _JasLibContext.spreadsheetId);
     const firstDataRow = sheet.getFrozenRows() + 1;
-    const balanceColumn = JasSpreadsheet.findColumn('balance', sheet);
-    return new CellData(sheet.getRange(firstDataRow, balanceColumn)).number();
+    const balanceColumn = SSLib.JasSpreadsheet.findColumn('balance', sheet);
+    return new SSLib.CellData(
+        sheet.getRange(firstDataRow, balanceColumn)).number();
   }
 
   /** Throws on validation failure. */
@@ -17,10 +18,11 @@ export default class BalanceSheet {
     BalanceSheet.getBalance();
 
     // Assert the other columns exist.
-    const sheet = JasSpreadsheet.findSheet('balance');
-    JasSpreadsheet.findColumn('date', sheet);
-    JasSpreadsheet.findColumn('description', sheet);
-    JasSpreadsheet.findColumn('transaction', sheet);
+    const sheet = SSLib.JasSpreadsheet.findSheet(
+        'balance', _JasLibContext.spreadsheetId);
+    SSLib.JasSpreadsheet.findColumn('date', sheet);
+    SSLib.JasSpreadsheet.findColumn('description', sheet);
+    SSLib.JasSpreadsheet.findColumn('transaction', sheet);
   }
 
   /**
@@ -63,16 +65,17 @@ export default class BalanceSheet {
   }
 
   static insertRow(balanceRow: BalanceRow) {
-    const sheet = JasSpreadsheet.findSheet('balance');
+    const sheet = SSLib.JasSpreadsheet.findSheet(
+        'balance', _JasLibContext.spreadsheetId);
     const headerRow = sheet.getFrozenRows();
     sheet.insertRowAfter(headerRow);
     const newRow = headerRow + 1;
-    const balanceColumn = JasSpreadsheet.findColumn('balance', sheet);
+    const balanceColumn = SSLib.JasSpreadsheet.findColumn('balance', sheet);
     const previousBalanceCellA1 =
         sheet.getRange(newRow + 1, balanceColumn).getA1Notation();
 
     const setCell = (columnName: string, value: any) => {
-      const column = JasSpreadsheet.findColumn(columnName, sheet);
+      const column = SSLib.JasSpreadsheet.findColumn(columnName, sheet);
       sheet.getRange(newRow, column).setValue(value);
     };
 
@@ -92,8 +95,8 @@ export default class BalanceSheet {
           `= if (${prevBal} >= 0, - ${prevBal} * ${interestRate} / 12, 0)`);
     }
 
-    const transactionCell =
-        sheet.getRange(newRow, JasSpreadsheet.findColumn('transaction', sheet));
+    const transactionCell = sheet.getRange(
+        newRow, SSLib.JasSpreadsheet.findColumn('transaction', sheet));
     setCell('balance',
         `= ${previousBalanceCellA1} - ${transactionCell.getA1Notation()}`);
   }

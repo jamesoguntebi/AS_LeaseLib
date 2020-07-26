@@ -1,8 +1,8 @@
 import Config from './config';
 import Tester from './testing/tester';
 import BalanceSheet, { BalanceRow } from './balance_sheet';
-import JasSpreadsheet from './jas_spreadsheet';
 import { JASLib } from "jas_api"
+import { SSLib } from "ss_api"
 
 type Sheet = GoogleAppsScript.Spreadsheet.Sheet;
 
@@ -21,6 +21,10 @@ export default class BalanceSheetTest implements JASLib.Test {
   }
 
   run(t: Tester) {
+    const getSpreadsheet = () => {
+      return SSLib.JasSpreadsheet.getSpreadsheet(_JasLibContext.spreadsheetId);
+    };
+
     const baseConfigSpecs = [
       {
         configType: 'rent config',
@@ -137,13 +141,14 @@ export default class BalanceSheetTest implements JASLib.Test {
      * This test operates on a real sheet. So it is difficult to clean up.
      */
     t.describe('insertRow', () => {
-      const spreadsheet = JasSpreadsheet.getSpreadsheet();
+      const spreadsheet = getSpreadsheet();
       let originalBalanceSheet: Sheet;
       let sheet: Sheet;
       const initialBalance = 500;
 
       t.beforeAll(() => {
-        originalBalanceSheet = JasSpreadsheet.findSheet('balance');
+        originalBalanceSheet = SSLib.JasSpreadsheet.findSheet(
+            'balance', _JasLibContext.spreadsheetId);
         // This name should not match query 'balance':
         originalBalanceSheet.setName('__test_backup__');
       });
@@ -153,7 +158,7 @@ export default class BalanceSheetTest implements JASLib.Test {
         sheet = spreadsheet.duplicateActiveSheet();
         sheet.setName('Balance');
 
-        const balanceColumn = JasSpreadsheet.findColumn('balance', sheet);
+        const balanceColumn = SSLib.JasSpreadsheet.findColumn('balance', sheet);
         const firstDataRow = sheet.getFrozenRows() + 1;
         sheet.getRange(firstDataRow, balanceColumn).setValue(initialBalance);
 
@@ -182,7 +187,7 @@ export default class BalanceSheetTest implements JASLib.Test {
         ];
         const dataRow = sheet.getFrozenRows() + 1;
         for (const { colName, expectedValue } of checkSpecs) {
-          const column = JasSpreadsheet.findColumn(colName, sheet);
+          const column = SSLib.JasSpreadsheet.findColumn(colName, sheet);
           t.expect(sheet.getRange(dataRow, column).getValue()).toEqual(
             expectedValue
           );
@@ -224,12 +229,13 @@ export default class BalanceSheetTest implements JASLib.Test {
     });
 
     t.describe('validateActiveSheet', () => {
-      const spreadsheet = JasSpreadsheet.getSpreadsheet();
+      const spreadsheet = getSpreadsheet();
       let originalBalanceSheet: Sheet;
       let sheet: Sheet;
 
       t.beforeAll(() => {
-        originalBalanceSheet = JasSpreadsheet.findSheet('balance');
+        originalBalanceSheet = SSLib.JasSpreadsheet.findSheet(
+            'balance', _JasLibContext.spreadsheetId);
         // This name should not match query 'balance':
         originalBalanceSheet.setName('__test_backup__');
       });
@@ -263,7 +269,7 @@ export default class BalanceSheetTest implements JASLib.Test {
       });
 
       t.it('throws for invalid last balance cell', () => {
-        const balanceColumn = JasSpreadsheet.findColumn('balance', sheet);
+        const balanceColumn = SSLib.JasSpreadsheet.findColumn('balance', sheet);
         const firstDataRow = sheet.getFrozenRows() + 1;
         sheet.getRange(firstDataRow, balanceColumn).setValue('start balance');
         t.expect(() => BalanceSheet.validateActiveSheet()).toThrow();
@@ -271,22 +277,24 @@ export default class BalanceSheetTest implements JASLib.Test {
 
       t.describe('when checking columns', () => {
         t.it('throws for missing date', () => {
-          sheet.deleteColumn(JasSpreadsheet.findColumn('date', sheet));
+          sheet.deleteColumn(SSLib.JasSpreadsheet.findColumn('date', sheet));
           t.expect(() => BalanceSheet.validateActiveSheet()).toThrow();
         });
 
         t.it('throws for missing transaction', () => {
-          sheet.deleteColumn(JasSpreadsheet.findColumn('transaction', sheet));
+          sheet.deleteColumn(
+              SSLib.JasSpreadsheet.findColumn('transaction', sheet));
           t.expect(() => BalanceSheet.validateActiveSheet()).toThrow();
         });
 
         t.it('throws for missing balance', () => {
-          sheet.deleteColumn(JasSpreadsheet.findColumn('balance', sheet));
+          sheet.deleteColumn(SSLib.JasSpreadsheet.findColumn('balance', sheet));
           t.expect(() => BalanceSheet.validateActiveSheet()).toThrow();
         });
 
         t.it('throws for missing description', () => {
-          sheet.deleteColumn(JasSpreadsheet.findColumn('description', sheet));
+          sheet.deleteColumn(
+              SSLib.JasSpreadsheet.findColumn('description', sheet));
           t.expect(() => BalanceSheet.validateActiveSheet()).toThrow();
         });
       });

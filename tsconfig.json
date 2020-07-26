@@ -6,7 +6,4 @@
     "noUnusedLocals": true,
     "outFile": "temp_compiled.js"
   },
-  "exclude": [
-    "./jas_lib.d.ts"
-  ]
 }

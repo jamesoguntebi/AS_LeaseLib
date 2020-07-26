@@ -1,7 +1,7 @@
 import Tester from "./testing/tester";
 import Config, { ConfigParams, ConfigField } from "./config";
-import JasSpreadsheet from "./jas_spreadsheet";
 import { JASLib } from "jas_api"
+import { SSLib } from "ss_api"
 
 type Range = GoogleAppsScript.Spreadsheet.Range;
 
@@ -10,9 +10,10 @@ export default class ConfigTest implements JASLib.Test {
 
   private storedConfigValues: Map<string, unknown[]> = new Map();
 
-  private readonly configSheet = JasSpreadsheet.findSheet('config');
+  private readonly configSheet =
+      SSLib.JasSpreadsheet.findSheet('config', _JasLibContext.spreadsheetId);
   private readonly valueColumn =
-      JasSpreadsheet.findColumn('value', this.configSheet);
+      SSLib.JasSpreadsheet.findColumn('value', this.configSheet);
 
   private replaceConfigValue(
       t: Tester, configName: string, replaceFn: (r: Range) => void) {
@@ -21,14 +22,14 @@ export default class ConfigTest implements JASLib.Test {
     }
 
     t.beforeAll(() => {
-      const row = JasSpreadsheet.findRow(configName, this.configSheet);
+      const row = SSLib.JasSpreadsheet.findRow(configName, this.configSheet);
       const range = this.configSheet.getRange(row, this.valueColumn);
       this.storedConfigValues.get(configName).push(range.getValue());
       replaceFn(range);
     });
 
     t.afterAll(() => {
-      const row = JasSpreadsheet.findRow(configName, this.configSheet);
+      const row = SSLib.JasSpreadsheet.findRow(configName, this.configSheet);
       const range = this.configSheet.getRange(row, this.valueColumn);
       range.setValue(this.storedConfigValues.get(configName).pop());
     });

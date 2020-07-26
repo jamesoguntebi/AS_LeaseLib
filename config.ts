@@ -1,5 +1,4 @@
-import JasSpreadsheet from "./jas_spreadsheet";
-import { CellData } from "./jas_range";
+import { SSLib } from "ss_api"
 
 export default class Config {
   static readonly PaymentTypeStrings: Record<string, string> = {
@@ -11,12 +10,13 @@ export default class Config {
 
   static get(): ConfigParams {
     const F = Config.FIELD;
-    const configSheet = JasSpreadsheet.findSheet('config');
-    const valueColumn = JasSpreadsheet.findColumn('value', configSheet);
+    const configSheet = SSLib.JasSpreadsheet.findSheet(
+        'config', _JasLibContext.spreadsheetId);
+    const valueColumn = SSLib.JasSpreadsheet.findColumn('value', configSheet);
 
     const getCellData = (configField: ConfigField) => {
-      const configRow = JasSpreadsheet.findRow(configField, configSheet);
-      return new CellData(configSheet.getRange(configRow, valueColumn));
+      const configRow = SSLib.JasSpreadsheet.findRow(configField, configSheet);
+      return new SSLib.CellData(configSheet.getRange(configRow, valueColumn));
     };
 
     let rentConfig: RentConfig;

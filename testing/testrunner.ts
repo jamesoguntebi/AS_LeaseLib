@@ -2,8 +2,6 @@ import BalanceSheetTest from "../balance_sheet_test";
 import EmailSenderTest from "../email_sender_test";
 import EmailCheckerTest from "../email_checker_test";
 import ConfigTest from "../config_test";
-import JasRangeTest from "../jas_range_test";
-import JasSpreadsheetTest from "../jas_spreadsheet_test";
 import Tester from "./tester";
 import ClientSheetManagerTest from "../client_sheet_manager_test";
 import { JASLib } from "jas_api"
@@ -53,8 +51,6 @@ export default class TestRunner {
       ConfigTest,
       EmailCheckerTest,
       EmailSenderTest,
-      JasRangeTest,
-      JasSpreadsheetTest,
     ];
 
     if (testClassNames) {
