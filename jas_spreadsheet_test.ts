@@ -1,10 +1,10 @@
 import JasSpreadsheet from './jas_spreadsheet';
 import Tester from './testing/tester';
-import { Test } from './testing/testrunner';
+import { JASLib } from "jas_api"
 
 type Sheet = GoogleAppsScript.Spreadsheet.Sheet;
 
-export default class JasSpreadsheetTest implements Test {
+export default class JasSpreadsheetTest implements JASLib.Test {
   readonly name = 'JasSpreadsheetTest';
 
   run(t: Tester) {
@@ -78,8 +78,10 @@ export default class JasSpreadsheetTest implements Test {
       });
 
       t.it('does fuzzy matching, ignoring case', () => {
-        t.expect(() => JasSpreadsheet.findRow('PAYMENT T', sheet)).not.toThrow();
-        t.expect(() => JasSpreadsheet.findRow('EMAIL DIS', sheet)).not.toThrow();
+        t.expect(() => JasSpreadsheet.findRow('PAYMENT T', sheet))
+            .not.toThrow();
+        t.expect(() => JasSpreadsheet.findRow('EMAIL DIS', sheet))
+            .not.toThrow();
       });
 
       t.it('throws for absent row', () => {

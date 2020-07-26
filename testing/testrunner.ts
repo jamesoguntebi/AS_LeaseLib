@@ -6,29 +6,32 @@ import JasRangeTest from "../jas_range_test";
 import JasSpreadsheetTest from "../jas_spreadsheet_test";
 import Tester from "./tester";
 import ClientSheetManagerTest from "../client_sheet_manager_test";
+import { JASLib } from "jas_api"
 
-export function runTests(params: TestRunnerParams | string = {}) {
+export function runTests(params: TestRunnerOptions | string = {}) {
   if (typeof params === 'string') {
     params = {testClassNames: params.split(',')};
   }
-  TestRunner.run(params as TestRunnerParams);
+  TestRunner.run(params as TestRunnerOptions);
   return Logger.getLog();
 }
 
-export function runTestsAndHideFailures(
-    params: TestRunnerParams | string = {}) {
+export function runTestsAndHideSuccesses(
+    params: TestRunnerOptions | string = {}) {
   if (typeof params === 'string') {
-    params = {testClassNames: params.split(','), verbose: false};
+    params = {testClassNames: params.split(',')};
   }
-  TestRunner.run(params as TestRunnerParams);
+  params.showSuccesses = false;
+  TestRunner.run(params as TestRunnerOptions);
   return Logger.getLog();
 }
 
-export function runTestsWithLogs(params: TestRunnerParams | string = {}) {
+export function runTestsWithLogs(params: TestRunnerOptions | string = {}) {
   if (typeof params === 'string') {
-    params = {testClassNames: params.split(','), suppressLogs: false};
+    params = {testClassNames: params.split(',')};
   }
-  TestRunner.run(params as TestRunnerParams);
+  params.suppressLogs = false;
+  TestRunner.run(params as TestRunnerOptions);
   return Logger.getLog();
 }
 
@@ -39,12 +42,12 @@ export default class TestRunner {
   static run({
     spreadsheetId = TestRunner.LEASE_TEMPLATE_SPREADSHEET_ID,
     suppressLogs = true,
-    verbose = true,
+    showSuccesses = true,
     testClassNames = undefined,
-  }: TestRunnerParams) {
+  }: TestRunnerOptions) {
     _JasLibContext.spreadsheetId = spreadsheetId;
 
-    let testClasses: Array<new() => Test> = [
+    let testClasses: Array<new() => JASLib.Test> = [
       BalanceSheetTest,
       ClientSheetManagerTest,
       ConfigTest,
@@ -62,72 +65,14 @@ export default class TestRunner {
       }
     }
 
-    // Suppress logs inside tests.
-    const storedLogFn = Logger.log;
-    if (suppressLogs) {
-      Logger.log = (data: any): typeof Logger => {
-        return Logger;
-      };
-    }
+    const tests = testClasses.map(tc => new tc());
 
-    let successTotal = 0;
-    let failureTotal = 0;
-    const outputTotal = ['Testing...\n'];
-    const startTime = Date.now();
-
-    for (const testClass of testClasses) {
-      const testStartTime = Date.now();
-      const test = new testClass();
-      const tester = new Tester(verbose);
-      test.run(tester);
-      const {successCount, failureCount, output} = tester.finish();
-      successTotal += successCount;
-      failureTotal += failureCount;
-      const runTime = `(in ${Date.now() - testStartTime} ms)`;
-      if (!failureCount) {
-        outputTotal.push( `${test.name} ✓ ${runTime}`);
-      } else {
-        outputTotal.push(
-            `${test.name} - ${failureCount} failures ${runTime}`);
-      }
-      if (failureCount || verbose) outputTotal.push(...output, '');
-    }
-
-    outputTotal.push('');
-    outputTotal.push(
-        `Total -- ${TestRunner.getStats(successTotal, failureTotal)} ` +
-        `(in ${Date.now() - startTime} ms)`);
-    outputTotal.push('');
-
-    if (suppressLogs) Logger.log = storedLogFn;
-
-    if (outputTotal.length < 100) {
-      Logger.log(outputTotal.join('\n'));
-    } else {
-      const pages = Math.ceil(outputTotal.length / 100);
-      let page = 1;
-      while (outputTotal.length) {
-        Logger.log([
-          `Testing ... page ${page++}/${pages}`,
-          ...outputTotal.splice(0, 100)
-        ].join('\n'));
-      }
-    }
-  }
-  
-  private static getStats(success: number, failure: number): string {
-    return `${success + failure} run, ${success} pass, ${failure} fail`;
+    JASLib.TestRunner.run(tests,
+        {suppressLogs, showSuccesses, testerClass: Tester});
   }
 }
 
-export interface Test {
-  name: string;
-  run: (t: Tester) => void;
-}
-
-export interface TestRunnerParams {
+interface TestRunnerOptions extends JASLib.TestRunnerOptions {
   spreadsheetId?: string;
-  suppressLogs?: boolean;
   testClassNames?: string[];
-  verbose?: boolean;
 }

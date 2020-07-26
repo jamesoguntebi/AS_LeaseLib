@@ -1,11 +1,11 @@
-import { Test } from "./testing/testrunner";
 import Tester from "./testing/tester";
 import Config, { ConfigParams, ConfigField } from "./config";
 import JasSpreadsheet from "./jas_spreadsheet";
+import { JASLib } from "jas_api"
 
 type Range = GoogleAppsScript.Spreadsheet.Range;
 
-export default class ConfigTest implements Test {
+export default class ConfigTest implements JASLib.Test {
   readonly name: string = 'ConfigTest';
 
   private storedConfigValues: Map<string, unknown[]> = new Map();

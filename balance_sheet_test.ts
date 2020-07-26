@@ -1,13 +1,12 @@
 import Config from './config';
-import { Test } from './testing/testrunner';
 import Tester from './testing/tester';
 import BalanceSheet, { BalanceRow } from './balance_sheet';
 import JasSpreadsheet from './jas_spreadsheet';
+import { JASLib } from "jas_api"
 
 type Sheet = GoogleAppsScript.Spreadsheet.Sheet;
-type Spreadsheet = GoogleAppsScript.Spreadsheet.Spreadsheet;
 
-export default class BalanceSheetTest implements Test {
+export default class BalanceSheetTest implements JASLib.Test {
   readonly name = 'BalanceSheetTest';
 
   private expectInsertRowToHaveBeenCalledLike(

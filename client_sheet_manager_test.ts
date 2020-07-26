@@ -1,11 +1,10 @@
-import { Test } from "./testing/testrunner";
 import Tester from "./testing/tester";
 import Config from "./config";
 import BalanceSheet from "./balance_sheet";
 import ClientSheetManager from "./client_sheet_manager";
-import { FakeProperties } from "./testing/fakes";
+import { JASLib } from "jas_api"
 
-export default class ClientSheetManagerTest implements Test {
+export default class ClientSheetManagerTest implements JASLib.Test {
   readonly name = 'ClientSheetManagerTest';
 
   private expectRegisteredCount(t: Tester, expected: number) {
@@ -32,7 +31,7 @@ export default class ClientSheetManagerTest implements Test {
     });
 
     t.beforeEach(() => {
-      const fakeProperties = new FakeProperties();
+      const fakeProperties = new JASLib.FakeProperties();
       t.spyOn(PropertiesService, 'getScriptProperties').and
           .callFake(() => fakeProperties);
     });

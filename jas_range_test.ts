@@ -1,11 +1,11 @@
 import JasRange, { CellData } from './jas_range';
 import JasSpreadsheet from './jas_spreadsheet';
 import Tester from './testing/tester';
-import { Test } from './testing/testrunner';
+import { JASLib } from "jas_api"
 
 type Range = GoogleAppsScript.Spreadsheet.Range;
 
-export default class JasRangeTest implements Test {
+export default class JasRangeTest implements JASLib.Test {
   readonly name = 'JasRangeTest';
 
   run(t: Tester) {
@@ -48,7 +48,8 @@ export default class JasRangeTest implements Test {
 
       t.it('handles optional calls', () => {
         defaultRange.clear({contentsOnly: true});
-        t.expect(new CellData(defaultRange).stringOptional()).toEqual(undefined);
+        t.expect(new CellData(defaultRange).stringOptional())
+            .toEqual(undefined);
       });
 
       t.it('finds string array', () => {

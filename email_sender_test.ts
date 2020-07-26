@@ -1,12 +1,12 @@
-import { Test } from "./testing/testrunner";
 import Tester from "./testing/tester";
 import EmailSender from "./email_sender";
 import Config from "./config";
 import BalanceSheet from "./balance_sheet";
+import { JASLib } from "jas_api"
 
 type SendEmailParameters = Parameters<typeof GmailApp.sendEmail>;
 
-export default class EmailSenderTest implements Test{
+export default class EmailSenderTest implements JASLib.Test {
   readonly name: string = 'EmailSenderTest';
 
   private expectSendMailToHaveBeenCalledLike(

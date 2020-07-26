@@ -1,5 +1,11 @@
 {
   "dependencies": {
+    "libraries": [{
+      "userSymbol": "JASLib",
+      "libraryId": "1qlspIocP-I0BEU3Qp7iQyaoYpDEIQl5JqG13fSPFPx81MxPh1m-FJctN",
+      "version": "3",
+      "developmentMode": true
+    }]
   },
   "exceptionLogging": "STACKDRIVER",
   "executionApi": {
