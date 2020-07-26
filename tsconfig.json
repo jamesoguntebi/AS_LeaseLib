@@ -1,5 +1,12 @@
 {
   "compilerOptions": {
-    "noUnusedLocals": true
-  }
+    "downlevelIteration": true,
+    "lib": ["ES2017"],
+    "module": "System",
+    "noUnusedLocals": true,
+    "outFile": "temp_compiled.js"
+  },
+  "exclude": [
+    "./jas_lib.d.ts"
+  ]
 }
