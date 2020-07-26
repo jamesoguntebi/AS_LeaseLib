@@ -7,14 +7,6 @@
 
 P0:
 - ensure all client sheets have permissions
-- refactor out general AS lib
-  - generate typescript types declaration:
-    https://www.typescriptlang.org/docs/handbook/declaration-files/publishing.html
-  - claspignore
-    - test files
-    - whatever else comes up in clasp --watch
-  - the imported library name in AS editor ui maybe must match the namespace name
-    - in TS declarations
 - update README
 - fix printing dollar amounts: e.g. "$-500" in new balance thank you email
 
@@ -79,6 +71,14 @@ P0:
 - when checking an email fails, add a Failed Label (obsolete)
 - if updating Labels fails, add to Properties
   - don't try to check emails for failed messages in Properties
+- refactor out general AS lib
+  - generate typescript types declaration:
+    https://www.typescriptlang.org/docs/handbook/declaration-files/publishing.html
+  - claspignore
+    - test files
+    - whatever else comes up in clasp --watch
+  - the imported library name in AS editor ui maybe must match the namespace name
+    - in TS declarations
 
 P1:
 - add option to add a full payment
