@@ -16,6 +16,7 @@ P0:
   - the imported library name in AS editor ui maybe must match the namespace name
     - in TS declarations
 - update README
+- fix printing dollar amounts: e.g. "$-500" in new balance thank you email
 
 P1:
 - read all emails, and ask admin to verify emails that should be parsed
