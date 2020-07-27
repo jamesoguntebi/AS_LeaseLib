@@ -6,12 +6,12 @@
 
 <p>
   Thank you for your recent payment of
-  <strong>$<?= templateParams.paymentAmount ?></strong>.
+  <strong><?= templateParams.paymentAmount ?></strong>.
   Your balance is now
-  <strong <? if (templateParams.colorBalance) { ?>
-            style="color: #b34;"
+  <strong <? if (templateParams.balanceColor) { ?>
+            style="color: <?= templateParams.balanceColor ?>;"
           <? } ?>>
-    $<?= templateParams.balance ?>
+    <?= templateParams.balance ?>
   </strong>.
 </p>
 

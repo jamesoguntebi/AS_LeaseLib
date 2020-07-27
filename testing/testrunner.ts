@@ -63,8 +63,19 @@ export default class TestRunner {
 
     const tests = testClasses.map(tc => new tc());
 
+    // Suppress logs inside tests. JASLib will also replace Logger.log, but for
+    // some reason, that doesn not affect the Logger in this script's context.
+    const storedLogFn = Logger.log;
+    if (suppressLogs) {
+      Logger.log = (_: any): typeof Logger => {
+        return Logger;
+      };
+    }
+
     JASLib.TestRunner.run(tests,
         {suppressLogs, showSuccesses, testerClass: Tester});
+
+    if (suppressLogs) Logger.log = storedLogFn;
   }
 }
 

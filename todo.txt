@@ -21,6 +21,12 @@ P1:
   - with a config valid checkbox!
 - figure out how to differentiate between two types of payments from one person
   meant for two different spreadsheets
+  - labels
+- status at the top of the sheet
+  - current balance
+  - next interest date / next rent due date
+  - `With continued monthly payments of ${amount}, this will be done ${date}`
+  - can be done in one big merged cell. at least in thebut programatically?
 
 P2:
 - option to add partial payment

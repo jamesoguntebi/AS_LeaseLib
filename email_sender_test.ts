@@ -15,6 +15,19 @@ export default class EmailSenderTest implements JASLib.Test {
       t.matcher((args: unknown[]) => matcher(args as SendEmailParameters)));
   }
 
+  private expectSentMailToContain(
+      t: Tester, contents: string|string[], htmlOnly: boolean = false) {
+    this.expectSendMailToHaveBeenCalledLike(
+        t, (params: SendEmailParameters) => {
+          if (!Array.isArray(contents)) contents = [contents];
+          for (const content of contents) {
+            if (!htmlOnly) t.expect(params[2]).toContain(content);
+            t.expect(params[3].htmlBody).toContain(content);
+          }
+          return true;
+        });
+  }
+
   run(t: Tester) {
     t.beforeAll(() => {
       t.setConfig(Config.getLoanConfigForTest());
@@ -26,21 +39,34 @@ export default class EmailSenderTest implements JASLib.Test {
         t.spyOn(BalanceSheet, 'getBalance').and.returnValue(100);
       });
 
-      t.it('formats large numbers with comma', () => {
-        EmailSender.sendPaymentThanks(1500);
+      t.describe('when formatting money', () => {
+        t.it('adds commas in large numbers', () => {
+          EmailSender.sendPaymentThanks(1500);
+          this.expectSentMailToContain(t, '$1,500');
+        });
 
-        this.expectSendMailToHaveBeenCalledLike(
-            t, (params: SendEmailParameters) => {
-              t.expect(params[2]).toContain('1,500');
-              t.expect(params[3].htmlBody).toContain('1,500');
-              return true;
-            });
+        t.it('handles negative numbers', () => {
+          EmailSender.sendPaymentThanks(-50);
+          this.expectSentMailToContain(t, '-$50');
+        });
+
+        t.it('rounds decimals', () => {
+          EmailSender.sendPaymentThanks(15.12848);
+          this.expectSentMailToContain(t, '$15.13');
+        });
+
+        t.it('combines correct formatting', () => {
+          EmailSender.sendPaymentThanks(-4119283.12848);
+          this.expectSentMailToContain(t, '-$4,119,283.13');
+        });
       });
 
       const RED_BALANCE_STRING = 'style="color: #b34;"';
+      const GREEN_BALANCE_STRING = 'style="color: #192;"';
 
       const balanceSpecs = [
         {balance: 100, type: 'positive'},
+        {balance: 0, type: 'no'},
         {balance: -100, type: 'negative'},
       ];
       const configSepcs = [
@@ -58,8 +84,10 @@ export default class EmailSenderTest implements JASLib.Test {
                 });
                 
                 const expectRed = configType === 'rent' && balance > 0;
-                const testName = expectRed ?
-                    `shows balance in red` : `does not show balance in red`;
+                const expectGreen = configType === 'rent' && balance < 0;
+                const testName = expectRed ? `shows balance in red` :
+                    expectGreen ? `shows balance in green` :
+                    `shows balance in black`;
                 t.it(testName, () => {
                   EmailSender.sendPaymentThanks(1);
           
@@ -68,8 +96,13 @@ export default class EmailSenderTest implements JASLib.Test {
                         const expectation = t.expect(params[3].htmlBody);
                         if (expectRed) {
                           expectation.toContain(RED_BALANCE_STRING);
+                          expectation.not.toContain(GREEN_BALANCE_STRING);
+                        } else if (expectGreen) {
+                          expectation.toContain(GREEN_BALANCE_STRING);
+                          expectation.not.toContain(RED_BALANCE_STRING);
                         } else {
                           expectation.not.toContain(RED_BALANCE_STRING);
+                          expectation.not.toContain(GREEN_BALANCE_STRING);
                         }
                         return true;
                       });
@@ -102,12 +135,7 @@ export default class EmailSenderTest implements JASLib.Test {
           t.it('shows when link config is present', () => {
             t.setConfig(Config.DEFAULT);
             EmailSender.sendPaymentThanks(1);
-              
-            this.expectSendMailToHaveBeenCalledLike(
-                t, (params: SendEmailParameters) => {
-                  t.expect(params[3].htmlBody).toContain('See balance sheet');
-                  return true;
-                });
+            this.expectSentMailToContain(t, 'See balance sheet');
           });
 
           t.it('falls back to href for display text', () => {
@@ -116,16 +144,8 @@ export default class EmailSenderTest implements JASLib.Test {
             EmailSender.sendPaymentThanks(1);
             const href = Config.get().linkToSheetHref;
               
-            this.expectSendMailToHaveBeenCalledLike(
-                t, (params: SendEmailParameters) => {
-                  const {htmlBody} = params[3];
-                  t.expect(htmlBody).toContain('See balance sheet');
-                  t.expect(htmlBody).toContain(`${href}    </a>`);
-                  return true;
-                });
-            // Enable spyOn within it()
-            // - new ItContext
-            // - simplify a bunch of tests to remove wrapping describe()
+            this.expectSentMailToContain(t,
+                ['See balance sheet', `${href}    </a>`], true /* htmlOnly */);
           });
 
           t.it('hides when link config is not present', () => {

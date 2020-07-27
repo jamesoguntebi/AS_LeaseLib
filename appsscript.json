@@ -4,14 +4,14 @@
       {
         "userSymbol": "JASLib",
         "libraryId": "1qlspIocP-I0BEU3Qp7iQyaoYpDEIQl5JqG13fSPFPx81MxPh1m-FJctN",
-        "version": "3",
-        "developmentMode": true
+        "version": "5",
+        "developmentMode": false
       },
       {
         "userSymbol": "SSLib",
         "libraryId": "1aTGsRDaXIHXpmR9yUhop_JN-fE0FS0E7x2bMKOtR9HFO-mVdIHBytALE",
-        "version": "1",
-        "developmentMode": true
+        "version": "3",
+        "developmentMode": false
       }
     ]
   },
