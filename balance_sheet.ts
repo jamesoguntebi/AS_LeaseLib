@@ -30,7 +30,7 @@ export default class BalanceSheet {
    * day.
    */
   static maybeAddRentOrInterestTransaction() {
-    const currentDayOfMonth = new Date().getDate();
+    const currentDayOfMonth = this.getCurrentDayOfMonth();
     const config = Config.get();
 
     if (config.rentConfig?.dueDayOfMonth === currentDayOfMonth) {
@@ -99,6 +99,11 @@ export default class BalanceSheet {
         newRow, SSLib.JasSpreadsheet.findColumn('transaction', sheet));
     setCell('balance',
         `= ${previousBalanceCellA1} - ${transactionCell.getA1Notation()}`);
+  }
+
+  /** Separate method for easier testing. */
+  static getCurrentDayOfMonth(): number {
+    return new Date().getDate();
   }
 }
 

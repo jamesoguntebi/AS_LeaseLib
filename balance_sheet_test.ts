@@ -21,6 +21,9 @@ export default class BalanceSheetTest implements JASLib.Test {
   }
 
   run(t: Tester) {
+    // This should be in [1, 27] so that we can add 1 and still be in [1, 28].
+    const configTransactionDayOfMonth = 5;
+
     const getSpreadsheet = () => {
       return SSLib.JasSpreadsheet.getSpreadsheet(_JasLibContext.spreadsheetId);
     };
@@ -30,7 +33,7 @@ export default class BalanceSheetTest implements JASLib.Test {
         configType: 'rent config',
         config: Config.getRentConfigForTest({
           rentConfig: {
-            dueDayOfMonth: new Date().getDate(),
+            dueDayOfMonth: configTransactionDayOfMonth,
             monthlyAmount: 873,
           },
         }),
@@ -39,7 +42,7 @@ export default class BalanceSheetTest implements JASLib.Test {
         configType: 'loan config',
         config: Config.getLoanConfigForTest({
           loanConfig: {
-            interestDayOfMonth: new Date().getDate(),
+            interestDayOfMonth: configTransactionDayOfMonth,
             interestRate: 0.06,
           },
         }),
@@ -63,10 +66,10 @@ export default class BalanceSheetTest implements JASLib.Test {
       ];
 
       for (const typeObj of configSpecs) {
-        for (const replaceDate of [true, false]) {
-          const dateString = replaceDate
-              ? `not on transaction day`
-              : `on transaction day`;
+        for (const isTransactionDay of [true, false]) {
+          const dateString = isTransactionDay
+              ? `on transaction day`
+              : `not on transaction day`;
           const {
             configType,
             config,
@@ -77,21 +80,16 @@ export default class BalanceSheetTest implements JASLib.Test {
           t.describe(`for ${configType} ${dateString}`, () => {
             t.beforeEach(() => {
               t.setConfig(config);
-              if (replaceDate) {
-                // Replace the day of month with some other day.
-                const fakeMonthDay = ((new Date().getDate() + 1) % 28) + 1;
-                t.spyOn(Date.prototype, 'getDate').and.returnValue(
-                  fakeMonthDay
-                );
-              }
+              t.spyOn(Date.prototype, 'getDate').and.returnValue(
+                  configTransactionDayOfMonth + (isTransactionDay ? 0 : 1)); 
             });
 
             const testString =
-              `${replaceDate ? 'does not insert' : 'inserts'} a row on ` +
-              `due day`;
+                `${isTransactionDay ? 'inserts' : 'does not insert'} a row ` +
+                `on transaction day`;
             t.it(testString, () => {
               BalanceSheet.maybeAddRentOrInterestTransaction();
-              if (replaceDate) {
+              if (!isTransactionDay) {
                 t.expect(BalanceSheet.insertRow).not.toHaveBeenCalled();
               } else {
                 this.expectInsertRowToHaveBeenCalledLike(

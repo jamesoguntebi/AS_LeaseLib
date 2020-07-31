@@ -130,9 +130,10 @@ export default class Config {
   }
 
   private static validateDayOfMonth(day: number) {
+    Logger.log(day);
     if (!Number.isInteger(day) || day < 1 || day > 28) {
       throw new Error('Day of month must be a whole number from 1 to 28 to ' +
-          'valid in all months.');
+          `valid in all months. Got ${day}`);
     }
   }
 
