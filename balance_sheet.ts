@@ -1,6 +1,6 @@
 import Config from "./config";
 import { SSLib } from "ss_api";
-import Util from "./util";
+import Util from "./_util";
 
 export function testUpdateStatusCell() {
   _JasLibContext.spreadsheetId = '1e-xDkyts6jt_2JPGS5i1hX4opVJ9niQ9f0y8YtAvTlw';
@@ -31,6 +31,17 @@ export default class BalanceSheet {
     SSLib.JasSpreadsheet.findColumn('date', sheet);
     SSLib.JasSpreadsheet.findColumn('description', sheet);
     SSLib.JasSpreadsheet.findColumn('transaction', sheet);
+
+    // Assert the status cell exists.
+    if (sheet.getFrozenRows() !== 2) {
+      throw new Error('Expected 2 frozen rows in Balance sheet');
+    }
+    const statusRange = sheet.getRange(1, sheet.getLastColumn());
+    if (!statusRange.isPartOfMerge() ||
+        statusRange.getMergedRanges().length !== 1) {
+      throw new Error(
+          'Expected 1st row in balance sheet to be one merged range.')
+    }
   }
 
   /**
@@ -114,6 +125,7 @@ export default class BalanceSheet {
   }
 
   static updateStatusCell() {
+    BalanceSheet.validateActiveSheet();
     const config = Config.get();
 
     let statusText = '';
@@ -131,24 +143,37 @@ export default class BalanceSheet {
           statusText += text;
         };
 
-    statusText += `Hi ${config.customerDisplayName}!\n\n`;
+    // Balance line.
+    statusText += `Balance: `;
+    const balance = BalanceSheet.getBalance();
+    let color = '';
+    if (config.rentConfig) {
+      if (balance > 0) color = Colors.RED_BALANCE;
+      if (balance < 0) color = Colors.GREEN_BALANCE;
+    }
+    addFormatted(Util.formatMoney(balance), {isBold: true, color});
 
-    statusText += `Your current balance is `;
-    addFormatted(Util.formatMoney(BalanceSheet.getBalance()),
-        {isBold: true, color: 'green'});
-    statusText += '.';
-
+    // Last payment line.
     const lastPayment = BalanceSheet.findLastPayment();
     if (lastPayment) {
-      statusText += `\n\nYour last payment of `;
+      statusText += `\nLast payment: `;
       addFormatted(Util.formatMoney(lastPayment.amount), {isBold: true});
-      statusText += ` was applied on ${lastPayment.date}.`
+      statusText += `, ${Util.dateString(lastPayment.date)}`;
     }
 
+    // Upcoming transaction line.
     if (config.rentConfig) {
-      statusText += `\n\nRent is due soon.`;
+      const {monthlyAmount, dueDayOfMonth} = config.rentConfig;
+      statusText += `\nUpcoming: `;
+      addFormatted(Util.formatMoney(monthlyAmount), {isBold: true});
+      statusText += ` due ${Util.getNextDayOfMonthString(dueDayOfMonth)}`;
     } else if (config.loanConfig!.interestRate) {
-      statusText += `\n\nInterest will be applied soon.`;
+      const {interestRate, interestDayOfMonth} = config.loanConfig;
+      statusText += `\nUpcoming: `;
+      const interestAmount = interestRate / 12 * balance;
+      addFormatted(Util.formatMoney(interestAmount), {isBold: true});
+      statusText += ` interest to be applied ${
+          Util.getNextDayOfMonthString(interestDayOfMonth)}`;
     }
 
     const rtBuilder = SpreadsheetApp.newRichTextValue().setText(statusText);
@@ -157,7 +182,14 @@ export default class BalanceSheet {
     }
 
     const sheet = BalanceSheet.getSheet();
-    sheet.getRange(1, 1).setRichTextValue(rtBuilder.build());
+    const range = sheet.getRange(1, 1);
+    range.setRichTextValue(rtBuilder.build());
+    range.setFontSize(12);
+
+    // Line height is about 21px, + some top and bottom padding.
+    const lines = (statusText.match(/\n/g) || []).length + 1;
+    sheet.setRowHeight(1, lines * 21 + 16);
+    range.setVerticalAlignment('middle');
   }
 
   private static findLastPayment(): {amount: number, date: Date}|null {
@@ -166,6 +198,9 @@ export default class BalanceSheet {
     const lastRow = sheet.getLastRow();
     const trxColumn = SSLib.JasSpreadsheet.findColumn('transaction', sheet);
     const dateColumn = SSLib.JasSpreadsheet.findColumn('date', sheet);
+    // TODO: Also check description. Probably make 'Rent payment' or
+    // 'Loan payment' a const in Config? But what if Adrienne or James changes
+    // the description. Protect those ranges?
 
     for (let row = firstDataRow; row <= lastRow; row++) {
       const trxCell = sheet.getRange(row, trxColumn);

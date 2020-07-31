@@ -1,6 +1,6 @@
 import Config from "./config";
 import BalanceSheet from "./balance_sheet";
-import Util from "./util";
+import Util from "./_util";
 
 export default class EmailSender {
   static sendPaymentThanks(amount: number) {
@@ -9,7 +9,8 @@ export default class EmailSender {
 
     let balanceColor: string;
     if (config.rentConfig && balanceNum) {
-      balanceColor = balanceNum > 0 ? '#b34' : '#192';
+      balanceColor =
+          balanceNum > 0 ? Colors.RED_BALANCE : Colors.GREEN_BALANCE;
     }
 
     const templateParams: PaymentEmailTemplateParams = {

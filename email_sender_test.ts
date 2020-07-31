@@ -39,9 +39,6 @@ export default class EmailSenderTest implements JASLib.Test {
         t.spyOn(BalanceSheet, 'getBalance').and.returnValue(100);
       });
 
-      const RED_BALANCE_STRING = 'style="color: #b34;"';
-      const GREEN_BALANCE_STRING = 'style="color: #192;"';
-
       const balanceSpecs = [
         {balance: 100, type: 'positive'},
         {balance: 0, type: 'no'},
@@ -73,14 +70,14 @@ export default class EmailSenderTest implements JASLib.Test {
                       t, (params: SendEmailParameters) => {
                         const expectation = t.expect(params[3].htmlBody);
                         if (expectRed) {
-                          expectation.toContain(RED_BALANCE_STRING);
-                          expectation.not.toContain(GREEN_BALANCE_STRING);
+                          expectation.toContain(Colors.RED_BALANCE);
+                          expectation.not.toContain(Colors.GREEN_BALANCE);
                         } else if (expectGreen) {
-                          expectation.toContain(GREEN_BALANCE_STRING);
-                          expectation.not.toContain(RED_BALANCE_STRING);
+                          expectation.toContain(Colors.GREEN_BALANCE);
+                          expectation.not.toContain(Colors.RED_BALANCE);
                         } else {
-                          expectation.not.toContain(RED_BALANCE_STRING);
-                          expectation.not.toContain(GREEN_BALANCE_STRING);
+                          expectation.not.toContain(Colors.RED_BALANCE);
+                          expectation.not.toContain(Colors.GREEN_BALANCE);
                         }
                         return true;
                       });

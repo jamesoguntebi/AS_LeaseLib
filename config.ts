@@ -1,4 +1,5 @@
 import { SSLib } from "ss_api"
+import Util from "./_util";
 
 export default class Config {
   static readonly PaymentTypeStrings: Record<string, string> = {
@@ -74,13 +75,13 @@ export default class Config {
     }
 
     if (config.rentConfig) {
-      Config.validateDayOfMonth(config.rentConfig.dueDayOfMonth);
+      Util.validateRecurringDayOfMonth(config.rentConfig.dueDayOfMonth);
       if (config.rentConfig.monthlyAmount < 0) {
         throw new Error('Illegal negative rent');
       }
     }
     if (config.loanConfig) {
-      Config.validateDayOfMonth(config.loanConfig.interestDayOfMonth);
+      Util.validateRecurringDayOfMonth(config.loanConfig.interestDayOfMonth);
       if (config.loanConfig.interestRate < 0 ||
           config.loanConfig.interestRate > 1) {
         throw new Error('Interest rate must be between 0 and 1.');
@@ -127,14 +128,6 @@ export default class Config {
 
   private static isUrl(s: string): boolean {
     return /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/.test(s);
-  }
-
-  private static validateDayOfMonth(day: number) {
-    Logger.log(day);
-    if (!Number.isInteger(day) || day < 1 || day > 28) {
-      throw new Error('Day of month must be a whole number from 1 to 28 to ' +
-          `valid in all months. Got ${day}`);
-    }
   }
 
   private static assertIsPaymentType(s: string): PaymentType {

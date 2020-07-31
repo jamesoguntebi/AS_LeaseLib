@@ -135,9 +135,7 @@ export default class BalanceSheetTest implements JASLib.Test {
       }
     });
 
-    /**
-     * This test operates on a real sheet. So it is difficult to clean up.
-     */
+    /** This test operates on a real sheet. So it is difficult to clean up. */
     t.describe('insertRow', () => {
       const spreadsheet = getSpreadsheet();
       let originalBalanceSheet: Sheet;
@@ -296,6 +294,18 @@ export default class BalanceSheetTest implements JASLib.Test {
           t.expect(() => BalanceSheet.validateActiveSheet()).toThrow();
         });
       });
+    });
+
+    /** This test operates on a real sheet. So it is difficult to clean up. */
+    t.describe('updateStatusCell', () => {
+      t.describe('validates', () => {});
+      t.describe('balance line', () => {});
+      t.describe('last payment line', () => {});
+      t.describe('upcoming transaction line', () => {});
+      t.describe('formatted ranges', () => {});
+      t.describe('rowHeight', () => {});
+      t.it('font size', () => {});
+      t.it('rowHeight', () => {});
     });
   }
 }

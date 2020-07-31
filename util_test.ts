@@ -1,5 +1,5 @@
 import Tester from "./testing/tester";
-import Util from "./util";
+import Util from "./_util";
 import { JASLib } from "jas_api"
 
 export default class UtilTest implements JASLib.Test {
