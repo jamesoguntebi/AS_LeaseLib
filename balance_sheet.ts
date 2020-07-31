@@ -172,7 +172,8 @@ export default class BalanceSheet {
       if (!trxCell.isBlank()) {
         const amount = new SSLib.CellData(trxCell).number();
         if (amount > 0) {
-          const date = sheet.getRange(row, dateColumn).getValue() as Date;
+          const date =
+              new SSLib.CellData(sheet.getRange(row, dateColumn)).date();
           return {amount, date};
         }
       }

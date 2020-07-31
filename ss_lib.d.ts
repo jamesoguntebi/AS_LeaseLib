@@ -17,7 +17,9 @@ declare module "jas_range" {
         stringOptional(): string | undefined;
         stringArray(): string[];
         number(): number;
+        date(includeTime?: boolean): Date;
         private getCellString;
+        private static isDateValue;
     }
 }
 declare module "jas_spreadsheet" {
