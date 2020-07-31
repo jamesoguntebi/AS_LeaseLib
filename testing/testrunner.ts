@@ -5,6 +5,7 @@ import ConfigTest from "../config_test";
 import Tester from "./tester";
 import ClientSheetManagerTest from "../client_sheet_manager_test";
 import { JASLib } from "jas_api"
+import UtilTest from "../util_test";
 
 export function runTests(params: TestRunnerOptions | string = {}) {
   if (typeof params === 'string') {
@@ -51,6 +52,7 @@ export default class TestRunner {
       ConfigTest,
       EmailCheckerTest,
       EmailSenderTest,
+      UtilTest,
     ];
 
     if (testClassNames) {

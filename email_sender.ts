@@ -1,20 +1,8 @@
 import Config from "./config";
 import BalanceSheet from "./balance_sheet";
-
-export function testEmailSending() {
-  _JasLibContext.spreadsheetId = '1e-xDkyts6jt_2JPGS5i1hX4opVJ9niQ9f0y8YtAvTlw';
-  EmailSender.sendPaymentThanks(1000);
-  return Logger.getLog();
-}
+import Util from "./util";
 
 export default class EmailSender {
-  private static MONEY_FORMATTER =
-      new Intl.NumberFormat('en-us', {
-        currency: "USD",
-        minimumFractionDigits: 0,      
-        maximumFractionDigits: 2,
-      });
-
   static sendPaymentThanks(amount: number) {
     const config = Config.get();
     const balanceNum = BalanceSheet.getBalance();
@@ -24,15 +12,12 @@ export default class EmailSender {
       balanceColor = balanceNum > 0 ? '#b34' : '#192';
     }
 
-    Logger.log('formatted balance: ' + EmailSender.formatMoney(balanceNum));
-    Logger.log('balanceColor: ' + balanceColor);
-
     const templateParams: PaymentEmailTemplateParams = {
-      balance: EmailSender.formatMoney(balanceNum),
+      balance: Util.formatMoney(balanceNum),
       balanceColor,
       linkHref: config.linkToSheetHref,
       linkText: config.linkToSheetText,
-      paymentAmount: EmailSender.formatMoney(amount),
+      paymentAmount: Util.formatMoney(amount),
       customerDisplayName: config.customerDisplayName,
     };
 
@@ -55,17 +40,6 @@ export default class EmailSender {
           name: config.emailDisplayName,
           htmlBody: template.evaluate().getContent(),
         });
-  }
-
-  static formatMoney(amount: number): string {
-    let formatted = this.MONEY_FORMATTER.format(amount);
-    if (amount < 0) {
-      // Insert the dollar sign after the negative.
-      formatted = `-$${formatted.substring(1)}`;
-    } else {
-      formatted = `$${formatted}`;
-    }
-    return formatted;
   }
 }
 

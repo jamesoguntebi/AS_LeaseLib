@@ -39,28 +39,6 @@ export default class EmailSenderTest implements JASLib.Test {
         t.spyOn(BalanceSheet, 'getBalance').and.returnValue(100);
       });
 
-      t.describe('when formatting money', () => {
-        t.it('adds commas in large numbers', () => {
-          EmailSender.sendPaymentThanks(1500);
-          this.expectSentMailToContain(t, '$1,500');
-        });
-
-        t.it('handles negative numbers', () => {
-          EmailSender.sendPaymentThanks(-50);
-          this.expectSentMailToContain(t, '-$50');
-        });
-
-        t.it('rounds decimals', () => {
-          EmailSender.sendPaymentThanks(15.12848);
-          this.expectSentMailToContain(t, '$15.13');
-        });
-
-        t.it('combines correct formatting', () => {
-          EmailSender.sendPaymentThanks(-4119283.12848);
-          this.expectSentMailToContain(t, '-$4,119,283.13');
-        });
-      });
-
       const RED_BALANCE_STRING = 'style="color: #b34;"';
       const GREEN_BALANCE_STRING = 'style="color: #192;"';
 

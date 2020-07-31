@@ -27,6 +27,7 @@ P1:
   - next interest date / next rent due date
   - `With continued monthly payments of ${amount}, this will be done ${date}`
   - can be done in one big merged cell. at least in thebut programatically?
+- set Google Sans font everywhere
 
 P2:
 - option to add partial payment
