@@ -36,8 +36,13 @@ export default class Util {
     const tomorrow = new Date(today.getTime() + Util.DAY_IN_MILLIS);
     if (tomorrow.getTime() === dateCopy.getTime()) return 'tomorrow';
 
+    const format =
+      dateCopy.getFullYear() === today.getFullYear()
+        ? 'MMM dd'
+        : 'MMM dd, yyyy';
+
     return `on ${
-        Utilities.formatDate(date, Session.getScriptTimeZone(), 'MMM dd')}`;
+        Utilities.formatDate(date, Session.getScriptTimeZone(), format)}`;
   }
 
   static getNextDayOfMonth(dayOfMonth: number): Date {

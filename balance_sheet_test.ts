@@ -67,6 +67,10 @@ export default class BalanceSheetTest implements JASLib.Test {
     );
   }
 
+  private getDateInThisYear(month: number, dayOfMonth: number): Date {
+    return new Date(new Date().getFullYear(), month, dayOfMonth);
+  }
+
   run(t: Tester) {
     // This should be in [1, 27] so that we can add 1 and still be in [1, 28].
     const configTransactionDayOfMonth = 5;
@@ -332,7 +336,7 @@ export default class BalanceSheetTest implements JASLib.Test {
       ): {text: string; styledRuns: RichTextValue[]} | null => {
         const rtv = statusCell.getRichTextValue();
         const lines = rtv.getText().split('\n');
-        let line: number, lineText: string;
+        let lineText: string;
         let startIndex = 0;
 
         // Return null if line string is not present.
@@ -340,7 +344,6 @@ export default class BalanceSheetTest implements JASLib.Test {
         for (let i = 0; i < lines.length; i++) {
           if (lines[i].toLowerCase().includes(substring)) {
             lineText = lines[i];
-            line = i;
             break;
           }
           startIndex += lines[i].length + 1;
@@ -447,7 +450,7 @@ export default class BalanceSheetTest implements JASLib.Test {
           // Add a row for each payment. Jun 17, May 17, ...
           const description = 'Test payment';
           for (let i = payments.length - 1; i >= 0; i--) {
-            const date = new Date(2020, 5 - i, 17);
+            const date = this.getDateInThisYear(5 - i, 17);
             const transaction = payments[i];
             BalanceSheet.insertRow({date, description, transaction});
           }
@@ -501,7 +504,7 @@ export default class BalanceSheetTest implements JASLib.Test {
           );
           t.spyOn(BalanceSheet, 'getBalance').and.returnValue(balance);
           t.spyOn(Util, 'getNextDayOfMonth').and.returnValue(
-            new Date(2018, 3, 27)
+            this.getDateInThisYear(3, 27)
           );
           BalanceSheet.updateStatusCell();
 
@@ -525,7 +528,7 @@ export default class BalanceSheetTest implements JASLib.Test {
             })
           );
           t.spyOn(Util, 'getNextDayOfMonth').and.returnValue(
-            new Date(2018, 9, 3)
+            this.getDateInThisYear(9, 3)
           );
           BalanceSheet.updateStatusCell();
 
