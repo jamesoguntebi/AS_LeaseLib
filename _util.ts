@@ -21,6 +21,7 @@ export default class Util {
 
   /** Returns date string of the form 'today' or 'on Jul 13'. */
   static dateString(date: Date): string {
+    // TODO: Add year to string if not in current year.
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 

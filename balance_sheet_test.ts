@@ -3,7 +3,7 @@ import Tester from './testing/tester';
 import BalanceSheet, {BalanceRow} from './balance_sheet';
 import {JASLib} from 'jas_api';
 import {SSLib} from 'ss_api';
-import { CellData } from 'apihelper';
+import Util from './_util';
 
 type Range = GoogleAppsScript.Spreadsheet.Range;
 type RichTextValue = GoogleAppsScript.Spreadsheet.RichTextValue;
@@ -92,7 +92,7 @@ export default class BalanceSheetTest implements JASLib.Test {
       },
     ];
 
-    t.xdescribe('maybeAddRentOrInterestTransaction', () => {
+    t.describe('maybeAddRentOrInterestTransaction', () => {
       t.beforeAll(() => t.spyOn(BalanceSheet, 'insertRow'));
 
       const configSpecs = [
@@ -151,7 +151,7 @@ export default class BalanceSheetTest implements JASLib.Test {
       }
     });
 
-    t.xdescribe('addPayment', () => {
+    t.describe('addPayment', () => {
       t.beforeAll(() => t.spyOn(BalanceSheet, 'insertRow'));
 
       const configSpecs = [
@@ -179,7 +179,7 @@ export default class BalanceSheetTest implements JASLib.Test {
       }
     });
 
-    t.xdescribe('insertRow', () => {
+    t.describe('insertRow', () => {
       const initialBalance = 500;
       const sheetContainer = this.withTempBalanceSheet(t); // For pass-by-ref.
       let sheet: Sheet;
@@ -248,7 +248,7 @@ export default class BalanceSheetTest implements JASLib.Test {
       });
     });
 
-    t.xdescribe('validateActiveSheet', () => {
+    t.describe('validateActiveSheet', () => {
       const sheetContainer = this.withTempBalanceSheet(t); // For pass-by-ref.
       let sheet: Sheet;
       t.beforeEach(() => (sheet = sheetContainer.sheet));
@@ -321,22 +321,35 @@ export default class BalanceSheetTest implements JASLib.Test {
       });
 
       const BLACK = '#000000';
-      const getStyledRunsInLine = (
-        rtv: RichTextValue,
-        line: number // 0-indexed
-      ): RichTextValue[] => {
+
+      /**
+       * Looks for the line with the at the given index or containing the given
+       * substring and returns its text and contained styled runs.
+       * @param line 0-indexed line or substring to look for.
+       */
+      const getLineInStatusCell = (
+        substring: string
+      ): {text: string; styledRuns: RichTextValue[]} | null => {
+        const rtv = statusCell.getRichTextValue();
         const lines = rtv.getText().split('\n');
-        if (line < 0 || line >= lines.length) {
-          throw new Error(
-            `Invalid line number '${line}'in rich text with ${lines.length} lines.`
-          );
-        }
+        let line: number, lineText: string;
         let startIndex = 0;
-        for (let l = 0; l < line; l++) {
-          startIndex += lines[l].length + 1;
+
+        // Return null if line string is not present.
+        substring = substring.toLowerCase();
+        for (let i = 0; i < lines.length; i++) {
+          if (lines[i].toLowerCase().includes(substring)) {
+            lineText = lines[i];
+            line = i;
+            break;
+          }
+          startIndex += lines[i].length + 1;
         }
-        const endIndex = startIndex + lines[line].length;
-        return rtv.getRuns().filter(run => {
+        // No line number was found.
+        if (!lineText) return null;
+
+        const endIndex = startIndex + lineText.length;
+        const styledRuns = rtv.getRuns().filter((run) => {
           const ts = run.getTextStyle();
           return (
             run.getStartIndex() >= startIndex &&
@@ -348,9 +361,25 @@ export default class BalanceSheetTest implements JASLib.Test {
               ts.isStrikethrough())
           );
         });
+        return {text: lineText, styledRuns};
       };
 
-      t.xit('validatesSheet', () => {
+      const deleteAllPaymentRows = () => {
+        const transactionColumn = SSLib.JasSpreadsheet.findColumn(
+          'transaction',
+          sheet
+        );
+        const firstDataRow = sheet.getFrozenRows() + 1;
+        const lastRow = sheet.getLastRow();
+        for (let row = lastRow; row >= firstDataRow; row--) {
+          const cell = sheet.getRange(row, transactionColumn);
+          if (new SSLib.CellData(cell).number(0) > 0) {
+            sheet.deleteRow(row);
+          }
+        }
+      };
+
+      t.it('validatesSheet', () => {
         sheet.deleteRow(1);
         t.expect(() => BalanceSheet.validateActiveSheet()).toThrow(
           'Expected 2 frozen rows'
@@ -359,23 +388,20 @@ export default class BalanceSheetTest implements JASLib.Test {
 
       t.describe('balance line', () => {
         const getBalanceStyle = (): TextStyle => {
-          const balanceRuns = getStyledRunsInLine(
-            statusCell.getRichTextValue(),
-            0
-          );
-          t.expect(balanceRuns.length).toEqual(1);
-          return balanceRuns[0].getTextStyle();
+          const {text, styledRuns} = getLineInStatusCell('balance');
+          t.expect(text).toContain('Balance');
+          t.expect(styledRuns.length).toEqual(1);
+          return styledRuns[0].getTextStyle();
         };
 
-        t.it('has correct text', () => {
+        t.it('has correct text with bolded balance', () => {
           t.setConfig(Config.getLoanConfigForTest());
           t.spyOn(BalanceSheet, 'getBalance').and.returnValue(1000);
           BalanceSheet.updateStatusCell();
-          const balanceLine = statusCell
-            .getRichTextValue()
-            .getText()
-            .split('\n')[0];
-          t.expect(balanceLine).toEqual('Balance: $1,000');
+
+          const {text, styledRuns} = getLineInStatusCell('balance');
+          t.expect(text).toEqual('Balance: $1,000');
+          t.expect(styledRuns[0].getText()).toEqual('$1,000');
         });
 
         t.it('never styles loan config balance', () => {
@@ -416,65 +442,138 @@ export default class BalanceSheetTest implements JASLib.Test {
       t.describe('last payment line', () => {
         /** @param payments Most-recent-first payment amounts. */
         const addFakePaymentHistory = (payments: number[]) => {
-          // Delete all payment rows.
-          const transactionColumn = SSLib.JasSpreadsheet.findColumn(
-            'transaction',
-            sheet
-          );
-          const firstDataRow = sheet.getFrozenRows() + 1;
-          const lastRow = sheet.getLastRow();
-          for (let row = lastRow; row >= firstDataRow; row--) {
-            const cell = sheet.getRange(row, transactionColumn);
-            if (new CellData(cell).number(0) > 0) {
-              sheet.deleteRow(row);
-            }
-          }
+          deleteAllPaymentRows();
 
-          // Add a row for each payment.
+          // Add a row for each payment. Jun 17, May 17, ...
           const description = 'Test payment';
-          payments.forEach((transaction, i) => {
-            const date = new Date(2020, 6 - i, 1);
+          for (let i = payments.length - 1; i >= 0; i--) {
+            const date = new Date(2020, 5 - i, 17);
+            const transaction = payments[i];
             BalanceSheet.insertRow({date, description, transaction});
-          });
-        };
-
-        const getBalanceStyle = (): TextStyle => {
-          const balanceRuns = getStyledRunsInLine(
-            statusCell.getRichTextValue(),
-            0
-          );
-          t.expect(balanceRuns.length).toEqual(1);
-          return balanceRuns[0].getTextStyle();
+          }
         };
 
         t.it(`doesn't exist when there is no payment`, () => {
           t.setConfig(Config.getLoanConfigForTest());
           this.deleteAllDataRows(sheet);
-
           BalanceSheet.updateStatusCell();
+
+          t.expect(getLineInStatusCell('last payment')).toEqual(null);
           t.expect(statusCell.getRichTextValue().getText()).not.toContain(
             'Last payment'
           );
         });
 
-        t.it('has correct text, choosing most recent payment', () => {
-          t.setConfig(Config.getLoanConfigForTest());
-          addFakePaymentHistory([500, 600]);
-          BalanceSheet.updateStatusCell();
-          const balanceLine = statusCell
-            .getRichTextValue()
-            .getText()
-            .split('\n')[0];
-          t.expect(balanceLine).toEqual('Balance: $1,000');
-        });
+        t.it(
+          'has correct text, with bold payment amount, choosing most recent payment',
+          () => {
+            t.setConfig(Config.getLoanConfigForTest());
+            addFakePaymentHistory([500, 600]);
+            BalanceSheet.updateStatusCell();
+
+            const {text, styledRuns} = getLineInStatusCell('last payment');
+            t.expect(text).toEqual('Last payment: $500, on Jun 17');
+            t.expect(styledRuns[0].getText()).toEqual('$500');
+          }
+        );
       });
 
-      // t.describe('last payment line', () => {});
-      // t.describe('upcoming transaction line', () => {});
-      // t.describe('formatted ranges', () => {});
-      // t.describe('rowHeight', () => {});
-      // t.it('font size', () => {});
-      // t.it('rowHeight', () => {});
+      t.describe('upcoming transaction line', () => {
+        t.it(`doesn't exist for 0-interest loans`, () => {
+          t.setConfig(
+            Config.getLoanConfigForTest(undefined, {
+              loanConfig: {interestRate: 0},
+            })
+          );
+          BalanceSheet.updateStatusCell();
+
+          t.expect(getLineInStatusCell('upcoming')).toEqual(null);
+          t.expect(statusCell.getRichTextValue().getText()).not.toContain(
+            'Upcoming'
+          );
+        });
+
+        t.it('works for loan config', () => {
+          const interestRate = 0.078;
+          const balance = 3874.17;
+          t.setConfig(
+            Config.getLoanConfigForTest(undefined, {loanConfig: {interestRate}})
+          );
+          t.spyOn(BalanceSheet, 'getBalance').and.returnValue(balance);
+          t.spyOn(Util, 'getNextDayOfMonth').and.returnValue(
+            new Date(2018, 3, 27)
+          );
+          BalanceSheet.updateStatusCell();
+
+          const nextInterestAmount = balance * interestRate / 12;
+          const {text, styledRuns} = getLineInStatusCell('upcoming');
+          t.expect(text).toEqual(
+            `Upcoming: $${nextInterestAmount.toFixed(
+              2
+            )} interest to be applied on Apr 27`
+          );
+          t.expect(styledRuns[0].getText()).toEqual(
+            `$${nextInterestAmount.toFixed(2)}`
+          );
+        });
+
+        t.it('works for rent config', () => {
+          const monthlyAmount = 1671;
+          t.setConfig(
+            Config.getRentConfigForTest(undefined, {
+              rentConfig: {monthlyAmount},
+            })
+          );
+          t.spyOn(Util, 'getNextDayOfMonth').and.returnValue(
+            new Date(2018, 9, 3)
+          );
+          BalanceSheet.updateStatusCell();
+
+          const {text, styledRuns} = getLineInStatusCell('upcoming');
+          t.expect(text).toEqual(`Upcoming: $1,671 due on Oct 03`);
+          t.expect(styledRuns[0].getText()).toEqual(`$1,671`);
+        });
+      });
+      
+      t.it('sets font size', () => {
+        t.setConfig(Config.DEFAULT);
+        BalanceSheet.updateStatusCell();
+        t.expect(statusCell.getFontSize()).toEqual(12);
+      });
+
+      t.describe('sets row height', () => {
+        t.it('for balance only', () => {
+          // Zero-interest loan
+          t.setConfig(
+            Config.getLoanConfigForTest(undefined, {
+              loanConfig: {interestRate: 0},
+            })
+          );
+          // With no previous payments
+          deleteAllPaymentRows();
+          BalanceSheet.updateStatusCell();
+
+          t.expect(sheet.getRowHeight(1)).toEqual(37);
+        });
+
+        t.it('for 2 rows', () => {
+          t.setConfig(Config.DEFAULT);
+          // With no previous payments
+          deleteAllPaymentRows();
+          BalanceSheet.updateStatusCell();
+
+          t.expect(sheet.getRowHeight(1)).toEqual(58);
+        });
+
+        t.it('for 3 rows', () => {
+          t.setConfig(Config.DEFAULT);
+          // Ensure at least 1 payment exists.
+          BalanceSheet.addPayment(178, new Date());
+          BalanceSheet.updateStatusCell();
+
+          t.expect(sheet.getRowHeight(1)).toEqual(79);
+        });
+      });
     });
   }
 }
