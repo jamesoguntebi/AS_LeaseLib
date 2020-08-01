@@ -49,7 +49,7 @@ export default class BalanceSheet {
    * day.
    */
   static maybeAddRentOrInterestTransaction() {
-    const currentDayOfMonth = this.getCurrentDayOfMonth();
+    const currentDayOfMonth = BalanceSheet.getCurrentDayOfMonth();
     const config = Config.get();
 
     if (config.rentConfig?.dueDayOfMonth === currentDayOfMonth) {
