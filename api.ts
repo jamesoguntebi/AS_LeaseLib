@@ -13,6 +13,12 @@ export function maybeAddRentOrInterestTransaction() {
   });
 }
 
+export function updateStatusCell() {
+  return Executrix.run(() => {
+    ClientSheetManager.forEach(BalanceSheet.updateStatusCell);
+  });
+}
+
 export function checkedLabeledEmails() {
   return Executrix.run(() => EmailChecker.checkLabeledEmailsForAllSheets());
 }
