@@ -97,23 +97,6 @@ export default class UtilTest implements JASLib.Test {
           }
         });
       });
-
-      t.describe('validateRecurringDayOfMonth', () => {
-        t.it('rejects illegal values', () => {
-          t.expect(() => Util.validateRecurringDayOfMonth(-1)).toThrow();
-          t.expect(() => Util.validateRecurringDayOfMonth(0)).toThrow();
-          t.expect(() => Util.validateRecurringDayOfMonth(29)).toThrow();
-          t.expect(() => Util.validateRecurringDayOfMonth(30)).toThrow();
-          t.expect(() => Util.validateRecurringDayOfMonth(31)).toThrow();
-          t.expect(() => Util.validateRecurringDayOfMonth(1.5)).toThrow();
-        });
-
-        t.it('accepts legal values', () => {
-          for (let day = 1; day <= 28; day++) {
-            t.expect(() => Util.validateRecurringDayOfMonth(day)).not.toThrow();
-          }
-        });
-      });
     });
   }
 }

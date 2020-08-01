@@ -48,8 +48,8 @@ export default class Util {
   static getNextDayOfMonth(dayOfMonth: number): Date {
     Util.validateRecurringDayOfMonth(dayOfMonth);
     const date = new Date();
+    if (dayOfMonth <= date.getDate()) date.setMonth(date.getMonth() + 1);
     date.setDate(dayOfMonth);
-    date.setMonth(date.getMonth() + 1);
     return date;
   }
 
