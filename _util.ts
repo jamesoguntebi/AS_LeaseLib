@@ -9,7 +9,7 @@ export default class Util {
   private static DAY_IN_MILLIS = 24 * 60 * 60 * 1000;
 
   static formatMoney(amount: number): string {
-    let formatted = this.MONEY_FORMATTER.format(amount);
+    let formatted = Util.MONEY_FORMATTER.format(amount);
     if (amount < 0) {
       // Insert the dollar sign after the negative.
       formatted = `-$${formatted.substring(1)}`;
