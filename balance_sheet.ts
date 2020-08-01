@@ -34,7 +34,7 @@ export default class BalanceSheet {
 
     // Assert the status cell exists.
     if (sheet.getFrozenRows() !== 2) {
-      throw new Error('Expected 2 frozen rows in Balance sheet');
+      throw new Error('Expected 2 frozen rows in Balance sheet.');
     }
     const statusRange = sheet.getRange(1, sheet.getLastColumn());
     if (!statusRange.isPartOfMerge() ||
@@ -182,14 +182,14 @@ export default class BalanceSheet {
     }
 
     const sheet = BalanceSheet.getSheet();
-    const range = sheet.getRange(1, 1);
-    range.setRichTextValue(rtBuilder.build());
-    range.setFontSize(12);
+    const statusCell = sheet.getRange(1, 1);
+    statusCell.setRichTextValue(rtBuilder.build());
+    statusCell.setFontSize(12);
 
     // Line height is about 21px, + some top and bottom padding.
     const lines = (statusText.match(/\n/g) || []).length + 1;
     sheet.setRowHeight(1, lines * 21 + 16);
-    range.setVerticalAlignment('middle');
+    statusCell.setVerticalAlignment('middle');
   }
 
   private static findLastPayment(): {amount: number, date: Date}|null {
@@ -200,7 +200,7 @@ export default class BalanceSheet {
     const dateColumn = SSLib.JasSpreadsheet.findColumn('date', sheet);
     // TODO: Also check description. Probably make 'Rent payment' or
     // 'Loan payment' a const in Config? But what if Adrienne or James changes
-    // the description. Protect those ranges?
+    // the description manually in the sheet. Protect those ranges?
 
     for (let row = firstDataRow; row <= lastRow; row++) {
       const trxCell = sheet.getRange(row, trxColumn);

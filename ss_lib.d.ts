@@ -13,10 +13,10 @@ declare module "jas_range" {
         private readonly data;
         constructor(range: Range);
         isBlank(): boolean;
-        string(): string;
+        string(defaultValue?: string): string;
         stringOptional(): string | undefined;
         stringArray(): string[];
-        number(): number;
+        number(defaultValue?: number): number;
         date(includeTime?: boolean): Date;
         private getCellString;
         private static isDateValue;
