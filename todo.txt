@@ -6,9 +6,9 @@
     |_|     \____/  |_____/   \____/    (_)
 
 P0:
-- ensure all client sheets have permissions
 - update README
-- fix printing dollar amounts: e.g. "$-500" in new balance thank you email
+- integration tests
+  - probably api_test.ts
 
 P1:
 - read all emails, and ask admin to verify emails that should be parsed
@@ -22,18 +22,13 @@ P1:
 - figure out how to differentiate between two types of payments from one person
   meant for two different spreadsheets
   - labels. maybe a custom label name in config
-- status at the top of the sheet
-  - current balance
-  - next interest date / next rent due date
-  - `With continued monthly payments of ${amount}, this will be done ${date}`
-  - can be done in one big merged cell. at least in thebut programatically?
 - set Google Sans font everywhere
 - if interest and payment are the same date, make payment be before interest
 - optimize Config.get
   - maybe only call it once per method
-    - some way to validate the current Config
+    - some way to cache the current Config
   - read the entire sheet and operate on it, rather than reading every cell one
-    at a time  
+    at a time
 
 
 P2:
@@ -93,6 +88,8 @@ P0:
     - whatever else comes up in clasp --watch
   - the imported library name in AS editor ui maybe must match the namespace name
     - in TS declarations
+- ensure all client sheets have permissions
+- fix printing dollar amounts: e.g. "$-500" in new balance thank you email
 
 P1:
 - add option to add a full payment
@@ -117,6 +114,11 @@ P1:
 - Set the header rows of Balance Sheet and Config to be imported ranges from
   the template
   - might be a problem with merged ranges (not a problem)
+- status at the top of the sheet
+  - current balance
+  - next interest date / next rent due date
+  - `With continued monthly payments of ${amount}, this will be done ${date}`
+  - can be done in one big merged cell. at least in thebut programatically?
 
 P2:
 - instead of checking emails, let manual step be to label emails. script do the
