@@ -33,6 +33,7 @@ P1:
 
 P2:
 - option to add partial payment
+  - EmailChecker can do this, but maybe should be possible in the UI
 - use dropdown list to select payment types in sheet config
 - allow disabling outgoing emails in the config
 - Add config for the payment label in balance sheet. e.g. "Car payment"
@@ -40,7 +41,8 @@ P2:
 
 P3:
 - integrate with Plaid to *maybe* get Zelle Ids  
-- automated way to unregister deleted clients
+- automated way to unregister deleted clients, or really, any good way to
+  unregister.
 
 P4
 - we get message date to use as transaction date. this date isn't always
