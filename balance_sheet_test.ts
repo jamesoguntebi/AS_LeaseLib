@@ -96,7 +96,7 @@ export default class BalanceSheetTest implements JASLib.Test {
       },
     ];
 
-    t.describe('maybeAddRentOrInterestTransaction', () => {
+    t.xdescribe('maybeAddRentOrInterestTransaction', () => {
       t.beforeAll(() => t.spyOn(BalanceSheet, 'insertRow'));
 
       const configSpecs = [
@@ -197,6 +197,7 @@ export default class BalanceSheetTest implements JASLib.Test {
         t.expect(BalanceSheet.getBalance()).toEqual(initialBalance);
 
         t.setConfig(Config.getLoanConfigForTest());
+        t.spyOn(BalanceSheet, 'updateStatusCell');
       });
 
       const expectNewRowValues = (
@@ -226,6 +227,7 @@ export default class BalanceSheetTest implements JASLib.Test {
         });
 
         expectNewRowValues(-450, 950, 'Partial rent due');
+        t.expect(BalanceSheet.updateStatusCell).not.toHaveBeenCalled();
       });
 
       t.it('decreases rent', () => {
@@ -236,6 +238,7 @@ export default class BalanceSheetTest implements JASLib.Test {
         });
 
         expectNewRowValues(450, 50, 'Rent payment');
+        t.expect(BalanceSheet.updateStatusCell).not.toHaveBeenCalled();
       });
 
       t.it('adds interest', () => {
@@ -249,10 +252,11 @@ export default class BalanceSheetTest implements JASLib.Test {
           (-initialBalance * Config.get().loanConfig!.interestRate) / 12;
         const expectedBalance = initialBalance - expectedInterest;
         expectNewRowValues(expectedInterest, expectedBalance, 'Interest');
+        t.expect(BalanceSheet.updateStatusCell).not.toHaveBeenCalled();
       });
     });
 
-    t.describe('validateActiveSheet', () => {
+    t.xdescribe('validateActiveSheet', () => {
       const sheetContainer = this.withTempBalanceSheet(t); // For pass-by-ref.
       let sheet: Sheet;
       t.beforeEach(() => (sheet = sheetContainer.sheet));
@@ -314,7 +318,7 @@ export default class BalanceSheetTest implements JASLib.Test {
       });
     });
 
-    t.describe('updateStatusCell', () => {
+    t.xdescribe('updateStatusCell', () => {
       const sheetContainer = this.withTempBalanceSheet(t); // For pass-by-ref.
       let sheet: Sheet;
       let statusCell: Range;

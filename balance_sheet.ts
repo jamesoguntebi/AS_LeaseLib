@@ -117,6 +117,8 @@ export default class BalanceSheet {
         newRow, SSLib.JasSpreadsheet.findColumn('transaction', sheet));
     setCell('balance',
         `= ${previousBalanceCellA1} - ${transactionCell.getA1Notation()}`);
+
+    BalanceSheet.updateStatusCell();
   }
 
   /** Separate method for easier testing. */
