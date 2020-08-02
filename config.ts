@@ -1,18 +1,23 @@
-import { SSLib } from "ss_api"
-import Util from "./_util";
+import {SSLib} from 'ss_api';
+import Util from './_util';
 
 export default class Config {
   static readonly PaymentTypeStrings: Record<string, string> = {
     Zelle: 'Zelle',
     Venmo: 'Venmo',
-  }
+  };
 
   static readonly DEFAULT = Config.getRentConfigForTest();
+  static readonly ZERO_INTEREST_LOAN = Config.getLoanConfigForTest(undefined, {
+    loanConfig: {interestRate: 0},
+  });
 
   static get(): ConfigParams {
     const F = Config.FIELD;
     const configSheet = SSLib.JasSpreadsheet.findSheet(
-        'config', _JasLibContext.spreadsheetId);
+      'config',
+      _JasLibContext.spreadsheetId
+    );
     const valueColumn = SSLib.JasSpreadsheet.findColumn('value', configSheet);
 
     const getCellData = (configField: ConfigField) => {
@@ -23,8 +28,10 @@ export default class Config {
     let rentConfig: RentConfig;
     const rentMonthlyAmountCellData = getCellData(F.rentConfig_monthlyAmount);
     const rentMonthlyDueDateCellData = getCellData(F.rentConfig_dueDayOfMonth);
-    if (!rentMonthlyAmountCellData.isBlank() ||
-        !rentMonthlyDueDateCellData.isBlank()) {
+    if (
+      !rentMonthlyAmountCellData.isBlank() ||
+      !rentMonthlyDueDateCellData.isBlank()
+    ) {
       rentConfig = {
         monthlyAmount: rentMonthlyAmountCellData.number(),
         dueDayOfMonth: rentMonthlyDueDateCellData.number(),
@@ -33,21 +40,24 @@ export default class Config {
 
     let loanConfig: LoanConfig;
     const loanInterestRateCellData = getCellData(F.loanConfig_interestRate);
-    const loanMonthlyInterestDayCellData =
-        getCellData(F.loanConfig_interestDayOfMonth);
-    if (!loanInterestRateCellData.isBlank() ||
-        !loanMonthlyInterestDayCellData.isBlank()) {
+    const loanMonthlyInterestDayCellData = getCellData(
+      F.loanConfig_interestDayOfMonth
+    );
+    if (
+      !loanInterestRateCellData.isBlank() ||
+      !loanMonthlyInterestDayCellData.isBlank()
+    ) {
       loanConfig = {
         interestRate: loanInterestRateCellData.number(),
         interestDayOfMonth: loanMonthlyInterestDayCellData.number(),
       };
     }
 
-    const paymentTypes =
-        getCellData(F.searchQuery_paymentTypes)
-            .string().split(/,|\n/)
-            .map(pt => pt.trim())
-            .map(pt => Config.assertIsPaymentType(pt));
+    const paymentTypes = getCellData(F.searchQuery_paymentTypes)
+      .string()
+      .split(/,|\n/)
+      .map((pt) => pt.trim())
+      .map((pt) => Config.assertIsPaymentType(pt));
 
     return Config.validate({
       customerDisplayName: getCellData(F.customerDisplayName).string(),
@@ -68,10 +78,10 @@ export default class Config {
 
   static validate(config: ConfigParams = Config.get()): ConfigParams {
     if (!config.rentConfig && !config.loanConfig) {
-      throw new Error('No renter or borrower config defined.')
+      throw new Error('No renter or borrower config defined.');
     }
     if (config.rentConfig && config.loanConfig) {
-      throw new Error('Both renter and borrower config defined.')
+      throw new Error('Both renter and borrower config defined.');
     }
 
     if (config.rentConfig) {
@@ -82,8 +92,10 @@ export default class Config {
     }
     if (config.loanConfig) {
       Util.validateRecurringDayOfMonth(config.loanConfig.interestDayOfMonth);
-      if (config.loanConfig.interestRate < 0 ||
-          config.loanConfig.interestRate > 1) {
+      if (
+        config.loanConfig.interestRate < 0 ||
+        config.loanConfig.interestRate > 1
+      ) {
         throw new Error('Interest rate must be between 0 and 1.');
       }
     }
@@ -127,51 +139,69 @@ export default class Config {
   }
 
   private static isUrl(s: string): boolean {
-    return /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/.test(s);
+    return /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/.test(
+      s
+    );
   }
 
   private static assertIsPaymentType(s: string): PaymentType {
     if (!Config.PaymentTypeStrings.hasOwnProperty(s)) {
-      throw new Error(`Expected a payment type in [${
-          Object.keys(Config.PaymentTypeStrings)
-              .map(key => Config.PaymentTypeStrings[key]).join(', ')}]. ` +
-          `Got ${s}.`);
+      throw new Error(
+        `Expected a payment type in [${Object.keys(Config.PaymentTypeStrings)
+          .map((key) => Config.PaymentTypeStrings[key])
+          .join(', ')}]. ` + `Got ${s}.`
+      );
     }
     return s as PaymentType;
   }
 
-  static getLoanConfigForTest(override?: Partial<ConfigParams>, overrides: {
-    loanConfig?: Partial<LoanConfig>,
-    searchQuery?: Partial<SearchQuery>,
-  } = {}): ConfigParams {
-    return Config.getConfigForTest({
-      loanConfig: {
-        interestRate: 0.05,
-        interestDayOfMonth: 1,
-        ...overrides.loanConfig,
+  static getLoanConfigForTest(
+    override?: Partial<ConfigParams>,
+    overrides: {
+      loanConfig?: Partial<LoanConfig>;
+      searchQuery?: Partial<SearchQuery>;
+    } = {}
+  ): ConfigParams {
+    return Config.getConfigForTest(
+      {
+        loanConfig: {
+          interestRate: 0.05,
+          interestDayOfMonth: 1,
+          ...overrides.loanConfig,
+        },
+        ...override,
       },
-      ...override,
-    }, overrides);
+      overrides
+    );
   }
 
-  static getRentConfigForTest(override?: Partial<ConfigParams>, overrides: {
-    rentConfig?: Partial<RentConfig>,
-    searchQuery?: Partial<SearchQuery>,
-  } = {}): ConfigParams {
-    return Config.getConfigForTest({
-      rentConfig: {
-        monthlyAmount: 3600,
-        dueDayOfMonth: 15,
-        ...overrides.rentConfig,
+  static getRentConfigForTest(
+    override?: Partial<ConfigParams>,
+    overrides: {
+      rentConfig?: Partial<RentConfig>;
+      searchQuery?: Partial<SearchQuery>;
+    } = {}
+  ): ConfigParams {
+    return Config.getConfigForTest(
+      {
+        rentConfig: {
+          monthlyAmount: 3600,
+          dueDayOfMonth: 15,
+          ...overrides.rentConfig,
+        },
+        ...override,
       },
-      ...override,
-    }, overrides);
+      overrides
+    );
   }
 
   /** Only to be called from getRentConfigForTest or getLoanConfigForTest. */
-  private static getConfigForTest(override: Partial<ConfigParams>, overrides: {
-    searchQuery?: Partial<SearchQuery>,
-  } = {}): ConfigParams {
+  private static getConfigForTest(
+    override: Partial<ConfigParams>,
+    overrides: {
+      searchQuery?: Partial<SearchQuery>;
+    } = {}
+  ): ConfigParams {
     return Config.validate({
       customerDisplayName: 'Gandalf the White',
       customerEmails: ['mithrandir@gmail.com', 'thewhiterider@gmail.com'],
@@ -204,10 +234,10 @@ export default class Config {
     rentConfig_dueDayOfMonth: 'rent monthly due day',
     searchQuery_paymentTypes: 'payment types',
     searchQuery_searchName: 'gmail search name',
-  }
+  };
 }
 
-  // Keep in sync with FIELD above.
+// Keep in sync with FIELD above.
 export interface ConfigParams {
   customerDisplayName: string;
   customerEmails: string[];

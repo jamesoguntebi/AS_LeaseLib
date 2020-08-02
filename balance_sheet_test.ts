@@ -96,8 +96,18 @@ export default class BalanceSheetTest implements JASLib.Test {
       },
     ];
 
-    t.describe('maybeAddRentOrInterestTransaction', () => {
-      t.beforeAll(() => t.spyOn(BalanceSheet, 'insertRow'));
+    t.describe('dailyUpdate', () => {
+      t.beforeAll(() => {
+        t.spyOn(BalanceSheet, 'insertRow');
+        t.spyOn(BalanceSheet, 'updateStatusCell');
+      });
+
+      t.it('updates status cell for 0-interest loans', () => {
+        t.setConfig(Config.ZERO_INTEREST_LOAN);
+        BalanceSheet.dailyUpdate();
+        t.expect(BalanceSheet.insertRow).not.toHaveBeenCalled();
+        t.expect(BalanceSheet.updateStatusCell).toHaveBeenCalled();
+      });
 
       const configSpecs = [
         {
@@ -136,9 +146,10 @@ export default class BalanceSheetTest implements JASLib.Test {
               `${isTransactionDay ? 'inserts' : 'does not insert'} a row ` +
               `on transaction day`;
             t.it(testString, () => {
-              BalanceSheet.maybeAddRentOrInterestTransaction();
+              BalanceSheet.dailyUpdate();
               if (!isTransactionDay) {
                 t.expect(BalanceSheet.insertRow).not.toHaveBeenCalled();
+                t.expect(BalanceSheet.updateStatusCell).toHaveBeenCalled();
               } else {
                 this.expectInsertRowToHaveBeenCalledLike(
                   t,
@@ -148,6 +159,9 @@ export default class BalanceSheetTest implements JASLib.Test {
                     return true;
                   }
                 );
+                // insertRow() calls updateStatusCell(), but this just verifies
+                // it's not called directly by dailyUpdate().
+                t.expect(BalanceSheet.updateStatusCell).not.toHaveBeenCalled();
               }
             });
           });
@@ -392,6 +406,12 @@ export default class BalanceSheetTest implements JASLib.Test {
           'Expected 2 frozen rows'
         );
       });
+      
+      t.it('sets font size', () => {
+        t.setConfig(Config.DEFAULT);
+        BalanceSheet.updateStatusCell();
+        t.expect(statusCell.getFontSize()).toEqual(12);
+      });
 
       t.describe('balance line', () => {
         const getBalanceStyle = (): TextStyle => {
@@ -444,6 +464,16 @@ export default class BalanceSheetTest implements JASLib.Test {
             Colors.GREEN_BALANCE
           );
         });
+
+        t.it('styles zero rent balance green', () => {
+          t.setConfig(Config.getRentConfigForTest());
+          t.spyOn(BalanceSheet, 'getBalance').and.returnValue(0);
+          
+          BalanceSheet.updateStatusCell();
+          t.expect(getBalanceStyle().getForegroundColor()).toEqual(
+            Colors.GREEN_BALANCE
+          );
+        });
       });
 
       t.describe('last payment line', () => {
@@ -487,11 +517,7 @@ export default class BalanceSheetTest implements JASLib.Test {
 
       t.describe('upcoming transaction line', () => {
         t.it(`doesn't exist for 0-interest loans`, () => {
-          t.setConfig(
-            Config.getLoanConfigForTest(undefined, {
-              loanConfig: {interestRate: 0},
-            })
-          );
+          t.setConfig(Config.ZERO_INTEREST_LOAN);
           BalanceSheet.updateStatusCell();
 
           t.expect(getLineInStatusCell('upcoming')).toEqual(null);
@@ -541,21 +567,10 @@ export default class BalanceSheetTest implements JASLib.Test {
           t.expect(styledRuns[0].getText()).toEqual(`$1,671`);
         });
       });
-      
-      t.it('sets font size', () => {
-        t.setConfig(Config.DEFAULT);
-        BalanceSheet.updateStatusCell();
-        t.expect(statusCell.getFontSize()).toEqual(12);
-      });
 
       t.describe('sets row height', () => {
         t.it('for balance only', () => {
-          // Zero-interest loan
-          t.setConfig(
-            Config.getLoanConfigForTest(undefined, {
-              loanConfig: {interestRate: 0},
-            })
-          );
+          t.setConfig(Config.ZERO_INTEREST_LOAN);
           // With no previous payments
           deleteAllPaymentRows();
           BalanceSheet.updateStatusCell();

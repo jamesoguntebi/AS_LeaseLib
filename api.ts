@@ -7,9 +7,9 @@ const LEASE_TEMPLATE_SPREADSHEET_ID =
 
 _JasLibContext = {spreadsheetId: ''};
 
-export function maybeAddRentOrInterestTransaction() {
+export function dailyBalanceUpdate() {
   return Executrix.run(() => {
-    ClientSheetManager.forEach(BalanceSheet.maybeAddRentOrInterestTransaction);
+    ClientSheetManager.forEach(BalanceSheet.dailyUpdate);
   });
 }
 
@@ -23,11 +23,9 @@ export function checkedLabeledEmails() {
   return Executrix.run(() => EmailChecker.checkLabeledEmailsForAllSheets());
 }
 
-export function template_maybeAddRentOrInterestTransaction() {
+export function template_dailyBalanceUpdate() {
   _JasLibContext.spreadsheetId = LEASE_TEMPLATE_SPREADSHEET_ID;
-  return Executrix.run(() => {
-    BalanceSheet.maybeAddRentOrInterestTransaction();
-  });
+  return Executrix.run(() => BalanceSheet.dailyUpdate());
 }
 
 export function template_checkedLabeledEmails() {

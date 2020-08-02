@@ -29,6 +29,8 @@ P1:
     - some way to cache the current Config
   - read the entire sheet and operate on it, rather than reading every cell one
     at a time
+- make doDailyUpdate idempotent
+  - check if rent or interest was already applied  
 
 
 P2:
@@ -38,6 +40,8 @@ P2:
 - allow disabling outgoing emails in the config
 - Add config for the payment label in balance sheet. e.g. "Car payment"
 - Add a log in the spreadsheet, showing recent events
+- make addPayment idempotent
+  - add gmail message id in invisible column?
 
 P3:
 - integrate with Plaid to *maybe* get Zelle Ids  
@@ -121,6 +125,7 @@ P1:
   - next interest date / next rent due date
   - `With continued monthly payments of ${amount}, this will be done ${date}`
   - can be done in one big merged cell. at least in thebut programatically?
+- make 0 balance green for rent
 
 P2:
 - instead of checking emails, let manual step be to label emails. script do the
