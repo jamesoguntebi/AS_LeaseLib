@@ -96,7 +96,7 @@ export default class BalanceSheetTest implements JASLib.Test {
       },
     ];
 
-    t.xdescribe('maybeAddRentOrInterestTransaction', () => {
+    t.describe('maybeAddRentOrInterestTransaction', () => {
       t.beforeAll(() => t.spyOn(BalanceSheet, 'insertRow'));
 
       const configSpecs = [
@@ -227,7 +227,7 @@ export default class BalanceSheetTest implements JASLib.Test {
         });
 
         expectNewRowValues(-450, 950, 'Partial rent due');
-        t.expect(BalanceSheet.updateStatusCell).not.toHaveBeenCalled();
+        t.expect(BalanceSheet.updateStatusCell).toHaveBeenCalled();
       });
 
       t.it('decreases rent', () => {
@@ -238,7 +238,7 @@ export default class BalanceSheetTest implements JASLib.Test {
         });
 
         expectNewRowValues(450, 50, 'Rent payment');
-        t.expect(BalanceSheet.updateStatusCell).not.toHaveBeenCalled();
+        t.expect(BalanceSheet.updateStatusCell).toHaveBeenCalled();
       });
 
       t.it('adds interest', () => {
@@ -252,11 +252,11 @@ export default class BalanceSheetTest implements JASLib.Test {
           (-initialBalance * Config.get().loanConfig!.interestRate) / 12;
         const expectedBalance = initialBalance - expectedInterest;
         expectNewRowValues(expectedInterest, expectedBalance, 'Interest');
-        t.expect(BalanceSheet.updateStatusCell).not.toHaveBeenCalled();
+        t.expect(BalanceSheet.updateStatusCell).toHaveBeenCalled();
       });
     });
 
-    t.xdescribe('validateActiveSheet', () => {
+    t.describe('validateActiveSheet', () => {
       const sheetContainer = this.withTempBalanceSheet(t); // For pass-by-ref.
       let sheet: Sheet;
       t.beforeEach(() => (sheet = sheetContainer.sheet));
@@ -318,7 +318,7 @@ export default class BalanceSheetTest implements JASLib.Test {
       });
     });
 
-    t.xdescribe('updateStatusCell', () => {
+    t.describe('updateStatusCell', () => {
       const sheetContainer = this.withTempBalanceSheet(t); // For pass-by-ref.
       let sheet: Sheet;
       let statusCell: Range;

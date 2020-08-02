@@ -86,6 +86,9 @@ export default class BalanceSheet {
   static insertRow(balanceRow: BalanceRow) {
     const sheet = BalanceSheet.getSheet();
     const headerRow = sheet.getFrozenRows();
+    // TODO: Insert the row at the correct date location. This may need a custom
+    // row sort. When the date is a tie, for loan configs, a payment should come
+    // before the interest application to give the loaner the interest benefit.
     sheet.insertRowAfter(headerRow);
     const newRow = headerRow + 1;
     const balanceColumn = SSLib.JasSpreadsheet.findColumn('balance', sheet);
