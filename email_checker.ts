@@ -55,12 +55,23 @@ export default class EmailChecker {
     const alreadyProcessed =
         EmailChecker.getAllProcessedEmailsPendingLabelUpdate();
     let tryUpdateOldProcessedThreadLabels = false;
+    const config = Config.get();
 
     for (const thread of pendingThreads) {
       if (alreadyProcessed.has(thread.getId())) continue;
 
+      // TODO: Test this:
+      if (config.searchQuery.labelName) {
+        const labelName = config.searchQuery.labelName!.toLowerCase();
+        if (
+          !thread.getLabels().some(l => l.getName().toLowerCase() === labelName)
+        ) {
+          continue;
+        }
+      }
+
       for (const message of thread.getMessages()) {
-        for (const paymentType of Config.get().searchQuery.paymentTypes) {
+        for (const paymentType of config.searchQuery.paymentTypes) {
           const parser = EmailChecker.PARSERS.get(paymentType);
           const paymentAmount = parser(message);
           if (paymentAmount !== null) {

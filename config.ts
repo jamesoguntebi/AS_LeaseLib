@@ -70,6 +70,7 @@ export default class Config {
       loanConfig,
       rentConfig,
       searchQuery: {
+        labelName: getCellData(F.searchQuery_labelName).stringOptional(),
         paymentTypes,
         searchName: getCellData(F.searchQuery_searchName).string(),
       },
@@ -232,6 +233,7 @@ export default class Config {
     loanConfig_interestDayOfMonth: 'loan monthly interest day',
     rentConfig_monthlyAmount: 'rent monthly amount',
     rentConfig_dueDayOfMonth: 'rent monthly due day',
+    searchQuery_labelName: 'gmail label name',
     searchQuery_paymentTypes: 'payment types',
     searchQuery_searchName: 'gmail search name',
   };
@@ -262,6 +264,7 @@ interface LoanConfig {
 }
 
 interface SearchQuery {
+  labelName?: string;
   paymentTypes: PaymentType[];
   searchName: string;
 }

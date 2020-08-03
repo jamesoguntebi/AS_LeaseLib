@@ -11,7 +11,23 @@ P0:
   - probably api_test.ts
 - figure out how to differentiate between two types of payments from one person
   meant for two different spreadsheets
+  - add tests
 - abriel car loan
+- don't require monthly interest day for 0-interest loans
+- fix validation failure error reporing during client sheet registration
+  - Maybe use Util.isError from JAS_Lib
+  - Test by having a 0-interest sheet with no monthly interest day
+- if processing an email fails, mark it with a new failed label. don't process
+  - failed emails
+- when iterating over labeled emails, stop checking processed emails in future
+  sheets. bail early when done.
+  - 1) gmail says 2 threads have 'process pending' label
+  - 2) one sheet processes one thread
+  - 3) future sheets only need to process the remaining thread
+  - 4) once all threads are processed, stop
+- different color for per-sheet labels
+- add updateStatusCell option in spreadsheet UI menu
+
 
 P1:
 - read all emails, and ask admin to verify emails that should be parsed
