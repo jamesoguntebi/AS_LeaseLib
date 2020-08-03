@@ -7,16 +7,16 @@ export default class ClientSheetManager {
   /**
    * Sets each registered spreadhsheet as the current spreadsheet in the library
    * context, calling the callback each time.
-   * @param fn 
+   * @param fn Return true to break loop.
    */
-  static forEach(fn: (_: string) => void) {
+  static forEach(fn: (_: string) => boolean|void) {
     const storedSpreadsheetId = _JasLibContext.spreadsheetId;
 
     const spreadsheetIds = ClientSheetManager.getAll();
     Logger.log(`Registered clients: ${JSON.stringify(spreadsheetIds)}`);
     for (const spreadsheetId of spreadsheetIds) {
       _JasLibContext.spreadsheetId = spreadsheetId;
-      fn(spreadsheetId);
+      if (fn(spreadsheetId)) break;
       SpreadsheetApp.flush();
       // Sleeping after each spreadsheet operation is likely unecessary. It's
       // a safeguard to prevent cross-talk between client sheets.

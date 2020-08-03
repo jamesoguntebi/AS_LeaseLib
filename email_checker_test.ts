@@ -57,7 +57,8 @@ export default class EmailCheckerTest implements JASLib.Test {
     }
 
     const setDataWithPendingMessages = (
-      threadMessages: JASLib.GmailMessageParams[][]
+      threadMessages: JASLib.GmailMessageParams[][],
+      extraLabels: string[] = []
     ) => {
       JASLib.FakeGmailApp.setData({
         labels: [
@@ -67,6 +68,7 @@ export default class EmailCheckerTest implements JASLib.Test {
           },
           {name: EmailChecker.DONE_LABEL_NAME},
           {name: EmailChecker.FAILED_LABEL_NAME},
+          ...extraLabels.map(name => ({name}))
         ],
       });
     };
@@ -161,6 +163,39 @@ export default class EmailCheckerTest implements JASLib.Test {
         t.expect(EmailSender.sendPaymentThanks).toHaveBeenCalledTimes(2);
         t.expect(BalanceSheet.addPayment).toHaveBeenCalledTimes(2);
         this.expectLabelCounts(t, {pending: 0, done: 2, failed: 0});
+      });
+
+      t.it('checks config for required label', () => {
+        const secondLabel = 'Second Label';
+        t.setConfig(
+          Config.getLoanConfigForTest(undefined, {
+            searchQuery: {
+              paymentTypes: ['Venmo'],
+              labelName: secondLabel,
+            },
+          })
+        );
+
+        // When the message has Pending label but not the second label.
+        setDataWithPendingMessages([[VENMO_MESSAGE]]);
+        EmailChecker.checkLabeledEmails();
+
+        // Expect the message not to get parsed.
+        t.expect(EmailSender.sendPaymentThanks).not.toHaveBeenCalled();
+        t.expect(BalanceSheet.addPayment).not.toHaveBeenCalled();
+        this.expectLabelCounts(t, {pending: 1, done: 0, failed: 0});
+
+        // When the message has both labels.
+        setDataWithPendingMessages([[VENMO_MESSAGE]], [secondLabel]);
+        JASLib.FakeGmailApp.getUserLabelByName(EmailChecker.PENDING_LABEL_NAME)
+          .getThreads()[0]!
+          .addLabel(JASLib.FakeGmailApp.getUserLabelByName(secondLabel));
+        EmailChecker.checkLabeledEmails();
+
+        // Expect the message to get parsed.
+        t.expect(EmailSender.sendPaymentThanks).toHaveBeenCalled();
+        t.expect(BalanceSheet.addPayment).toHaveBeenCalled();
+        this.expectLabelCounts(t, {pending: 0, done: 1, failed: 0});
       });
     });
   }

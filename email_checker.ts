@@ -8,21 +8,9 @@ type GmailMessage = GoogleAppsScript.Gmail.GmailMessage;
 type GmailThread = GoogleAppsScript.Gmail.GmailThread;
 
 export default class EmailChecker {
-  // James Apps Script - Lease Lib - Email Checker -
-  // Processed email pending label update
-  private static readonly PROPERTY_KEY = 'jas_ll_ec_peplu';
   static readonly PENDING_LABEL_NAME = 'AS Payment Process Pending';
   static readonly DONE_LABEL_NAME = 'AS Payment Processed';
   static readonly FAILED_LABEL_NAME = 'AS Payment Process Failed';
-
-  static readonly PAYMENT_QUERIES = new Map<PaymentType, string>([
-    [
-      'Zelle',
-      'subject:(payment|deposited|deposit) zelle ' +
-          '("deposited your payment"|"deposited your zelle payment"|"into your account")',
-    ],
-    ['Venmo', '(from:venmo subject:"paid you")'],
-  ]);
 
   /** The first match in the RE must be the deposit amount. */
   static readonly PARSERS = new Map<PaymentType, EmailParser>([
@@ -36,10 +24,36 @@ export default class EmailChecker {
     const pendingThreads = pendingLabel.getThreads();
     if (!pendingThreads.length) return;
 
-    ClientSheetManager.forEach(
-        () => EmailChecker.checkLabeledEmails(pendingLabel, pendingThreads));
+    ClientSheetManager.forEach(() => {
+      EmailChecker.checkLabeledEmails(pendingLabel, pendingThreads);
+      return !pendingThreads.length;
+    });
 
-    EmailChecker.assertNoPendingThreads();
+    // Any remaining threads failed to be parsed.
+    if (pendingThreads.length) {
+      const failedLabel = EmailChecker.assertLabel(
+        EmailChecker.FAILED_LABEL_NAME
+      );
+      for (const thread of pendingThreads) {
+        try {
+          thread.removeLabel(pendingLabel);
+          thread.addLabel(failedLabel);
+        } catch {
+          const subjects = thread
+            .getMessages()
+            .map(m => m.getSubject())
+            .join(', ');
+          Logger.log(
+            `Updating labels for thread with message subjects '${subjects}' failed.`
+          );
+        }
+      }
+
+      const threadSubjects = pendingLabel.getThreads().map(t => t.getMessages()
+          .map(m => m.getSubject()));
+      throw new Error(`Failed to parse labeled threads with subjects: ${
+          threadSubjects}`)
+    }
   }
 
   /** Searches among labeled emails. */
@@ -53,13 +67,10 @@ export default class EmailChecker {
     }
     const doneLabel =
         EmailChecker.assertLabel(EmailChecker.DONE_LABEL_NAME);
-    const alreadyProcessed =
-        EmailChecker.getAllProcessedEmailsPendingLabelUpdate();
-    let tryUpdateOldProcessedThreadLabels = false;
     const config = Config.get();
 
-    for (const thread of pendingThreads) {
-      if (alreadyProcessed.has(thread.getId())) continue;
+    for (let i = pendingThreads.length - 1; i >= 0; i--) {
+      const thread = pendingThreads[i];
 
       // TODO: Test this:
       if (config.searchQuery.labelName) {
@@ -89,51 +100,16 @@ export default class EmailChecker {
             try {
               thread.removeLabel(pendingLabel);
               thread.addLabel(doneLabel);
-
-              // This means that label updates worked. Try to update labels for
-              // awaiting threads.
-              tryUpdateOldProcessedThreadLabels = true;
             } catch {
               Logger.log(`Updating labels for thread with message subject ${
                   message.getSubject()} failed.`);
-              EmailChecker.addProcessedEmailPendingLabelUpdate(thread.getId());
             }
+            pendingThreads.splice(i, 1);
             break;
           }
         }
       }
     }
-
-    if (tryUpdateOldProcessedThreadLabels) {
-      for (const threadId of alreadyProcessed) {
-        const thread = GmailApp.getThreadById(threadId);
-        try {
-          thread.removeLabel(pendingLabel);
-          thread.addLabel(doneLabel);
-          Logger.log('Updated labels for thread that failed label update ' +
-              'previously.');
-          alreadyProcessed.delete(threadId);
-        } catch {
-          Logger.log('Expected label update to succeed. But it failed.')
-        }
-      }
-      PropertiesService.getScriptProperties().setProperty(
-          EmailChecker.PROPERTY_KEY,
-          JSON.stringify(Array.from(alreadyProcessed)));
-    }
-  }
-
-  static assertNoPendingThreads() {
-    const pendingLabel =
-        EmailChecker.assertLabel(EmailChecker.PENDING_LABEL_NAME);
-    const threads = pendingLabel.getThreads();
-
-    if (threads.length) {
-      const threadSubjects = pendingLabel.getThreads().map(t => t.getMessages()
-          .map(m => m.getSubject()));
-      throw new Error(`Failed to parse labeled threads with subjects: ${
-          threadSubjects}`)
-    };
   }
 
   private static parseVenmoMessage(message: GmailMessage): number|null {
@@ -160,6 +136,15 @@ export default class EmailChecker {
     if (!regExResult) return null;
     return Number(regExResult[1]);
   }
+
+  static readonly PAYMENT_QUERIES = new Map<PaymentType, string>([
+    [
+      'Zelle',
+      'subject:(payment|deposited|deposit) zelle ' +
+          '("deposited your payment"|"deposited your zelle payment"|"into your account")',
+    ],
+    ['Venmo', '(from:venmo subject:"paid you")'],
+  ]);
 
   /**
    * Searches all emails for messages that look like payments from the renter.
@@ -190,33 +175,6 @@ export default class EmailChecker {
     const label = GmailApp.getUserLabelByName(labelName);
     if (!label) throw new Error(`Gmail label ${labelName} not found.`);
     return label;
-  }
-
-  private static addProcessedEmailPendingLabelUpdate(threadId: string) {
-    const existingIds = EmailChecker.getAllProcessedEmailsPendingLabelUpdate();
-    existingIds.add(threadId);
-    PropertiesService.getScriptProperties().setProperty(
-        EmailChecker.PROPERTY_KEY, JSON.stringify(Array.from(existingIds)));
-  }
-
-  private static getAllProcessedEmailsPendingLabelUpdate(): Set<string> {
-    const propertyValue = PropertiesService.getScriptProperties().getProperty(
-        EmailChecker.PROPERTY_KEY);
-    if (!propertyValue) return new Set();
-
-    try {
-      const idList = JSON.parse(propertyValue);
-      if (idList instanceof Array &&
-        idList.every(id => typeof id === 'string')) {
-        return new Set(idList);
-      } else {
-        throw new Error(`Stored processed email thread id list has ` +
-            `incorrect format: ${propertyValue}`);
-      }
-    } catch (e) {
-      Logger.log('Failure to parse processed email thread id list.');
-      throw e;
-    }
   }
 }
 

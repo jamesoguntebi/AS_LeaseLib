@@ -9,7 +9,7 @@ export default class ClientSheetManagerTest implements JASLib.Test {
 
   private expectRegisteredCount(t: Tester, expected: number) {
     let count = 0;
-    ClientSheetManager.forEach(() => count++);
+    ClientSheetManager.forEach(() => void count++);
     t.expect(count).toEqual(expected);
   }
 
@@ -129,6 +129,16 @@ export default class ClientSheetManagerTest implements JASLib.Test {
       t.it('sleeps after every sheet', () => {
         ClientSheetManager.forEach(eachFn);
         t.expect(Utilities.sleep).toHaveBeenCalledTimes(3);
+      });
+
+      t.it('bails early', () => {
+        const bailEarlyFn = (spreadsheetId: string) =>
+          spreadsheetId.endsWith('2');
+        const bailEarlyObserver = {bailEarlyFn};
+        t.spyOn(bailEarlyObserver, 'bailEarlyFn').and.callThrough();
+
+        ClientSheetManager.forEach(bailEarlyObserver.bailEarlyFn);
+        t.expect(bailEarlyObserver.bailEarlyFn).toHaveBeenCalledTimes(2);
       });
     });
   }
