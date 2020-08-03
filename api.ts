@@ -19,7 +19,7 @@ export function updateStatusCell() {
   });
 }
 
-export function checkedLabeledEmails() {
+export function checkLabeledEmails() {
   return Executrix.run(() => EmailChecker.checkLabeledEmailsForAllSheets());
 }
 
@@ -28,10 +28,10 @@ export function template_dailyBalanceUpdate() {
   return Executrix.run(() => BalanceSheet.dailyUpdate());
 }
 
-export function template_checkedLabeledEmails() {
+export function template_checkLabeledEmails() {
   _JasLibContext.spreadsheetId = LEASE_TEMPLATE_SPREADSHEET_ID;
   return Executrix.run(() => {
-    EmailChecker.checkedLabeledEmails();
+    EmailChecker.checkLabeledEmails();
   });
 }
 

@@ -13,6 +13,7 @@ export default class EmailChecker {
   private static readonly PROPERTY_KEY = 'jas_ll_ec_peplu';
   static readonly PENDING_LABEL_NAME = 'AS Payment Process Pending';
   static readonly DONE_LABEL_NAME = 'AS Payment Processed';
+  static readonly FAILED_LABEL_NAME = 'AS Payment Process Failed';
 
   static readonly PAYMENT_QUERIES = new Map<PaymentType, string>([
     [
@@ -33,16 +34,16 @@ export default class EmailChecker {
     const pendingLabel =
         EmailChecker.assertLabel(EmailChecker.PENDING_LABEL_NAME);
     const pendingThreads = pendingLabel.getThreads();
-    if (!pendingThreads.length) {
-      return;
-    }
+    if (!pendingThreads.length) return;
 
     ClientSheetManager.forEach(
-        () => EmailChecker.checkedLabeledEmails(pendingLabel, pendingThreads));    
+        () => EmailChecker.checkLabeledEmails(pendingLabel, pendingThreads));
+
+    EmailChecker.assertNoPendingThreads();
   }
 
   /** Searches among labeled emails. */
-  static checkedLabeledEmails(
+  static checkLabeledEmails(
       pendingLabel?: GmailLabel, pendingThreads?: GmailThread[]) {
     if (!pendingLabel) {
       pendingLabel = EmailChecker.assertLabel(EmailChecker.PENDING_LABEL_NAME);

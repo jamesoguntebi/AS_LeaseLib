@@ -14,7 +14,63 @@ export default class EmailCheckerTest implements JASLib.Test {
         undefined, {searchQuery: {paymentTypes}}));
   }
 
+  private expectLabelCounts(
+      t: Tester,
+      expectedCounts: {pending?: number, done?: number, failed?: number}) {
+    if (expectedCounts.pending !== undefined) {
+      t.expect(
+        JASLib.FakeGmailApp.getUserLabelByName(
+          EmailChecker.PENDING_LABEL_NAME
+        )!.getThreads().length
+      ).toEqual(expectedCounts.pending);
+    }
+    if (expectedCounts.done !== undefined) {
+      t.expect(
+        JASLib.FakeGmailApp.getUserLabelByName(
+          EmailChecker.DONE_LABEL_NAME
+        )!.getThreads().length
+      ).toEqual(expectedCounts.done);
+    }
+    if (expectedCounts.failed !== undefined) {
+      t.expect(
+        JASLib.FakeGmailApp.getUserLabelByName(
+          EmailChecker.FAILED_LABEL_NAME
+        )!.getThreads().length
+      ).toEqual(expectedCounts.failed);
+    }
+  }
+
   run(t: Tester) {
+    const ZELLE_MESSAGE: JASLib.GmailMessageParams = {
+      subject: 'We deposited your Zelle payment',
+      from: 'email@transfers.ally.com',
+      plainBody: 'We have successfully deposited the $100.00 ' + 
+          `Zelle® payment from ${Config.DEFAULT.searchQuery.searchName}`,
+    }
+    const VENMO_MESSAGE: JASLib.GmailMessageParams = {
+      subject: `${Config.DEFAULT.searchQuery.searchName} paid you $100.00`,
+      from: 'venmo@venmo.com',
+    }
+    const INVALID_MESSAGE: JASLib.GmailMessageParams = {
+      subject: `Not a valid lease/loan email`,
+      from: 'invalid@venmo.com',
+    }
+
+    const setDataWithPendingMessages = (
+      threadMessages: JASLib.GmailMessageParams[][]
+    ) => {
+      JASLib.FakeGmailApp.setData({
+        labels: [
+          {
+            name: EmailChecker.PENDING_LABEL_NAME,
+            threads: threadMessages.map(messages => ({messages})),
+          },
+          {name: EmailChecker.DONE_LABEL_NAME},
+          {name: EmailChecker.FAILED_LABEL_NAME},
+        ],
+      });
+    };
+
     t.beforeAll(() => {
       t.spyOn(GmailApp, 'getUserLabelByName').and
           .callFake(JASLib.FakeGmailApp.getUserLabelByName);
@@ -27,174 +83,85 @@ export default class EmailCheckerTest implements JASLib.Test {
     });
 
     t.describe('checkLabeledEmailsForAllSheets', () => {
-      t.describe('with invalid pending email', () => {
-        t.beforeEach(() => {
-          this.setConfigWithPaymentTypes(t, 'Zelle', 'Venmo');
-          JASLib.FakeGmailApp.setData({labels: [
-            {
-              name: EmailChecker.PENDING_LABEL_NAME,
-              threads: [{messages: [{}]}],
-            },
-            {name: EmailChecker.DONE_LABEL_NAME},
-          ]});
-        });
+      t.it('throws for invalid pending email', () => {
+        this.setConfigWithPaymentTypes(t, 'Zelle', 'Venmo');
+        setDataWithPendingMessages([[INVALID_MESSAGE]]);
 
-        t.it('throws on assertNoPendingThreads', () => {
-          EmailChecker.checkLabeledEmailsForAllSheets();
-          t.expect(EmailSender.sendPaymentThanks).not.toHaveBeenCalled();
-          t.expect(BalanceSheet.addPayment).not.toHaveBeenCalled();
-
-          t.expect(() => EmailChecker.assertNoPendingThreads())
-              .toThrow('Failed to parse labeled threads');
-        });
+        t.expect(() => EmailChecker.checkLabeledEmailsForAllSheets()).toThrow(
+          'Failed to parse labeled threads'
+        );
+        t.expect(EmailSender.sendPaymentThanks).not.toHaveBeenCalled();
+        t.expect(BalanceSheet.addPayment).not.toHaveBeenCalled();
+        this.expectLabelCounts(t, {pending: 0, done: 0, failed: 1});
       });
 
-      t.describe('with valid Zelle email', () => {
-        t.beforeEach(() => {
-          this.setConfigWithPaymentTypes(t, 'Zelle', 'Venmo');
-          JASLib.FakeGmailApp.setData({labels: [
-            {
-              name: EmailChecker.PENDING_LABEL_NAME,
-              threads: [
-                {messages: [EmailCheckerTest.ZELLE_MESSAGE]},
-              ],
-            },
-            {name: EmailChecker.DONE_LABEL_NAME},
-          ]});
-        });
+      t.it('does not throw for valid pending email', () => {
+        this.setConfigWithPaymentTypes(t, 'Zelle', 'Venmo');
+        setDataWithPendingMessages([[ZELLE_MESSAGE]]);
 
-        t.it('handles the email', () => {
-          EmailChecker.checkLabeledEmailsForAllSheets();
-
-          t.expect(EmailSender.sendPaymentThanks).toHaveBeenCalled();
-          t.expect(BalanceSheet.addPayment).toHaveBeenCalled();
-          t.expect(() => EmailChecker.assertNoPendingThreads()).not.toThrow();
-          t.expect(JASLib.FakeGmailApp.getUserLabelByName(
-              EmailChecker.DONE_LABEL_NAME)?.getThreads().length).toEqual(1);
-        });
-
-        t.describe('with Venmo-only Config', () => {
-          t.beforeEach(() => {
-            this.setConfigWithPaymentTypes(t, 'Venmo');
-          });
-  
-          t.it('does nothing', () => {
-            EmailChecker.checkLabeledEmailsForAllSheets();
-  
-            t.expect(EmailSender.sendPaymentThanks).not.toHaveBeenCalled();
-            t.expect(BalanceSheet.addPayment).not.toHaveBeenCalled();
-            t.expect(JASLib.FakeGmailApp.getUserLabelByName(
-                EmailChecker.DONE_LABEL_NAME)?.getThreads().length).toEqual(0);
-          });
-        });
-      });
-
-      t.describe('with valid Venmo email', () => {
-        t.beforeEach(() => {
-          this.setConfigWithPaymentTypes(t, 'Zelle', 'Venmo');
-          JASLib.FakeGmailApp.setData({labels: [
-            {
-              name: EmailChecker.PENDING_LABEL_NAME,
-              threads: [
-                {messages: [EmailCheckerTest.VENMO_MESSAGE]},
-              ],
-            },
-            {name: EmailChecker.DONE_LABEL_NAME},
-          ]});
-        });
-
-        t.it('handles the email', () => {
-          EmailChecker.checkLabeledEmailsForAllSheets();
-
-          t.expect(EmailSender.sendPaymentThanks).toHaveBeenCalled();
-          t.expect(BalanceSheet.addPayment).toHaveBeenCalled();
-          t.expect(() => EmailChecker.assertNoPendingThreads()).not.toThrow();
-          t.expect(JASLib.FakeGmailApp.getUserLabelByName(
-              EmailChecker.DONE_LABEL_NAME)?.getThreads().length).toEqual(1);
-        });
-
-        t.describe('with Zelle-only Config', () => {
-          t.beforeEach(() => {
-            this.setConfigWithPaymentTypes(t, 'Zelle');
-          });
-  
-          t.it('does nothing', () => {
-            EmailChecker.checkLabeledEmailsForAllSheets();
-  
-            t.expect(EmailSender.sendPaymentThanks).not.toHaveBeenCalled();
-            t.expect(BalanceSheet.addPayment).not.toHaveBeenCalled();
-            t.expect(JASLib.FakeGmailApp.getUserLabelByName(
-                EmailChecker.DONE_LABEL_NAME)?.getThreads().length).toEqual(0);
-          });
-        });
-      });
-
-      t.describe('with two valid emails in one thread', () => {
-        t.beforeEach(() => {
-          this.setConfigWithPaymentTypes(t, 'Zelle', 'Venmo');
-          JASLib.FakeGmailApp.setData({labels: [
-            {
-              name: EmailChecker.PENDING_LABEL_NAME,
-              threads: [
-                {
-                  messages: [
-                    EmailCheckerTest.VENMO_MESSAGE,
-                    EmailCheckerTest.VENMO_MESSAGE,
-                  ],
-                },
-              ],
-            },
-            {name: EmailChecker.DONE_LABEL_NAME},
-          ]});
-        });
-
-        t.it('handles both emails', () => {
-          EmailChecker.checkLabeledEmailsForAllSheets();
-
-          t.expect(EmailSender.sendPaymentThanks).toHaveBeenCalledTimes(2);
-          t.expect(BalanceSheet.addPayment).toHaveBeenCalledTimes(2);
-          t.expect(() => EmailChecker.assertNoPendingThreads()).not.toThrow();
-          t.expect(JASLib.FakeGmailApp.getUserLabelByName(
-              EmailChecker.DONE_LABEL_NAME)?.getThreads().length).toEqual(1);
-        });
-      });
-
-      t.describe('with valid emails in two threads', () => {
-        t.beforeEach(() => {
-          this.setConfigWithPaymentTypes(t, 'Zelle', 'Venmo');
-          JASLib.FakeGmailApp.setData({labels: [
-            {
-              name: EmailChecker.PENDING_LABEL_NAME,
-              threads: [
-                {messages: [EmailCheckerTest.VENMO_MESSAGE]},
-                {messages: [EmailCheckerTest.ZELLE_MESSAGE]},
-              ],
-            },
-            {name: EmailChecker.DONE_LABEL_NAME},
-          ]});
-        });
-
-        t.it('handles both emails', () => {
-          EmailChecker.checkLabeledEmailsForAllSheets();
-
-          t.expect(EmailSender.sendPaymentThanks).toHaveBeenCalledTimes(2);
-          t.expect(BalanceSheet.addPayment).toHaveBeenCalledTimes(2);
-          t.expect(() => EmailChecker.assertNoPendingThreads()).not.toThrow();
-          t.expect(JASLib.FakeGmailApp.getUserLabelByName(
-              EmailChecker.DONE_LABEL_NAME)?.getThreads().length).toEqual(2);
-        });
+        t.expect(() =>
+          EmailChecker.checkLabeledEmailsForAllSheets()
+        ).not.toThrow();
+        t.expect(EmailSender.sendPaymentThanks).toHaveBeenCalled();
+        t.expect(BalanceSheet.addPayment).toHaveBeenCalled();
+        this.expectLabelCounts(t, {pending: 0, done: 1, failed: 0});
       });
     });
-  }
 
-  private static readonly ZELLE_MESSAGE: JASLib.GmailMessageParams = {
-    subject: 'We deposited your Zelle payment',
-    from: 'email@transfers.ally.com',
-    plainBody: 'We have successfully deposited the $100.00 ' + 
-        `Zelle® payment from ${Config.DEFAULT.searchQuery.searchName}`,
-  }
-  private static readonly VENMO_MESSAGE: JASLib.GmailMessageParams = {
-    subject: `${Config.DEFAULT.searchQuery.searchName} paid you $100.00`,
-    from: 'venmo@venmo.com',
+    t.describe('checkLabeledEmails', () => {
+      type PaymentTypeSpec = {
+        message: JASLib.GmailMessageParams,
+        otherType: PaymentType,
+        type: PaymentType,
+      };
+      const paymentTypeSpecs: PaymentTypeSpec[] = [
+        {type: 'Venmo', otherType: 'Zelle', message: VENMO_MESSAGE},
+        {type: 'Zelle', otherType: 'Venmo', message: ZELLE_MESSAGE},
+      ];
+
+      for (const {type, message} of paymentTypeSpecs) {
+        t.it(`processes ${type} email`, () => {
+          this.setConfigWithPaymentTypes(t, type);
+          setDataWithPendingMessages([[message]]);
+          EmailChecker.checkLabeledEmails();
+  
+          t.expect(EmailSender.sendPaymentThanks).toHaveBeenCalled();
+          t.expect(BalanceSheet.addPayment).toHaveBeenCalled();
+          this.expectLabelCounts(t, {pending: 0, done: 1, failed: 0});
+        });
+      }
+
+      for (const {type, message, otherType} of paymentTypeSpecs) {
+        t.it(`ignores ${type} email in ${otherType} config`, () => {
+          this.setConfigWithPaymentTypes(t, otherType);
+          setDataWithPendingMessages([[message]]);
+          EmailChecker.checkLabeledEmails();
+  
+          t.expect(EmailSender.sendPaymentThanks).not.toHaveBeenCalled();
+          t.expect(BalanceSheet.addPayment).not.toHaveBeenCalled();
+          this.expectLabelCounts(t, {pending: 1, done: 0, failed: 0});
+        });
+      }
+
+      t.it('processes two valid emails in one thread', () => {
+        this.setConfigWithPaymentTypes(t, 'Zelle', 'Venmo');
+        setDataWithPendingMessages([[VENMO_MESSAGE, VENMO_MESSAGE]]);
+        EmailChecker.checkLabeledEmails();
+
+        t.expect(EmailSender.sendPaymentThanks).toHaveBeenCalledTimes(2);
+        t.expect(BalanceSheet.addPayment).toHaveBeenCalledTimes(2);
+        this.expectLabelCounts(t, {pending: 0, done: 1, failed: 0});
+      });
+
+      t.it('processes valid emails in two threads', () => {
+        this.setConfigWithPaymentTypes(t, 'Zelle', 'Venmo');
+        setDataWithPendingMessages([[VENMO_MESSAGE], [ZELLE_MESSAGE]]);
+        EmailChecker.checkLabeledEmails();
+
+        t.expect(EmailSender.sendPaymentThanks).toHaveBeenCalledTimes(2);
+        t.expect(BalanceSheet.addPayment).toHaveBeenCalledTimes(2);
+        this.expectLabelCounts(t, {pending: 0, done: 2, failed: 0});
+      });
+    });
   }
 }
