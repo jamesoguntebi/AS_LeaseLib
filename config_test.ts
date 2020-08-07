@@ -115,6 +115,16 @@ export default class ConfigTest implements JASLib.Test {
          })).toThrow('Both renter and borrower config');
       });
 
+      t.it('loan config without interest day of month', () => {
+        t.expect(() => Config.getLoanConfigForTest(undefined, {
+           loanConfig: {interestDayOfMonth: undefined}
+         })).toThrow('Loans must have an interest day');
+
+        t.expect(() => Config.getLoanConfigForTest(undefined, {
+           loanConfig: {interestRate: 0},
+         })).not.toThrow();
+      });
+
       t.it('negative day of month', () => {
         t.expect(() => Config.getLoanConfigForTest(undefined, {
            loanConfig: {interestDayOfMonth: -10}

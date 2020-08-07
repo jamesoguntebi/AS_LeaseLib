@@ -1,15 +1,14 @@
-  _______    ____    _____     ____        
- |__   __|  / __ \  |  __ \   / __ \     _ 
+  _______    ____    _____     ____
+ |__   __|  / __ \  |  __ \   / __ \     _
     | |    | |  | | | |  | | | |  | |   (_)
-    | |    | |  | | | |  | | | |  | |      
-    | |    | |__| | | |__| | | |__| |    _ 
+    | |    | |  | | | |  | | | |  | |
+    | |    | |__| | | |__| | | |__| |    _
     |_|     \____/  |_____/   \____/    (_)
 
 P0:
 - update README
 - integration tests
   - probably api_test.ts
-- don't require monthly interest day for 0-interest loans
 - fix validation failure error reporing during client sheet registration
   - Maybe use Util.isError from JAS_Lib
   - Test by having a 0-interest sheet with no monthly interest day
@@ -57,7 +56,7 @@ P2:
   - add gmail message id in invisible column?
 
 P3:
-- integrate with Plaid to *maybe* get Zelle Ids  
+- integrate with Plaid to *maybe* get Zelle Ids
 - automated way to unregister deleted clients, or really, any good way to
   unregister.
 - mark L tests and make running them optional
@@ -70,11 +69,11 @@ P4
 - tsconfig
 
 
-  _____     ____    _   _   ______     
- |  __ \   / __ \  | \ | | |  ____|  _ 
+  _____     ____    _   _   ______
+ |  __ \   / __ \  | \ | | |  ____|  _
  | |  | | | |  | | |  \| | | |__    (_)
- | |  | | | |  | | | . ` | |  __|      
- | |__| | | |__| | | |\  | | |____   _ 
+ | |  | | | |  | | | . ` | |  __|
+ | |__| | | |__| | | |\  | | |____   _
  |_____/   \____/  |_| \_| |______| (_)
 
 P0:
@@ -90,8 +89,8 @@ P0:
 - fix afterAll and configtest
 - For every 5 minute 'check labeled Emails', first check if there are any
     labeled emails, then open every spreadsheet.
-- All product code tested!!! 
-- All test framework code tested!!! 
+- All product code tested!!!
+- All test framework code tested!!!
 - sheet validations
   - correctly named sheets, maybe columns
   - probably better to run some unit tests against the sheet (obsolete)
@@ -123,6 +122,7 @@ P0:
 - figure out how to differentiate between two types of payments from one person
   meant for two different spreadsheets
   - add tests
+- don't require monthly interest day for 0-interest loans
 
 P1:
 - add option to add a full payment

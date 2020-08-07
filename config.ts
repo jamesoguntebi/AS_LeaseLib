@@ -42,7 +42,7 @@ export default class Config {
         !loanMonthlyInterestDayCellData.isBlank()) {
       loanConfig = {
         interestRate: loanInterestRateCellData.number(),
-        interestDayOfMonth: loanMonthlyInterestDayCellData.number(),
+        interestDayOfMonth: loanMonthlyInterestDayCellData.number(undefined),
       };
     }
 
@@ -85,7 +85,13 @@ export default class Config {
       }
     }
     if (config.loanConfig) {
-      Util.validateRecurringDayOfMonth(config.loanConfig.interestDayOfMonth);
+      if (config.loanConfig.interestRate) {
+        if (config.loanConfig.interestDayOfMonth === undefined) {
+          throw new Error(
+              'Loans must have an interest day unless they are 0-interest loans.');
+        }
+        Util.validateRecurringDayOfMonth(config.loanConfig.interestDayOfMonth);
+      }
       if (config.loanConfig.interestRate < 0 ||
           config.loanConfig.interestRate > 1) {
         throw new Error('Interest rate must be between 0 and 1.');
@@ -240,7 +246,7 @@ interface RentConfig {
 
 interface LoanConfig {
   interestRate: number;
-  interestDayOfMonth: number;
+  interestDayOfMonth?: number;
 }
 
 interface SearchQuery {
