@@ -9,10 +9,6 @@ P0:
 - update README
 - integration tests
   - probably api_test.ts
-- figure out how to differentiate between two types of payments from one person
-  meant for two different spreadsheets
-  - add tests
-- abriel car loan
 - don't require monthly interest day for 0-interest loans
 - fix validation failure error reporing during client sheet registration
   - Maybe use Util.isError from JAS_Lib
@@ -43,6 +39,11 @@ P1:
   - check if rent or interest was already applied
 - static file analysis
   - no 'this' in ts files
+- optimizations
+  - store per-project configs in Properties, update onEdit
+  - https://developers.google.com/apps-script/reference/script/trigger-builder#forspreadsheetkey
+- set balance sheet tab color based on current balance
+- add toBe to tests
 
 
 P2:
@@ -118,6 +119,10 @@ P0:
   - 3) future sheets only need to process the remaining thread
   - 4) once all threads are processed, stop
 - different color for per-sheet labels
+- abriel car loan
+- figure out how to differentiate between two types of payments from one person
+  meant for two different spreadsheets
+  - add tests
 
 P1:
 - add option to add a full payment

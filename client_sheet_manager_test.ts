@@ -1,8 +1,9 @@
-import Tester from "./testing/tester";
-import Config from "./config";
-import BalanceSheet from "./balance_sheet";
-import ClientSheetManager from "./client_sheet_manager";
-import { JASLib } from "jas_api"
+import {JASLib} from 'jas_api'
+
+import BalanceSheet from './balance_sheet';
+import ClientSheetManager from './client_sheet_manager';
+import Config from './config';
+import Tester from './testing/tester';
 
 export default class ClientSheetManagerTest implements JASLib.Test {
   readonly name = 'ClientSheetManagerTest';
@@ -13,7 +14,7 @@ export default class ClientSheetManagerTest implements JASLib.Test {
     t.expect(count).toEqual(expected);
   }
 
-  run (t: Tester) {
+  run(t: Tester) {
     let forceConfigSheetInvalid = false;
     let forceBalanceSheetInvalid = false;
 
@@ -32,8 +33,8 @@ export default class ClientSheetManagerTest implements JASLib.Test {
 
     t.beforeEach(() => {
       const fakeProperties = new JASLib.FakeProperties();
-      t.spyOn(PropertiesService, 'getScriptProperties').and
-          .callFake(() => fakeProperties);
+      t.spyOn(PropertiesService, 'getScriptProperties')
+          .and.callFake(() => fakeProperties);
     });
 
     t.describe('regsiter', () => {
@@ -133,7 +134,7 @@ export default class ClientSheetManagerTest implements JASLib.Test {
 
       t.it('bails early', () => {
         const bailEarlyFn = (spreadsheetId: string) =>
-          spreadsheetId.endsWith('2');
+            spreadsheetId.endsWith('2');
         const bailEarlyObserver = {bailEarlyFn};
         t.spyOn(bailEarlyObserver, 'bailEarlyFn').and.callThrough();
 

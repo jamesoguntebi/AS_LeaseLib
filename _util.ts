@@ -1,10 +1,9 @@
 export default class Util {
-  private static MONEY_FORMATTER =
-      new Intl.NumberFormat('en-us', {
-        currency: "USD",
-        minimumFractionDigits: 0,      
-        maximumFractionDigits: 2,
-      });
+  private static MONEY_FORMATTER = new Intl.NumberFormat('en-us', {
+    currency: 'USD',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  });
 
   private static DAY_IN_MILLIS = 24 * 60 * 60 * 1000;
 
@@ -27,7 +26,7 @@ export default class Util {
 
     const dateCopy = new Date(date.getTime());
     dateCopy.setHours(0, 0, 0, 0);
-    
+
     if (today.getTime() === dateCopy.getTime()) return 'today';
 
     const yesterday = new Date(today.getTime() - Util.DAY_IN_MILLIS);
@@ -36,10 +35,9 @@ export default class Util {
     const tomorrow = new Date(today.getTime() + Util.DAY_IN_MILLIS);
     if (tomorrow.getTime() === dateCopy.getTime()) return 'tomorrow';
 
-    const format =
-      dateCopy.getFullYear() === today.getFullYear()
-        ? 'MMM dd'
-        : 'MMM dd, yyyy';
+    const format = dateCopy.getFullYear() === today.getFullYear() ?
+        'MMM dd' :
+        'MMM dd, yyyy';
 
     return `on ${
         Utilities.formatDate(date, Session.getScriptTimeZone(), format)}`;
@@ -60,7 +58,8 @@ export default class Util {
   /** Validates that `day` is in [1, 28], making it valid in every month. */
   static validateRecurringDayOfMonth(day: number) {
     if (!Number.isInteger(day) || day < 1 || day > 28) {
-      throw new Error('Day of month must be a whole number from 1 to 28 to ' +
+      throw new Error(
+          'Day of month must be a whole number from 1 to 28 to ' +
           `valid in all months. Got ${day}`);
     }
   }

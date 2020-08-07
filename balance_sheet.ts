@@ -1,6 +1,7 @@
-import Config from './config';
 import {SSLib} from 'ss_api';
+
 import Util from './_util';
+import Config from './config';
 
 export function testUpdateStatusCell() {
   _JasLibContext.spreadsheetId = '1e-xDkyts6jt_2JPGS5i1hX4opVJ9niQ9f0y8YtAvTlw';
@@ -13,9 +14,8 @@ export default class BalanceSheet {
     const sheet = BalanceSheet.getSheet();
     const firstDataRow = sheet.getFrozenRows() + 1;
     const balanceColumn = SSLib.JasSpreadsheet.findColumn('balance', sheet);
-    return new SSLib.CellData(
-      sheet.getRange(firstDataRow, balanceColumn)
-    ).number();
+    return new SSLib.CellData(sheet.getRange(firstDataRow, balanceColumn))
+        .number();
   }
 
   /**
@@ -38,13 +38,10 @@ export default class BalanceSheet {
       throw new Error('Expected 2 frozen rows in Balance sheet.');
     }
     const statusRange = sheet.getRange(1, sheet.getLastColumn());
-    if (
-      !statusRange.isPartOfMerge() ||
-      statusRange.getMergedRanges().length !== 1
-    ) {
+    if (!statusRange.isPartOfMerge() ||
+        statusRange.getMergedRanges().length !== 1) {
       throw new Error(
-        'Expected 1st row in balance sheet to be one merged range.'
-      );
+          'Expected 1st row in balance sheet to be one merged range.');
     }
   }
 
@@ -64,9 +61,8 @@ export default class BalanceSheet {
       });
       Logger.log(`Added 'Rent Due' transaction!`);
     } else if (
-      config.loanConfig?.interestDayOfMonth === currentDayOfMonth &&
-      config.loanConfig.interestRate > 0
-    ) {
+        config.loanConfig?.interestDayOfMonth === currentDayOfMonth &&
+        config.loanConfig.interestRate > 0) {
       BalanceSheet.insertRow({
         date: new Date(),
         description: 'Monthly interest',
@@ -99,9 +95,8 @@ export default class BalanceSheet {
     sheet.insertRowAfter(headerRow);
     const newRow = headerRow + 1;
     const balanceColumn = SSLib.JasSpreadsheet.findColumn('balance', sheet);
-    const previousBalanceCellA1 = sheet
-      .getRange(newRow + 1, balanceColumn)
-      .getA1Notation();
+    const previousBalanceCellA1 =
+        sheet.getRange(newRow + 1, balanceColumn).getA1Notation();
 
     const setCell = (columnName: string, value: any) => {
       const column = SSLib.JasSpreadsheet.findColumn(columnName, sheet);
@@ -120,19 +115,15 @@ export default class BalanceSheet {
       }
       const interestRate = Config.get().loanConfig.interestRate;
       setCell(
-        'transaction',
-        `= if (${prevBal} >= 0, - ${prevBal} * ${interestRate} / 12, 0)`
-      );
+          'transaction',
+          `= if (${prevBal} >= 0, - ${prevBal} * ${interestRate} / 12, 0)`);
     }
 
     const transactionCell = sheet.getRange(
-      newRow,
-      SSLib.JasSpreadsheet.findColumn('transaction', sheet)
-    );
+        newRow, SSLib.JasSpreadsheet.findColumn('transaction', sheet));
     setCell(
-      'balance',
-      `= ${previousBalanceCellA1} - ${transactionCell.getA1Notation()}`
-    );
+        'balance',
+        `= ${previousBalanceCellA1} - ${transactionCell.getA1Notation()}`);
 
     BalanceSheet.updateStatusCell();
   }
@@ -188,9 +179,8 @@ export default class BalanceSheet {
       statusText += `\nUpcoming: `;
       const interestAmount = (interestRate / 12) * balance;
       addFormatted(Util.formatMoney(interestAmount), {isBold: true});
-      statusText += ` interest to be applied ${Util.getNextDayOfMonthString(
-        interestDayOfMonth
-      )}`;
+      statusText += ` interest to be applied ${
+          Util.getNextDayOfMonthString(interestDayOfMonth)}`;
     }
 
     const rtBuilder = SpreadsheetApp.newRichTextValue().setText(statusText);
@@ -209,7 +199,7 @@ export default class BalanceSheet {
     statusCell.setVerticalAlignment('middle');
   }
 
-  private static findLastPayment(): {amount: number; date: Date} | null {
+  private static findLastPayment(): {amount: number; date: Date}|null {
     const sheet = BalanceSheet.getSheet();
     const firstDataRow = sheet.getFrozenRows() + 1;
     const lastRow = sheet.getLastRow();
@@ -224,9 +214,8 @@ export default class BalanceSheet {
       if (!trxCell.isBlank()) {
         const amount = new SSLib.CellData(trxCell).number();
         if (amount > 0) {
-          const date = new SSLib.CellData(
-            sheet.getRange(row, dateColumn)
-          ).date();
+          const date =
+              new SSLib.CellData(sheet.getRange(row, dateColumn)).date();
           return {amount, date};
         }
       }
@@ -237,16 +226,14 @@ export default class BalanceSheet {
 
   private static getSheet(): GoogleAppsScript.Spreadsheet.Sheet {
     return SSLib.JasSpreadsheet.findSheet(
-      'balance',
-      _JasLibContext.spreadsheetId
-    );
+        'balance', _JasLibContext.spreadsheetId);
   }
 }
 
 export interface BalanceRow {
   date: Date;
   description: string;
-  transaction: number | 'interest';
+  transaction: number|'interest';
 }
 
 interface TextStyle {

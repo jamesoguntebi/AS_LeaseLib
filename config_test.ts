@@ -1,7 +1,8 @@
-import Tester from "./testing/tester";
-import Config, { ConfigParams, ConfigField } from "./config";
-import { JASLib } from "jas_api"
-import { SSLib } from "ss_api"
+import {JASLib} from 'jas_api'
+import {SSLib} from 'ss_api'
+
+import Config, {ConfigField, ConfigParams} from './config';
+import Tester from './testing/tester';
 
 type Range = GoogleAppsScript.Spreadsheet.Range;
 
@@ -71,8 +72,8 @@ export default class ConfigTest implements JASLib.Test {
           this.setValue(
               t, F.loanConfig_interestRate, c.loanConfig.interestRate);
           this.setValue(
-              t, 
-              F.loanConfig_interestDayOfMonth, c.loanConfig.interestDayOfMonth);
+              t, F.loanConfig_interestDayOfMonth,
+              c.loanConfig.interestDayOfMonth);
           this.clearValue(t, F.rentConfig_monthlyAmount);
           this.clearValue(t, F.rentConfig_dueDayOfMonth);
         } else {
@@ -85,12 +86,13 @@ export default class ConfigTest implements JASLib.Test {
         }
       };
 
-      const configSpecs = [
-        {name: 'loan', config: Config.getLoanConfigForTest()},
-        {name: 'rent', config: Config.getRentConfigForTest()},
-      ]
+      const configSpecs =
+          [
+            {name: 'loan', config: Config.getLoanConfigForTest()},
+            {name: 'rent', config: Config.getRentConfigForTest()},
+          ]
 
-      for (const {name, config} of configSpecs) {
+          for (const {name, config} of configSpecs) {
         t.describe(`after writing ${name} config`, () => {
           writeConfig(config);
           t.it('reads back the config', () => {
@@ -102,115 +104,106 @@ export default class ConfigTest implements JASLib.Test {
 
     t.describe('validate throws for', () => {
       t.it('neither rent nor loan config', () => {
-        t.expect(() => Config.getLoanConfigForTest({loanConfig: undefined}))
-            .toThrow('No renter or borrower config');
+        t.expect(() => Config.getLoanConfigForTest({
+           loanConfig: undefined
+         })).toThrow('No renter or borrower config');
       });
 
       t.it('both rent and loan config', () => {
-        t.expect(
-            () => Config.getLoanConfigForTest(
-                {rentConfig: Config.DEFAULT.rentConfig}))
-            .toThrow('Both renter and borrower config');
+        t.expect(() => Config.getLoanConfigForTest({
+           rentConfig: Config.DEFAULT.rentConfig
+         })).toThrow('Both renter and borrower config');
       });
 
       t.it('negative day of month', () => {
-        t.expect(
-            () => Config.getLoanConfigForTest(
-                undefined, {loanConfig: {interestDayOfMonth: -10}}))
-            .toThrow('Day of month');
+        t.expect(() => Config.getLoanConfigForTest(undefined, {
+           loanConfig: {interestDayOfMonth: -10}
+         })).toThrow('Day of month');
 
-        t.expect(
-          () => Config.getRentConfigForTest(
-              undefined, {rentConfig: {dueDayOfMonth: -1}}))
-          .toThrow('Day of month');
+        t.expect(() => Config.getRentConfigForTest(undefined, {
+           rentConfig: {dueDayOfMonth: -1}
+         })).toThrow('Day of month');
       });
 
       t.it('day of month too high', () => {
-        t.expect(
-            () => Config.getLoanConfigForTest(
-                undefined, {loanConfig: {interestDayOfMonth: 29}}))
-            .toThrow('Day of month');
+        t.expect(() => Config.getLoanConfigForTest(undefined, {
+           loanConfig: {interestDayOfMonth: 29}
+         })).toThrow('Day of month');
 
-        t.expect(
-          () => Config.getRentConfigForTest(
-              undefined, {rentConfig: {dueDayOfMonth: 100}}))
-          .toThrow('Day of month');
+        t.expect(() => Config.getRentConfigForTest(undefined, {
+           rentConfig: {dueDayOfMonth: 100}
+         })).toThrow('Day of month');
       });
 
       t.it('invalid interest rate', () => {
-        t.expect(
-            () => Config.getLoanConfigForTest(
-                undefined, {loanConfig: {interestRate: -0.04}}))
-            .toThrow('Interest rate');
+        t.expect(() => Config.getLoanConfigForTest(undefined, {
+           loanConfig: {interestRate: -0.04}
+         })).toThrow('Interest rate');
 
-        t.expect(
-            () => Config.getLoanConfigForTest(
-                undefined, {loanConfig: {interestRate: 4.5}}))
-            .toThrow('Interest rate');
+        t.expect(() => Config.getLoanConfigForTest(undefined, {
+           loanConfig: {interestRate: 4.5}
+         })).toThrow('Interest rate');
       });
 
       t.it('no payment types', () => {
-        t.expect(
-            () => Config.getLoanConfigForTest(
-                undefined, {searchQuery: {paymentTypes: []}}))
-            .toThrow('At least one payment type');
+        t.expect(() => Config.getLoanConfigForTest(undefined, {
+           searchQuery: {paymentTypes: []}
+         })).toThrow('At least one payment type');
       });
 
       t.it('no search query name', () => {
-        t.expect(
-            () => Config.getLoanConfigForTest(
-                undefined, {searchQuery: {searchName: ''}}))
-            .toThrow('Search query name is required');
+        t.expect(() => Config.getLoanConfigForTest(undefined, {
+           searchQuery: {searchName: ''}
+         })).toThrow('Search query name is required');
       });
 
       t.it('no customer display name', () => {
-        t.expect(() => Config.getLoanConfigForTest({customerDisplayName: ''}))
-            .toThrow('Customer display name is required');
+        t.expect(() => Config.getLoanConfigForTest({
+           customerDisplayName: ''
+         })).toThrow('Customer display name is required');
       });
 
       t.it('no customer emails', () => {
-        t.expect(() => Config.getLoanConfigForTest({customerEmails: []}))
-            .toThrow('At least one customer email is required');
+        t.expect(() => Config.getLoanConfigForTest({
+           customerEmails: []
+         })).toThrow('At least one customer email is required');
       });
 
       t.it('invalid customer emails', () => {
-        t.expect(
-            () => Config.getLoanConfigForTest(
-                {customerEmails: ['alpha@beta.gamma', 'hello']}))
-            .toThrow('Invalid email format');
+        t.expect(() => Config.getLoanConfigForTest({
+           customerEmails: ['alpha@beta.gamma', 'hello']
+         })).toThrow('Invalid email format');
       });
 
       t.it('no bot email display name', () => {
-        t.expect(() => Config.getLoanConfigForTest({emailDisplayName: ''}))
-            .toThrow('Email display name is required');
+        t.expect(() => Config.getLoanConfigForTest({
+           emailDisplayName: ''
+         })).toThrow('Email display name is required');
       });
 
       t.it('invalid email ccs', () => {
-        t.expect(
-            () => Config.getLoanConfigForTest(
-                {emailCCs: ['alpha@beta.gamma', 'hello']}))
-            .toThrow('Invalid email format');
+        t.expect(() => Config.getLoanConfigForTest({
+           emailCCs: ['alpha@beta.gamma', 'hello']
+         })).toThrow('Invalid email format');
       });
 
       t.it('invalid email bccs', () => {
-        t.expect(
-            () => Config.getLoanConfigForTest(
-                {emailBCCs: ['alpha@beta.gamma', 'hello']}))
-            .toThrow('Invalid email format');
+        t.expect(() => Config.getLoanConfigForTest({
+           emailBCCs: ['alpha@beta.gamma', 'hello']
+         })).toThrow('Invalid email format');
       });
 
       t.it('invalid link to sheet href', () => {
-        t.expect(
-            () => Config.getLoanConfigForTest(
-                {linkToSheetHref: 'not-a-url'}))
-            .toThrow('Invalid link');
+        t.expect(() => Config.getLoanConfigForTest({
+           linkToSheetHref: 'not-a-url'
+         })).toThrow('Invalid link');
       });
 
       t.it('link to sheet without href', () => {
-        t.expect(
-            () => Config.getLoanConfigForTest(
-                {linkToSheetText: 'balance sheet', linkToSheetHref: undefined}))
-            .toThrow('Link text is useless without href');
+        t.expect(() => Config.getLoanConfigForTest({
+           linkToSheetText: 'balance sheet',
+           linkToSheetHref: undefined
+         })).toThrow('Link text is useless without href');
       });
     });
   }

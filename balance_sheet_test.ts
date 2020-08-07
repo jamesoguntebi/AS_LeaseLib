@@ -1,9 +1,10 @@
-import Config from './config';
-import Tester from './testing/tester';
-import BalanceSheet, {BalanceRow} from './balance_sheet';
 import {JASLib} from 'jas_api';
 import {SSLib} from 'ss_api';
+
 import Util from './_util';
+import BalanceSheet, {BalanceRow} from './balance_sheet';
+import Config from './config';
+import Tester from './testing/tester';
 
 type Range = GoogleAppsScript.Spreadsheet.Range;
 type RichTextValue = GoogleAppsScript.Spreadsheet.RichTextValue;
@@ -14,28 +15,23 @@ export default class BalanceSheetTest implements JASLib.Test {
   readonly name = 'BalanceSheetTest';
 
   private expectInsertRowToHaveBeenCalledLike(
-    t: Tester,
-    matcher: (params: BalanceRow) => boolean
-  ) {
-    t.expect(BalanceSheet.insertRow).toHaveBeenCalledLike(
-      t.matcher((args: unknown[]) => {
-        return matcher((args as Parameters<typeof BalanceSheet.insertRow>)[0]);
-      })
-    );
+      t: Tester, matcher: (params: BalanceRow) => boolean) {
+    t.expect(BalanceSheet.insertRow)
+        .toHaveBeenCalledLike(t.matcher((args: unknown[]) => {
+          return matcher(
+              (args as Parameters<typeof BalanceSheet.insertRow>)[0]);
+        }));
   }
 
   private withTempBalanceSheet(t: Tester): {sheet?: Sheet} {
-    const spreadsheet = SSLib.JasSpreadsheet.getSpreadsheet(
-      _JasLibContext.spreadsheetId
-    );
+    const spreadsheet =
+        SSLib.JasSpreadsheet.getSpreadsheet(_JasLibContext.spreadsheetId);
     let originalBalanceSheet: Sheet;
-    let obj: {sheet?: Sheet} = {}; // To enable pass-by-reference.
+    let obj: {sheet?: Sheet} = {};  // To enable pass-by-reference.
 
     t.beforeAll(() => {
       originalBalanceSheet = SSLib.JasSpreadsheet.findSheet(
-        'balance',
-        _JasLibContext.spreadsheetId
-      );
+          'balance', _JasLibContext.spreadsheetId);
       // This name should not match query 'balance':
       originalBalanceSheet.setName('__test_backup__');
     });
@@ -62,9 +58,8 @@ export default class BalanceSheetTest implements JASLib.Test {
     // the end before doing so.
     sheet.insertRowAfter(sheet.getLastRow());
     sheet.deleteRows(
-      sheet.getFrozenRows() + 1,
-      sheet.getLastRow() - sheet.getFrozenRows() - 1
-    );
+        sheet.getFrozenRows() + 1,
+        sheet.getLastRow() - sheet.getFrozenRows() - 1);
   }
 
   private getDateInThisYear(month: number, dayOfMonth: number): Date {
@@ -124,9 +119,8 @@ export default class BalanceSheetTest implements JASLib.Test {
 
       for (const typeObj of configSpecs) {
         for (const isTransactionDay of [true, false]) {
-          const dateString = isTransactionDay
-            ? `on transaction day`
-            : `not on transaction day`;
+          const dateString = isTransactionDay ? `on transaction day` :
+                                                `not on transaction day`;
           const {
             configType,
             config,
@@ -137,14 +131,14 @@ export default class BalanceSheetTest implements JASLib.Test {
           t.describe(`for ${configType} ${dateString}`, () => {
             t.beforeEach(() => {
               t.setConfig(config);
-              t.spyOn(Date.prototype, 'getDate').and.returnValue(
-                configTransactionDayOfMonth + (isTransactionDay ? 0 : 1)
-              );
+              t.spyOn(Date.prototype, 'getDate')
+                  .and.returnValue(
+                      configTransactionDayOfMonth + (isTransactionDay ? 0 : 1));
             });
 
             const testString =
-              `${isTransactionDay ? 'inserts' : 'does not insert'} a row ` +
-              `on transaction day`;
+                `${isTransactionDay ? 'inserts' : 'does not insert'} a row ` +
+                `on transaction day`;
             t.it(testString, () => {
               BalanceSheet.dailyUpdate();
               if (!isTransactionDay) {
@@ -152,13 +146,11 @@ export default class BalanceSheetTest implements JASLib.Test {
                 t.expect(BalanceSheet.updateStatusCell).toHaveBeenCalled();
               } else {
                 this.expectInsertRowToHaveBeenCalledLike(
-                  t,
-                  (row: BalanceRow) => {
-                    t.expect(row.description).toEqual(expectedDecription);
-                    t.expect(row.transaction).toEqual(expectedTransaction);
-                    return true;
-                  }
-                );
+                    t, (row: BalanceRow) => {
+                      t.expect(row.description).toEqual(expectedDecription);
+                      t.expect(row.transaction).toEqual(expectedTransaction);
+                      return true;
+                    });
                 // insertRow() calls updateStatusCell(), but this just verifies
                 // it's not called directly by dailyUpdate().
                 t.expect(BalanceSheet.updateStatusCell).not.toHaveBeenCalled();
@@ -199,7 +191,7 @@ export default class BalanceSheetTest implements JASLib.Test {
 
     t.describe('insertRow', () => {
       const initialBalance = 500;
-      const sheetContainer = this.withTempBalanceSheet(t); // For pass-by-ref.
+      const sheetContainer = this.withTempBalanceSheet(t);  // For pass-by-ref.
       let sheet: Sheet;
 
       t.beforeEach(() => {
@@ -214,24 +206,20 @@ export default class BalanceSheetTest implements JASLib.Test {
         t.spyOn(BalanceSheet, 'updateStatusCell');
       });
 
-      const expectNewRowValues = (
-        transaction: number,
-        balance: number,
-        description: string
-      ) => {
-        const checkSpecs = [
-          {colName: 'transaction', expectedValue: transaction},
-          {colName: 'balance', expectedValue: balance},
-          {colName: 'description', expectedValue: description},
-        ];
-        const dataRow = sheet.getFrozenRows() + 1;
-        for (const {colName, expectedValue} of checkSpecs) {
-          const column = SSLib.JasSpreadsheet.findColumn(colName, sheet);
-          t.expect(sheet.getRange(dataRow, column).getValue()).toEqual(
-            expectedValue
-          );
-        }
-      };
+      const expectNewRowValues =
+          (transaction: number, balance: number, description: string) => {
+            const checkSpecs = [
+              {colName: 'transaction', expectedValue: transaction},
+              {colName: 'balance', expectedValue: balance},
+              {colName: 'description', expectedValue: description},
+            ];
+            const dataRow = sheet.getFrozenRows() + 1;
+            for (const {colName, expectedValue} of checkSpecs) {
+              const column = SSLib.JasSpreadsheet.findColumn(colName, sheet);
+              t.expect(sheet.getRange(dataRow, column).getValue())
+                  .toEqual(expectedValue);
+            }
+          };
 
       t.it('increases rent', () => {
         BalanceSheet.insertRow({
@@ -263,7 +251,7 @@ export default class BalanceSheetTest implements JASLib.Test {
         });
 
         const expectedInterest =
-          (-initialBalance * Config.get().loanConfig!.interestRate) / 12;
+            (-initialBalance * Config.get().loanConfig!.interestRate) / 12;
         const expectedBalance = initialBalance - expectedInterest;
         expectNewRowValues(expectedInterest, expectedBalance, 'Interest');
         t.expect(BalanceSheet.updateStatusCell).toHaveBeenCalled();
@@ -271,7 +259,7 @@ export default class BalanceSheetTest implements JASLib.Test {
     });
 
     t.describe('validateActiveSheet', () => {
-      const sheetContainer = this.withTempBalanceSheet(t); // For pass-by-ref.
+      const sheetContainer = this.withTempBalanceSheet(t);  // For pass-by-ref.
       let sheet: Sheet;
       t.beforeEach(() => (sheet = sheetContainer.sheet));
 
@@ -299,8 +287,7 @@ export default class BalanceSheetTest implements JASLib.Test {
 
         t.it('throws for missing transaction', () => {
           sheet.deleteColumn(
-            SSLib.JasSpreadsheet.findColumn('transaction', sheet)
-          );
+              SSLib.JasSpreadsheet.findColumn('transaction', sheet));
           t.expect(() => BalanceSheet.validateActiveSheet()).toThrow();
         });
 
@@ -311,29 +298,27 @@ export default class BalanceSheetTest implements JASLib.Test {
 
         t.it('throws for missing description', () => {
           sheet.deleteColumn(
-            SSLib.JasSpreadsheet.findColumn('description', sheet)
-          );
+              SSLib.JasSpreadsheet.findColumn('description', sheet));
           t.expect(() => BalanceSheet.validateActiveSheet()).toThrow();
         });
 
         t.it('throws for missing status cell', () => {
           sheet.deleteRow(1);
-          t.expect(() => BalanceSheet.validateActiveSheet()).toThrow(
-            'Expected 2 frozen rows'
-          );
+          t.expect(() => BalanceSheet.validateActiveSheet())
+              .toThrow('Expected 2 frozen rows');
         });
 
         t.it('throws for malformed status cell row', () => {
           sheet.getRange(1, 1, 1, sheet.getLastColumn()).breakApart();
-          t.expect(() => BalanceSheet.validateActiveSheet()).toThrow(
-            'Expected 1st row in balance sheet to be one merged range.'
-          );
+          t.expect(() => BalanceSheet.validateActiveSheet())
+              .toThrow(
+                  'Expected 1st row in balance sheet to be one merged range.');
         });
       });
     });
 
     t.describe('updateStatusCell', () => {
-      const sheetContainer = this.withTempBalanceSheet(t); // For pass-by-ref.
+      const sheetContainer = this.withTempBalanceSheet(t);  // For pass-by-ref.
       let sheet: Sheet;
       let statusCell: Range;
 
@@ -349,47 +334,41 @@ export default class BalanceSheetTest implements JASLib.Test {
        * substring and returns its text and contained styled runs.
        * @param line 0-indexed line or substring to look for.
        */
-      const getLineInStatusCell = (
-        substring: string
-      ): {text: string; styledRuns: RichTextValue[]} | null => {
-        const rtv = statusCell.getRichTextValue();
-        const lines = rtv.getText().split('\n');
-        let lineText: string;
-        let startIndex = 0;
+      const getLineInStatusCell =
+          (substring: string): {text: string; styledRuns: RichTextValue[]}|
+          null => {
+            const rtv = statusCell.getRichTextValue();
+            const lines = rtv.getText().split('\n');
+            let lineText: string;
+            let startIndex = 0;
 
-        // Return null if line string is not present.
-        substring = substring.toLowerCase();
-        for (let i = 0; i < lines.length; i++) {
-          if (lines[i].toLowerCase().includes(substring)) {
-            lineText = lines[i];
-            break;
-          }
-          startIndex += lines[i].length + 1;
-        }
-        // No line number was found.
-        if (!lineText) return null;
+            // Return null if line string is not present.
+            substring = substring.toLowerCase();
+            for (let i = 0; i < lines.length; i++) {
+              if (lines[i].toLowerCase().includes(substring)) {
+                lineText = lines[i];
+                break;
+              }
+              startIndex += lines[i].length + 1;
+            }
+            // No line number was found.
+            if (!lineText) return null;
 
-        const endIndex = startIndex + lineText.length;
-        const styledRuns = rtv.getRuns().filter((run) => {
-          const ts = run.getTextStyle();
-          return (
-            run.getStartIndex() >= startIndex &&
-            run.getEndIndex() <= endIndex &&
-            (ts.isBold() ||
-              ts.getForegroundColor() !== BLACK ||
-              ts.isItalic() ||
-              ts.isUnderline() ||
-              ts.isStrikethrough())
-          );
-        });
-        return {text: lineText, styledRuns};
-      };
+            const endIndex = startIndex + lineText.length;
+            const styledRuns = rtv.getRuns().filter((run) => {
+              const ts = run.getTextStyle();
+              return (
+                  run.getStartIndex() >= startIndex &&
+                  run.getEndIndex() <= endIndex &&
+                  (ts.isBold() || ts.getForegroundColor() !== BLACK ||
+                   ts.isItalic() || ts.isUnderline() || ts.isStrikethrough()));
+            });
+            return {text: lineText, styledRuns};
+          };
 
       const deleteAllPaymentRows = () => {
-        const transactionColumn = SSLib.JasSpreadsheet.findColumn(
-          'transaction',
-          sheet
-        );
+        const transactionColumn =
+            SSLib.JasSpreadsheet.findColumn('transaction', sheet);
         const firstDataRow = sheet.getFrozenRows() + 1;
         const lastRow = sheet.getLastRow();
         for (let row = lastRow; row >= firstDataRow; row--) {
@@ -402,11 +381,10 @@ export default class BalanceSheetTest implements JASLib.Test {
 
       t.it('validatesSheet', () => {
         sheet.deleteRow(1);
-        t.expect(() => BalanceSheet.validateActiveSheet()).toThrow(
-          'Expected 2 frozen rows'
-        );
+        t.expect(() => BalanceSheet.validateActiveSheet())
+            .toThrow('Expected 2 frozen rows');
       });
-      
+
       t.it('sets font size', () => {
         t.setConfig(Config.DEFAULT);
         BalanceSheet.updateStatusCell();
@@ -448,31 +426,28 @@ export default class BalanceSheetTest implements JASLib.Test {
         t.it('styles positive rent balance red', () => {
           t.setConfig(Config.getRentConfigForTest());
           t.spyOn(BalanceSheet, 'getBalance').and.returnValue(500);
-          
+
           BalanceSheet.updateStatusCell();
-          t.expect(getBalanceStyle().getForegroundColor()).toEqual(
-            Colors.RED_BALANCE
-          );
+          t.expect(getBalanceStyle().getForegroundColor())
+              .toEqual(Colors.RED_BALANCE);
         });
 
         t.it('styles negative rent balance green', () => {
           t.setConfig(Config.getRentConfigForTest());
           t.spyOn(BalanceSheet, 'getBalance').and.returnValue(-500);
-          
+
           BalanceSheet.updateStatusCell();
-          t.expect(getBalanceStyle().getForegroundColor()).toEqual(
-            Colors.GREEN_BALANCE
-          );
+          t.expect(getBalanceStyle().getForegroundColor())
+              .toEqual(Colors.GREEN_BALANCE);
         });
 
         t.it('styles zero rent balance green', () => {
           t.setConfig(Config.getRentConfigForTest());
           t.spyOn(BalanceSheet, 'getBalance').and.returnValue(0);
-          
+
           BalanceSheet.updateStatusCell();
-          t.expect(getBalanceStyle().getForegroundColor()).toEqual(
-            Colors.GREEN_BALANCE
-          );
+          t.expect(getBalanceStyle().getForegroundColor())
+              .toEqual(Colors.GREEN_BALANCE);
         });
       });
 
@@ -496,23 +471,21 @@ export default class BalanceSheetTest implements JASLib.Test {
           BalanceSheet.updateStatusCell();
 
           t.expect(getLineInStatusCell('last payment')).toEqual(null);
-          t.expect(statusCell.getRichTextValue().getText()).not.toContain(
-            'Last payment'
-          );
+          t.expect(statusCell.getRichTextValue().getText())
+              .not.toContain('Last payment');
         });
 
         t.it(
-          'has correct text, with bold payment amount, choosing most recent payment',
-          () => {
-            t.setConfig(Config.getLoanConfigForTest());
-            addFakePaymentHistory([500, 600]);
-            BalanceSheet.updateStatusCell();
+            'has correct text, with bold payment amount, choosing most recent payment',
+            () => {
+              t.setConfig(Config.getLoanConfigForTest());
+              addFakePaymentHistory([500, 600]);
+              BalanceSheet.updateStatusCell();
 
-            const {text, styledRuns} = getLineInStatusCell('last payment');
-            t.expect(text).toEqual('Last payment: $500, on Jun 17');
-            t.expect(styledRuns[0].getText()).toEqual('$500');
-          }
-        );
+              const {text, styledRuns} = getLineInStatusCell('last payment');
+              t.expect(text).toEqual('Last payment: $500, on Jun 17');
+              t.expect(styledRuns[0].getText()).toEqual('$500');
+            });
       });
 
       t.describe('upcoming transaction line', () => {
@@ -521,45 +494,35 @@ export default class BalanceSheetTest implements JASLib.Test {
           BalanceSheet.updateStatusCell();
 
           t.expect(getLineInStatusCell('upcoming')).toEqual(null);
-          t.expect(statusCell.getRichTextValue().getText()).not.toContain(
-            'Upcoming'
-          );
+          t.expect(statusCell.getRichTextValue().getText())
+              .not.toContain('Upcoming');
         });
 
         t.it('works for loan config', () => {
           const interestRate = 0.078;
           const balance = 3874.17;
-          t.setConfig(
-            Config.getLoanConfigForTest(undefined, {loanConfig: {interestRate}})
-          );
+          t.setConfig(Config.getLoanConfigForTest(
+              undefined, {loanConfig: {interestRate}}));
           t.spyOn(BalanceSheet, 'getBalance').and.returnValue(balance);
-          t.spyOn(Util, 'getNextDayOfMonth').and.returnValue(
-            this.getDateInThisYear(3, 27)
-          );
+          t.spyOn(Util, 'getNextDayOfMonth')
+              .and.returnValue(this.getDateInThisYear(3, 27));
           BalanceSheet.updateStatusCell();
 
           const nextInterestAmount = balance * interestRate / 12;
           const {text, styledRuns} = getLineInStatusCell('upcoming');
-          t.expect(text).toEqual(
-            `Upcoming: $${nextInterestAmount.toFixed(
-              2
-            )} interest to be applied on Apr 27`
-          );
-          t.expect(styledRuns[0].getText()).toEqual(
-            `$${nextInterestAmount.toFixed(2)}`
-          );
+          t.expect(text).toEqual(`Upcoming: $${
+              nextInterestAmount.toFixed(2)} interest to be applied on Apr 27`);
+          t.expect(styledRuns[0].getText())
+              .toEqual(`$${nextInterestAmount.toFixed(2)}`);
         });
 
         t.it('works for rent config', () => {
           const monthlyAmount = 1671;
-          t.setConfig(
-            Config.getRentConfigForTest(undefined, {
-              rentConfig: {monthlyAmount},
-            })
-          );
-          t.spyOn(Util, 'getNextDayOfMonth').and.returnValue(
-            this.getDateInThisYear(9, 3)
-          );
+          t.setConfig(Config.getRentConfigForTest(undefined, {
+            rentConfig: {monthlyAmount},
+          }));
+          t.spyOn(Util, 'getNextDayOfMonth')
+              .and.returnValue(this.getDateInThisYear(9, 3));
           BalanceSheet.updateStatusCell();
 
           const {text, styledRuns} = getLineInStatusCell('upcoming');

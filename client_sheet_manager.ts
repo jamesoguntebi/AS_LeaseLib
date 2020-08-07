@@ -1,5 +1,5 @@
-import Config from "./config";
-import BalanceSheet from "./balance_sheet";
+import BalanceSheet from './balance_sheet';
+import Config from './config';
 
 export default class ClientSheetManager {
   private static readonly PROPERTY_NAME = 'REGISTERED_CLIENTS';
@@ -9,7 +9,7 @@ export default class ClientSheetManager {
    * context, calling the callback each time.
    * @param fn Return true to break loop.
    */
-  static forEach(fn: (_: string) => boolean|void) {
+  static forEach(fn: (_: string) => boolean | void) {
     const storedSpreadsheetId = _JasLibContext.spreadsheetId;
 
     const spreadsheetIds = ClientSheetManager.getAll();
@@ -34,7 +34,7 @@ export default class ClientSheetManager {
 
     try {
       _JasLibContext.spreadsheetId = spreadsheetId;
-      Config.get(); // This will validate that the Config sheet.
+      Config.get();  // This will validate that the Config sheet.
       BalanceSheet.validateActiveSheet();
     } catch (e) {
       Logger.log('Validation of new sheet failed with error:');
@@ -55,7 +55,7 @@ export default class ClientSheetManager {
   static unregister(spreadsheetId: string) {
     const registeredSet = new Set(ClientSheetManager.getAll());
     if (!registeredSet.has(spreadsheetId)) return;
-    
+
     registeredSet.delete(spreadsheetId);
     PropertiesService.getScriptProperties().setProperty(
         ClientSheetManager.PROPERTY_NAME,

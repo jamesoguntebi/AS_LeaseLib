@@ -1,13 +1,15 @@
-import BalanceSheetTest from "../balance_sheet_test";
-import EmailSenderTest from "../email_sender_test";
-import EmailCheckerTest from "../email_checker_test";
-import ConfigTest from "../config_test";
-import Tester from "./tester";
-import ClientSheetManagerTest from "../client_sheet_manager_test";
-import { JASLib } from "jas_api"
-import UtilTest from "../util_test";
+import {JASLib} from 'jas_api'
 
-export function runTests(params: TestRunnerOptions | string = {}) {
+import BalanceSheetTest from '../balance_sheet_test';
+import ClientSheetManagerTest from '../client_sheet_manager_test';
+import ConfigTest from '../config_test';
+import EmailCheckerTest from '../email_checker_test';
+import EmailSenderTest from '../email_sender_test';
+import UtilTest from '../util_test';
+
+import Tester from './tester';
+
+export function runTests(params: TestRunnerOptions|string = {}) {
   if (typeof params === 'string') {
     params = {testClassNames: params.split(',')};
   }
@@ -16,7 +18,7 @@ export function runTests(params: TestRunnerOptions | string = {}) {
 }
 
 export function runTestsAndHideSuccesses(
-    params: TestRunnerOptions | string = {}) {
+    params: TestRunnerOptions|string = {}) {
   if (typeof params === 'string') {
     params = {testClassNames: params.split(',')};
   }
@@ -25,7 +27,7 @@ export function runTestsAndHideSuccesses(
   return Logger.getLog();
 }
 
-export function runTestsWithLogs(params: TestRunnerOptions | string = {}) {
+export function runTestsWithLogs(params: TestRunnerOptions|string = {}) {
   if (typeof params === 'string') {
     params = {testClassNames: params.split(',')};
   }
@@ -46,7 +48,7 @@ export default class TestRunner {
   }: TestRunnerOptions) {
     _JasLibContext.spreadsheetId = spreadsheetId;
 
-    let testClasses: Array<new() => JASLib.Test> = [
+    let testClasses: Array<new () => JASLib.Test> = [
       BalanceSheetTest,
       ClientSheetManagerTest,
       ConfigTest,
@@ -74,8 +76,8 @@ export default class TestRunner {
       };
     }
 
-    JASLib.TestRunner.run(tests,
-        {suppressLogs, showSuccesses, testerClass: Tester});
+    JASLib.TestRunner.run(
+        tests, {suppressLogs, showSuccesses, testerClass: Tester});
 
     if (suppressLogs) Logger.log = storedLogFn;
   }

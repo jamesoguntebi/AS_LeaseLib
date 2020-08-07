@@ -1,6 +1,6 @@
-import Config from "./config";
-import BalanceSheet from "./balance_sheet";
-import Util from "./_util";
+import Util from './_util';
+import BalanceSheet from './balance_sheet';
+import Config from './config';
 
 export default class EmailSender {
   static sendPaymentThanks(amount: number) {
@@ -9,8 +9,7 @@ export default class EmailSender {
 
     let balanceColor: string;
     if (config.rentConfig && balanceNum) {
-      balanceColor =
-          balanceNum > 0 ? Colors.RED_BALANCE : Colors.GREEN_BALANCE;
+      balanceColor = balanceNum > 0 ? Colors.RED_BALANCE : Colors.GREEN_BALANCE;
     }
 
     const templateParams: PaymentEmailTemplateParams = {
@@ -32,10 +31,8 @@ export default class EmailSender {
     template.templateParams = templateParams;
 
     GmailApp.sendEmail(
-        config.customerEmails.join(', '),
-        'Received your payment - Thanks!',
-        nonHtmlBody,
-        {
+        config.customerEmails.join(', '), 'Received your payment - Thanks!',
+        nonHtmlBody, {
           bcc: config.emailBCCs.join(', '),
           cc: config.emailCCs.join(', '),
           name: config.emailDisplayName,
@@ -46,10 +43,6 @@ export default class EmailSender {
 
 /** Keep in sync with email_template_payment.html. */
 interface PaymentEmailTemplateParams {
-  balance: string,
-  balanceColor: string,
-  customerDisplayName: string,
-  linkHref: string,
-  linkText: string,
-  paymentAmount: string,
+  balance: string, balanceColor: string, customerDisplayName: string,
+      linkHref: string, linkText: string, paymentAmount: string,
 }

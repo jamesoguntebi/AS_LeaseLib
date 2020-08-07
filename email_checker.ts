@@ -1,7 +1,7 @@
-import BalanceSheet from "./balance_sheet";
-import ClientSheetManager from "./client_sheet_manager";
-import Config, { PaymentType } from "./config";
-import EmailSender from "./email_sender";
+import BalanceSheet from './balance_sheet';
+import ClientSheetManager from './client_sheet_manager';
+import Config, {PaymentType} from './config';
+import EmailSender from './email_sender';
 
 type GmailLabel = GoogleAppsScript.Gmail.GmailLabel;
 type GmailMessage = GoogleAppsScript.Gmail.GmailMessage;
@@ -31,28 +31,24 @@ export default class EmailChecker {
 
     // Any remaining threads failed to be parsed.
     if (pendingThreads.length) {
-      const failedLabel = EmailChecker.assertLabel(
-        EmailChecker.FAILED_LABEL_NAME
-      );
+      const failedLabel =
+          EmailChecker.assertLabel(EmailChecker.FAILED_LABEL_NAME);
       for (const thread of pendingThreads) {
         try {
           thread.removeLabel(pendingLabel);
           thread.addLabel(failedLabel);
         } catch {
-          const subjects = thread
-            .getMessages()
-            .map(m => m.getSubject())
-            .join(', ');
-          Logger.log(
-            `Updating labels for thread with message subjects '${subjects}' failed.`
-          );
+          const subjects =
+              thread.getMessages().map(m => m.getSubject()).join(', ');
+          Logger.log(`Updating labels for thread with message subjects '${
+              subjects}' failed.`);
         }
       }
 
-      const threadSubjects = pendingLabel.getThreads().map(t => t.getMessages()
-          .map(m => m.getSubject()));
-      throw new Error(`Failed to parse labeled threads with subjects: ${
-          threadSubjects}`)
+      const threadSubjects = pendingLabel.getThreads().map(
+          t => t.getMessages().map(m => m.getSubject()));
+      throw new Error(
+          `Failed to parse labeled threads with subjects: ${threadSubjects}`)
     }
   }
 
@@ -65,8 +61,7 @@ export default class EmailChecker {
     if (!pendingThreads) {
       pendingThreads = pendingLabel.getThreads();
     }
-    const doneLabel =
-        EmailChecker.assertLabel(EmailChecker.DONE_LABEL_NAME);
+    const doneLabel = EmailChecker.assertLabel(EmailChecker.DONE_LABEL_NAME);
     const config = Config.get();
 
     for (let i = pendingThreads.length - 1; i >= 0; i--) {
@@ -75,9 +70,8 @@ export default class EmailChecker {
       // TODO: Test this:
       if (config.searchQuery.labelName) {
         const labelName = config.searchQuery.labelName!.toLowerCase();
-        if (
-          !thread.getLabels().some(l => l.getName().toLowerCase() === labelName)
-        ) {
+        if (!thread.getLabels().some(
+                l => l.getName().toLowerCase() === labelName)) {
           continue;
         }
       }
@@ -114,9 +108,10 @@ export default class EmailChecker {
 
   private static parseVenmoMessage(message: GmailMessage): number|null {
     if (!message.getFrom().toLowerCase().includes('venmo')) return null;
-    const subjectRegEx =
-        new RegExp(Config.get().searchQuery.searchName + 
-            '.* paid you \\$([0-9]+(\.[0-9][0-9])?)', 'i');
+    const subjectRegEx = new RegExp(
+        Config.get().searchQuery.searchName +
+            '.* paid you \\$([0-9]+(\.[0-9][0-9])?)',
+        'i');
     const regExResult = subjectRegEx.exec(message.getSubject());
     if (!regExResult) return null;
     return Number(regExResult[1]);
@@ -127,11 +122,10 @@ export default class EmailChecker {
 
     if (!/payment|deposited|deposit/.test(message.getSubject())) return null;
 
-    const bodyRegEx = 
-        new RegExp(
-            'deposited.*\\$([0-9]+(\.[0-9][0-9])?).*payment.*from ' +
-                Config.get().searchQuery.searchName,
-            'i');
+    const bodyRegEx = new RegExp(
+        'deposited.*\\$([0-9]+(\.[0-9][0-9])?).*payment.*from ' +
+            Config.get().searchQuery.searchName,
+        'i');
     const regExResult = bodyRegEx.exec(message.getPlainBody());
     if (!regExResult) return null;
     return Number(regExResult[1]);
@@ -154,21 +148,21 @@ export default class EmailChecker {
 
     const paymentTypes = config.searchQuery.paymentTypes;
     const query = `newer_than:25d older_than:20d (` +
-        [...paymentTypes.map(pt => `(${EmailChecker.PAYMENT_QUERIES.get(pt)}`)]
-            .join(' OR ') /*+
-        `) + ${config.searchQuery.searchName}`*/;
+        [
+          ...paymentTypes.map(pt => `(${EmailChecker.PAYMENT_QUERIES.get(pt)}`)
+        ].join(' OR ') /*+
+     `) + ${config.searchQuery.searchName}`*/
+        ;
     const threads = GmailApp.search(query);
 
     const messages = [];
-    threads.forEach(thread => thread.getMessages()
-        .forEach(message => {
-          messages.push(
-            {
-              subject: message.getSubject(),
-              body: message.getPlainBody(),
-              from: message.getFrom(),
-            });
-        }));
+    threads.forEach(thread => thread.getMessages().forEach(message => {
+      messages.push({
+        subject: message.getSubject(),
+        body: message.getPlainBody(),
+        from: message.getFrom(),
+      });
+    }));
   }
 
   private static assertLabel(labelName: string): GmailLabel {
