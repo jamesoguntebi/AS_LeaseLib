@@ -10,6 +10,8 @@ export function testUpdateStatusCell() {
 }
 
 export default class BalanceSheet {
+  static readonly SHEET_NAME = 'Balance';
+
   static getBalance(): number {
     const sheet = BalanceSheet.getSheet();
     const firstDataRow = sheet.getFrozenRows() + 1;
@@ -226,7 +228,7 @@ export default class BalanceSheet {
 
   private static getSheet(): GoogleAppsScript.Spreadsheet.Sheet {
     return SSLib.JasSpreadsheet.findSheet(
-        'balance', _JasLibContext.spreadsheetId);
+        BalanceSheet.SHEET_NAME, _JasLibContext.spreadsheetId);
   }
 }
 

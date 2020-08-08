@@ -1,8 +1,8 @@
 import {Executrix} from './api';
 import BalanceSheet from './balance_sheet';
 import ClientSheetManager from './client_sheet_manager';
-import EmailChecker from './email_checker';
 import Config from './config';
+import EmailChecker from './email_checker';
 
 export function updateOpenAndEditTriggers() {
   return Executrix.run(() => Triggers.updateOpenAndEditTriggers());
@@ -35,6 +35,8 @@ export function trigger_testing() {
 }
 
 export class Triggers {
+  private static readonly ON_EDIT_TRIGGERS_ENABLED = false;
+
   static updateOpenAndEditTriggers() {
     for (const trigger of ScriptApp.getScriptTriggers()) {
       if (trigger.getEventType() === ScriptApp.EventType.ON_EDIT ||
@@ -47,10 +49,13 @@ export class Triggers {
     const spreadsheetIds = ClientSheetManager.getAll();
 
     for (const spreadSheetId of spreadsheetIds) {
-      ScriptApp.newTrigger('trigger_onEdit')
-          .forSpreadsheet(spreadSheetId)
-          .onEdit()
-          .create();
+      if (Triggers.ON_EDIT_TRIGGERS_ENABLED) {
+        ScriptApp.newTrigger('trigger_onEdit')
+            .forSpreadsheet(spreadSheetId)
+            .onEdit()
+            .create();
+      }
+
       ScriptApp.newTrigger('trigger_onOpen')
           .forSpreadsheet(spreadSheetId)
           .onOpen()
@@ -91,13 +96,23 @@ export class Triggers {
   }
 
   static onEdit(e: GoogleAppsScript.Events.SheetsOnEdit) {
-    const sheetName = e.range.getSheet().getName();
-    Logger.log(`Handling open event for sheet '${
-        sheetName}' in spreadsheet '${e.source.getName()}'`);
-    
-    if (sheetName === Config.SHEET_NAME) {
-      Debouncer.debounce(`${e.source.getId()}-${sheetName}`,
-          10000, Triggers.debouncedConfigCheck.bind(null, e.source.getId()));
+    const spreadsheetId = e.source.getId();
+    let sheetName = e.range.getSheet().getName();
+    Logger.log(`Handling edit event for sheet '${sheetName}' in spreadsheet '${
+        e.source.getName()}'`);
+
+    sheetName = sheetName.toLowerCase().trim();
+
+    const debounceKey = `${spreadsheetId}-${sheetName}`;
+    if (sheetName === Config.SHEET_NAME.toLowerCase()) {
+      Logger.log('Asking to debounce on config sheet.');
+      Debouncer.debounce(
+          debounceKey, 4000,
+          () => Triggers.debouncedConfigCheck(spreadsheetId));
+    } else if (sheetName === BalanceSheet.SHEET_NAME.toLowerCase()) {
+      Debouncer.debounce(
+          debounceKey, 4000,
+          () => Triggers.debouncedStatusCellUpdate(spreadsheetId));
     }
   }
 
@@ -110,6 +125,11 @@ export class Triggers {
       Logger.log('Config is invalid.');
     }
   }
+
+  private static debouncedStatusCellUpdate(spreadsheetId: string) {
+    _JasLibContext.spreadsheetId = spreadsheetId;
+    BalanceSheet.updateStatusCell();
+  }
 }
 
 class Debouncer {
@@ -117,6 +137,10 @@ class Debouncer {
   private static readonly PROPERTY_NAME = 'jas_ll_d_k';
 
   static debounce(key: string, delayMs: number, fn: (this: void) => void) {
+    if (delayMs < 3000) {
+      throw new Error('Debouncing requires a delay of at least 3 seconds.');
+    }
+
     const data = Debouncer.getOrCreateProperty();
     const startTime = Date.now();
     data.set(key, startTime);
@@ -125,9 +149,14 @@ class Debouncer {
     Utilities.sleep(delayMs);
 
     const dataLater = Debouncer.getOrCreateProperty();
+    Logger.log('dataLater: ' + JSON.stringify([...dataLater]));
     if (dataLater.get(key) === startTime) {
+      Logger.log('Firing call.');
       fn();
-      Debouncer.setProperty(data);
+      dataLater.delete(key);
+      Debouncer.setProperty(dataLater);
+    } else {
+      Logger.log('Call debounced.')
     }
   }
 
@@ -151,11 +180,8 @@ class Debouncer {
 
     for (const mapEntry of propertyJson) {
       if (!Array.isArray(mapEntry)) fail();
-      if (
-        mapEntry.length !== 2 ||
-        typeof mapEntry[0] !== 'string' ||
-        typeof mapEntry[1] !== 'number'
-      ) {
+      if (mapEntry.length !== 2 || typeof mapEntry[0] !== 'string' ||
+          typeof mapEntry[1] !== 'number') {
         fail();
       }
     }
@@ -165,9 +191,7 @@ class Debouncer {
 
   private static setProperty(data: DebouncerData) {
     PropertiesService.getScriptProperties().setProperty(
-      Debouncer.PROPERTY_NAME,
-      JSON.stringify([...data])
-    );
+        Debouncer.PROPERTY_NAME, JSON.stringify([...data]));
   }
 }
 
