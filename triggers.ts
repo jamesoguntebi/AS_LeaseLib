@@ -29,6 +29,10 @@ export function routineCheckLabeledEmails() {
   return Executrix.run(() => EmailChecker.checkLabeledEmailsForAllSheets());
 }
 
+export function trigger_testing() {
+  Logger.log('Trigger testing');
+}
+
 export class Triggers {
   static updateOpenAndEditTriggers() {
     for (const trigger of ScriptApp.getScriptTriggers()) {
@@ -81,6 +85,8 @@ export class Triggers {
 
   static onOpen(e: GoogleAppsScript.Events.SheetsOnOpen) {
     Logger.log(`Handling open event for spreadsheet '${e.source.getName()}'`);
+    e.source.addMenu(
+        'testing', [{name: 'test 1', functionName: 'trigger_testing'}]);
   }
 
   static onEdit(e: GoogleAppsScript.Events.SheetsOnEdit) {

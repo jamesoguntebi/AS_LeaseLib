@@ -40,6 +40,7 @@ P1:
   - https://developers.google.com/apps-script/reference/script/trigger-builder#forspreadsheetkey
 - set balance sheet tab color based on current balance
 - add toBe to tests
+- throttle onEdit event per sheet using Properties
 
 
 P2:
