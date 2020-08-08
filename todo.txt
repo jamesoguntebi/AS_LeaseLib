@@ -25,7 +25,6 @@ P0:
   - check email now
   - validate config
   - add payment
-- document design in Menu
 - unregister test lease/loan template:
   - https://docs.google.com/spreadsheets/d/1vtpuR1GuzuwT1o9j62xSZlhg6_HgvjZEDXL56GoLpFI/edit#gid=1280668841
 - handle unit tests
@@ -175,6 +174,7 @@ P1:
   - can be done in one big merged cell. at least in thebut programatically?
 - make 0 balance green for rent
 - set Google Sans font everywhere
+- document design in Menu
 
 P2:
 - instead of checking emails, let manual step be to label emails. script do the

@@ -3,6 +3,18 @@ import ClientSheetManager from './client_sheet_manager';
 
 type Spreadsheet = GoogleAppsScript.Spreadsheet.Spreadsheet;
 
+/**
+ * Installs a menu in every client sheet.
+ *
+ * The menu function handlers have only a name, which is invoked at menu click
+ * time by the GAS infrastructure. The invokved function has no parameter, so
+ * the only way for the function to know which sheet to operate on is to have
+ * a unique function name.
+ *
+ * At script intrepration time, Menu#registerPerClientFunctions exposes on the
+ * globalThis a function for every menu item for every client spreadsheet. The
+ * function name is suffixed with a hash of the spreadsheet id.
+ */
 export class Menu {
   static install(spreadsheet: Spreadsheet) {
     const suffix = Menu.spreadsheetIdToFunctionSuffix(spreadsheet.getId());
