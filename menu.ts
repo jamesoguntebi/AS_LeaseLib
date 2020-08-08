@@ -16,22 +16,34 @@ type Spreadsheet = GoogleAppsScript.Spreadsheet.Spreadsheet;
  * function name is suffixed with a hash of the spreadsheet id.
  */
 export class Menu {
+  // Map of menu display name to Menu function.
+  private static readonly ItemSpecs:
+      Map<string,
+          {spreadsheetAgnostic?: boolean, functionName: keyof typeof Menu}> =
+          new Map([
+            [
+              'Register new spreadsheet',
+              {functionName: 'registerNew', spreadsheetAgnostic: true}
+            ],
+            ['Update status cell', {functionName: 'updateStatusCell'}],
+          ]);
+
   static install(spreadsheet: Spreadsheet) {
     const suffix = Menu.spreadsheetIdToFunctionSuffix(spreadsheet.getId());
 
-    spreadsheet.addMenu('OgunBank', [
-      {
-        name: 'Register new spreadsheet',
-        functionName: `menu_${MenuFunctionName.REGISTER_NEW}${suffix}`
-      },
-      {
-        name: 'Update status cell',
-        functionName: `menu_${MenuFunctionName.UPDATE_STATUS_CELL}${suffix}`
-      },
-    ]);
+    const menuItems = [
+      ...Menu.ItemSpecs
+    ].map(([displayName, {spreadsheetAgnostic, functionName}]) => {
+      return {
+        name: displayName,
+        functionName: `menu_${functionName}${spreadsheetAgnostic ? '' : suffix}`
+      };
+    });
+
+    spreadsheet.addMenu('OgunBank', menuItems);
   }
 
-  static registerNew(spreadsheetId: string) {
+  static registerNew() {
     const response =
         SpreadsheetApp.getUi().prompt('Spreadsheet ID of new sheet:\n\n');
     if (response.getSelectedButton() === SpreadsheetApp.getUi().Button.OK ||
@@ -50,18 +62,25 @@ export class Menu {
   static registerPerClientFunctions() {
     const spreadsheetIds = ClientSheetManager.getAll();
 
+    for (const [_, {spreadsheetAgnostic, functionName}] of Menu.ItemSpecs) {
+      if (spreadsheetAgnostic) {
+        globalThis[`menu_${functionName}`] = Menu[functionName];
+      }
+    }
+
     for (const spreadsheetId of spreadsheetIds) {
       const suffix = Menu.spreadsheetIdToFunctionSuffix(spreadsheetId);
 
-      globalThis[`menu_${MenuFunctionName.REGISTER_NEW}${suffix}`] =
-          Menu.registerNew.bind(null, spreadsheetId);
-
-      globalThis[`menu_${MenuFunctionName.UPDATE_STATUS_CELL}${suffix}`] =
-          Menu.updateStatusCell.bind(null, spreadsheetId);
+      for (const [_, {spreadsheetAgnostic, functionName}] of Menu.ItemSpecs) {
+        if (!spreadsheetAgnostic) {
+          globalThis[`menu_${functionName}${suffix}`] =
+              (Menu[functionName] as Function).bind(null, spreadsheetId);
+        }
+      }
     }
   }
 
-  private static spreadsheetIdToFunctionSuffix(id: string): string {
+  static spreadsheetIdToFunctionSuffix(id: string): string {
     // Combine the alphanumeric prefix and suffix.
     return '__' +
         /^[a-zA-Z0-9]+/.exec(id)[0].substring(0, 5) + '_' +
@@ -71,14 +90,10 @@ export class Menu {
   /** Throws for invalid spreadsheet ids. */
   static validateSpreadsheetId(id: string) {
     if (Menu.spreadsheetIdToFunctionSuffix(id).length < 9) {
-      throw 'Spreadsheet ID produces insufficiently unique function suffix.';
+      throw new Error(
+          'Spreadsheet ID produces insufficiently unique function suffix.');
     }
   }
-}
-
-enum MenuFunctionName {
-  REGISTER_NEW = 'registerNew',
-  UPDATE_STATUS_CELL = 'updateStatusCell',
 }
 
 Menu.registerPerClientFunctions();

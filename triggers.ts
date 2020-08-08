@@ -31,10 +31,14 @@ export function routineCheckLabeledEmails() {
   return Executrix.run(() => EmailChecker.checkLabeledEmailsForAllSheets());
 }
 
-export function trigger_testing() {
-  Logger.log('Trigger testing');
-}
-
+/**
+ * Programmatically handles triggers. See them in the web ui at:
+ * https://script.google.com/home/triggers
+ *
+ * Writing Tests for this is tricky because it would require either
+ * a) Faking the entire Trigger API to provide fake but meaningful data.
+ * b) Temporarily storing real triggers and the replacing them after the test.
+ */
 export class Triggers {
   private static readonly ON_EDIT_TRIGGERS_ENABLED = false;
 
