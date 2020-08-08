@@ -67,7 +67,7 @@ export default class ClientSheetManager {
     Logger.log(`Library removed client sheet ${spreadsheetId}`);
   }
 
-  private static getAll(): string[] {
+  static getAll(): string[] {
     const propertyValue = PropertiesService.getScriptProperties().getProperty(
         ClientSheetManager.PROPERTY_NAME);
     if (!propertyValue) return [];

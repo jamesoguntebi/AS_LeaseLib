@@ -9,22 +9,6 @@ _JasLibContext = {
   spreadsheetId: ''
 };
 
-export function dailyBalanceUpdate() {
-  return Executrix.run(() => {
-    ClientSheetManager.forEach(BalanceSheet.dailyUpdate);
-  });
-}
-
-export function updateStatusCell() {
-  return Executrix.run(() => {
-    ClientSheetManager.forEach(BalanceSheet.updateStatusCell);
-  });
-}
-
-export function checkLabeledEmails() {
-  return Executrix.run(() => EmailChecker.checkLabeledEmailsForAllSheets());
-}
-
 export function template_dailyBalanceUpdate() {
   _JasLibContext.spreadsheetId = LEASE_TEMPLATE_SPREADSHEET_ID;
   return Executrix.run(() => BalanceSheet.dailyUpdate());
@@ -50,7 +34,7 @@ export function testing(spreadsheetId: string) {
   return Executrix.run(() => ({result: 'testing'}));
 }
 
-class Executrix {
+export class Executrix {
   static run(job: () => JobRun | void): string {
     const start = Date.now();
     const jobRun = job();
