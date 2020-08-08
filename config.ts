@@ -44,7 +44,7 @@ export default class Config {
         !loanMonthlyInterestDayCellData.isBlank()) {
       loanConfig = {
         interestRate: loanInterestRateCellData.number(),
-        interestDayOfMonth: loanMonthlyInterestDayCellData.number(undefined),
+        interestDayOfMonth: loanMonthlyInterestDayCellData.numberOptional(),
       };
     }
 
