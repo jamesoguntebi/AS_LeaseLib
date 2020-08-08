@@ -1,3 +1,5 @@
+import {JASLib} from 'jas_api';
+
 import BalanceSheet from './balance_sheet';
 import Config from './config';
 
@@ -38,7 +40,8 @@ export default class ClientSheetManager {
       BalanceSheet.validateActiveSheet();
     } catch (e) {
       Logger.log('Validation of new sheet failed with error:');
-      Logger.log(e instanceof Error ? e.stack || e.message : 'Unknown error');
+      Logger.log(
+          JASLib.Util.isError(e) ? e.stack || e.message : 'Unknown error');
       return;
     } finally {
       _JasLibContext.spreadsheetId = storedSpreadsheetId;

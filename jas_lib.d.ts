@@ -29,7 +29,7 @@ declare module "testing/spy" {
     }
 }
 declare module "testing/util" {
-    export default class Util {
+    export class Util {
         static isPOJO(arg: unknown): arg is Pojo;
         static equals<U>(a: U, b: U): boolean;
         static arrayEquals(arr1: unknown[], arr2: unknown[]): boolean;
@@ -62,8 +62,8 @@ declare module "testing/expectation" {
     }
 }
 declare module "testing/tester" {
-    import { Spy } from "testing/spy";
     import { Expectation, SpyMatcher } from "testing/expectation";
+    import { Spy } from "testing/spy";
     export class Tester {
         private readonly verbose;
         static readonly ERROR_NAME = "TesterError";
@@ -165,8 +165,9 @@ declare module "testing/fakes" {
 }
 declare module "apihelper" {
     export { Spy } from "testing/spy";
-    export { Test, TestRunner, TestRunnerOptions } from "testing/testrunner";
     export { Tester } from "testing/tester";
+    export { Test, TestRunner, TestRunnerOptions } from "testing/testrunner";
+    export { Util } from "testing/util";
     export * from "testing/fakes";
 }
 declare module "jas_api" {

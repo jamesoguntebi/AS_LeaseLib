@@ -9,9 +9,6 @@ P0:
 - update README
 - integration tests
   - probably api_test.ts
-- fix validation failure error reporing during client sheet registration
-  - Maybe use Util.isError from JAS_Lib
-  - Test by having a 0-interest sheet with no monthly interest day
 - add updateStatusCell option in spreadsheet UI menu
 - check for bug in email parsing
   - receive email
@@ -123,6 +120,9 @@ P0:
   meant for two different spreadsheets
   - add tests
 - don't require monthly interest day for 0-interest loans
+- fix validation failure error reporing during client sheet registration
+  - Maybe use Util.isError from JAS_Lib
+  - Test by having a 0-interest sheet with no monthly interest day
 
 P1:
 - add option to add a full payment
