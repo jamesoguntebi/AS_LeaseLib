@@ -2,6 +2,7 @@ import {Executrix} from './api';
 import BalanceSheet from './balance_sheet';
 import ClientSheetManager from './client_sheet_manager';
 import EmailChecker from './email_checker';
+import Config from './config';
 
 export function updateOpenAndEditTriggers() {
   return Executrix.run(() => Triggers.updateOpenAndEditTriggers());
@@ -90,7 +91,84 @@ export class Triggers {
   }
 
   static onEdit(e: GoogleAppsScript.Events.SheetsOnEdit) {
+    const sheetName = e.range.getSheet().getName();
     Logger.log(`Handling open event for sheet '${
-        e.range.getSheet().getName()}' in spreadsheet '${e.source.getName()}'`);
+        sheetName}' in spreadsheet '${e.source.getName()}'`);
+    
+    if (sheetName === Config.SHEET_NAME) {
+      Debouncer.debounce(`${e.source.getId()}-${sheetName}`,
+          10000, Triggers.debouncedConfigCheck.bind(null, e.source.getId()));
+    }
+  }
+
+  private static debouncedConfigCheck(spreadsheetId: string) {
+    _JasLibContext.spreadsheetId = spreadsheetId;
+    try {
+      Config.get();
+      Logger.log('Config is valid.');
+    } catch (e) {
+      Logger.log('Config is invalid.');
+    }
   }
 }
+
+class Debouncer {
+  // JAS - Lease Lib - Debounce - Keys
+  private static readonly PROPERTY_NAME = 'jas_ll_d_k';
+
+  static debounce(key: string, delayMs: number, fn: (this: void) => void) {
+    const data = Debouncer.getOrCreateProperty();
+    const startTime = Date.now();
+    data.set(key, startTime);
+    Debouncer.setProperty(data);
+
+    Utilities.sleep(delayMs);
+
+    const dataLater = Debouncer.getOrCreateProperty();
+    if (dataLater.get(key) === startTime) {
+      fn();
+      Debouncer.setProperty(data);
+    }
+  }
+
+  private static getOrCreateProperty(): DebouncerData {
+    let propertyValue = PropertiesService.getScriptProperties().getProperty(
+        Debouncer.PROPERTY_NAME);
+    if (!propertyValue) propertyValue = '[]';
+
+    const fail = () => {
+      throw new Error(`Malford debouncer data: ${propertyValue}`);
+    };
+
+    let propertyJson = [];
+    try {
+      propertyJson = JSON.parse(propertyValue);
+    } catch (e) {
+      fail();
+    }
+
+    if (!Array.isArray(propertyJson)) fail();
+
+    for (const mapEntry of propertyJson) {
+      if (!Array.isArray(mapEntry)) fail();
+      if (
+        mapEntry.length !== 2 ||
+        typeof mapEntry[0] !== 'string' ||
+        typeof mapEntry[1] !== 'number'
+      ) {
+        fail();
+      }
+    }
+
+    return new Map(propertyJson as Array<[string, number]>);
+  }
+
+  private static setProperty(data: DebouncerData) {
+    PropertiesService.getScriptProperties().setProperty(
+      Debouncer.PROPERTY_NAME,
+      JSON.stringify([...data])
+    );
+  }
+}
+
+type DebouncerData = Map<string, number>;

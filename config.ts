@@ -2,6 +2,8 @@ import {SSLib} from 'ss_api';
 import Util from './_util';
 
 export default class Config {
+  static readonly SHEET_NAME = 'Config';
+
   static readonly PaymentTypeStrings: Record<string, string> = {
     Zelle: 'Zelle',
     Venmo: 'Venmo',
@@ -14,8 +16,8 @@ export default class Config {
 
   static get(): ConfigParams {
     const F = Config.FIELD;
-    const configSheet =
-        SSLib.JasSpreadsheet.findSheet('config', _JasLibContext.spreadsheetId);
+    const configSheet = SSLib.JasSpreadsheet.findSheet(
+        Config.SHEET_NAME, _JasLibContext.spreadsheetId);
     const valueColumn = SSLib.JasSpreadsheet.findColumn('value', configSheet);
 
     const getCellData = (configField: ConfigField) => {
