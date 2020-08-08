@@ -3,6 +3,7 @@ import BalanceSheet from './balance_sheet';
 import ClientSheetManager from './client_sheet_manager';
 import Config from './config';
 import EmailChecker from './email_checker';
+import {Menu} from './menu';
 
 export function updateOpenAndEditTriggers() {
   return Executrix.run(() => Triggers.updateOpenAndEditTriggers());
@@ -48,22 +49,26 @@ export class Triggers {
 
     const spreadsheetIds = ClientSheetManager.getAll();
 
-    for (const spreadSheetId of spreadsheetIds) {
-      if (Triggers.ON_EDIT_TRIGGERS_ENABLED) {
-        ScriptApp.newTrigger('trigger_onEdit')
-            .forSpreadsheet(spreadSheetId)
-            .onEdit()
-            .create();
-      }
-
-      ScriptApp.newTrigger('trigger_onOpen')
-          .forSpreadsheet(spreadSheetId)
-          .onOpen()
-          .create();
+    for (const spreadsheetId of spreadsheetIds) {
+      Triggers.installForClientSheet(spreadsheetId);
     }
 
     Logger.log(`Installed open and edit triggers for ${
         spreadsheetIds.length} client sheets.`);
+  }
+
+  static installForClientSheet(spreadsheetId: string) {
+    if (Triggers.ON_EDIT_TRIGGERS_ENABLED) {
+      ScriptApp.newTrigger('trigger_onEdit')
+          .forSpreadsheet(spreadsheetId)
+          .onEdit()
+          .create();
+    }
+
+    ScriptApp.newTrigger('trigger_onOpen')
+        .forSpreadsheet(spreadsheetId)
+        .onOpen()
+        .create();
   }
 
   static updateClockTriggers() {
@@ -91,8 +96,7 @@ export class Triggers {
 
   static onOpen(e: GoogleAppsScript.Events.SheetsOnOpen) {
     Logger.log(`Handling open event for spreadsheet '${e.source.getName()}'`);
-    e.source.addMenu(
-        'testing', [{name: 'test 1', functionName: 'trigger_testing'}]);
+    Menu.install(e.source);
   }
 
   static onEdit(e: GoogleAppsScript.Events.SheetsOnEdit) {

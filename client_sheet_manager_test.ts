@@ -3,7 +3,9 @@ import {JASLib} from 'jas_api'
 import BalanceSheet from './balance_sheet';
 import ClientSheetManager from './client_sheet_manager';
 import Config from './config';
+import {Menu} from './menu';
 import Tester from './testing/tester';
+import {Triggers} from './triggers';
 
 export default class ClientSheetManagerTest implements JASLib.Test {
   readonly name = 'ClientSheetManagerTest';
@@ -17,6 +19,7 @@ export default class ClientSheetManagerTest implements JASLib.Test {
   run(t: Tester) {
     let forceConfigSheetInvalid = false;
     let forceBalanceSheetInvalid = false;
+    let forceMenuIdCheckInvalid = false;
 
     t.beforeAll(() => {
       t.spyOn(Config, 'get').and.callFake(() => {
@@ -27,8 +30,14 @@ export default class ClientSheetManagerTest implements JASLib.Test {
           throw new Error('Balance sheet is invalid');
         }
       });
+      t.spyOn(Menu, 'validateSpreadsheetId').and.callFake(() => {
+        if (forceMenuIdCheckInvalid) {
+          throw new Error('Menu says spreadsheet id is invalid');
+        }
+      });
       t.spyOn(SpreadsheetApp, 'flush');
       t.spyOn(Utilities, 'sleep');
+      t.spyOn(Triggers, 'installForClientSheet');
     });
 
     t.beforeEach(() => {

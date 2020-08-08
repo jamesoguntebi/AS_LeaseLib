@@ -2,6 +2,8 @@ import {JASLib} from 'jas_api';
 
 import BalanceSheet from './balance_sheet';
 import Config from './config';
+import {Menu} from './menu';
+import {Triggers} from './triggers';
 
 export default class ClientSheetManager {
   private static readonly PROPERTY_NAME = 'REGISTERED_CLIENTS';
@@ -38,6 +40,7 @@ export default class ClientSheetManager {
       _JasLibContext.spreadsheetId = spreadsheetId;
       Config.get();  // This will validate that the Config sheet.
       BalanceSheet.validateActiveSheet();
+      Menu.validateSpreadsheetId(spreadsheetId);
     } catch (e) {
       Logger.log('Validation of new sheet failed with error:');
       Logger.log(
@@ -47,12 +50,13 @@ export default class ClientSheetManager {
       _JasLibContext.spreadsheetId = storedSpreadsheetId;
     }
 
+    Triggers.installForClientSheet(spreadsheetId);
     registeredSet.add(spreadsheetId);
     PropertiesService.getScriptProperties().setProperty(
         ClientSheetManager.PROPERTY_NAME,
         JSON.stringify(Array.from(registeredSet)));
 
-    Logger.log(`Library added client sheet ${spreadsheetId}`);
+    Logger.log(`Registered client sheet ${spreadsheetId}`);
   }
 
   static unregister(spreadsheetId: string) {
@@ -64,7 +68,7 @@ export default class ClientSheetManager {
         ClientSheetManager.PROPERTY_NAME,
         JSON.stringify(Array.from(registeredSet)));
 
-    Logger.log(`Library removed client sheet ${spreadsheetId}`);
+    Logger.log(`Unregistered client sheet ${spreadsheetId}`);
   }
 
   static getAll(): string[] {

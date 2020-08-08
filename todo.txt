@@ -10,10 +10,26 @@ P0:
 - integration tests
   - probably api_test.ts
 - add updateStatusCell option in spreadsheet UI menu
+  - tests needed
 - check for bug in email parsing
   - receive email
   - respond to email with message that has no deposit text in it
   - does this second message get parsed as a deposit?
+- options in spreadsheet menu:
+  - register new sheet
+  - unregister this sheet
+    - prompt/alert/confirm
+    - update triggers
+  - update status cell
+  - maybe add rent/loan transaction
+  - check email now
+  - validate config
+- unregister test lease/loan template:
+  - https://docs.google.com/spreadsheets/d/1vtpuR1GuzuwT1o9j62xSZlhg6_HgvjZEDXL56GoLpFI/edit#gid=1280668841
+- handle unit tests
+  - ClientSheetManager
+  - Triggers
+  - Menu
 
 
 P1:
