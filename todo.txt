@@ -24,12 +24,15 @@ P0:
   - maybe add rent/loan transaction
   - check email now
   - validate config
+  - add payment
 - unregister test lease/loan template:
   - https://docs.google.com/spreadsheets/d/1vtpuR1GuzuwT1o9j62xSZlhg6_HgvjZEDXL56GoLpFI/edit#gid=1280668841
 - handle unit tests
   - ClientSheetManager
   - Triggers
   - Menu
+- register abriel life loan sheet
+  - new gmail label to differentiate
 
 
 P1:
