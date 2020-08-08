@@ -17,6 +17,7 @@ declare module "jas_range" {
         stringOptional(): string | undefined;
         stringArray(): string[];
         number(defaultValue?: number): number;
+        numberOptional(): number | undefined;
         date(includeTime?: boolean): Date;
         private getCellString;
         private static isDateValue;
@@ -41,11 +42,11 @@ declare module "jas_spreadsheet" {
     }
 }
 declare module "apihelper" {
-    export { JasRange, CellData } from "jas_range";
+    export { CellData, JasRange } from "jas_range";
     export { JasSpreadsheet } from "jas_spreadsheet";
 }
 declare module "jas_range_test" {
-    import { JASLib } from "jas_api";
+    import { JASLib } from 'jas_api';
     export default class JasRangeTest implements JASLib.Test {
         readonly name = "JasRangeTest";
         /** This is the Lease Spreadsheet Template. */
@@ -54,7 +55,7 @@ declare module "jas_range_test" {
     }
 }
 declare module "jas_spreadsheet_test" {
-    import { JASLib } from "jas_api";
+    import { JASLib } from 'jas_api';
     export default class JasSpreadsheetTest implements JASLib.Test {
         readonly name = "JasSpreadsheetTest";
         /** This is the Lease Spreadsheet Template. */
@@ -63,11 +64,11 @@ declare module "jas_spreadsheet_test" {
     }
 }
 declare module "ss_api" {
-    import * as SSLib from "apihelper";
+    import * as SSLib from 'apihelper';
     export { SSLib };
 }
 declare module "testing/testrunner" {
-    import { JASLib } from "jas_api";
+    import { JASLib } from 'jas_api';
     export function runTests(params?: TestRunnerOptions | string): string;
     export function runTestsAndHideSuccesses(params?: TestRunnerOptions | string): string;
     export function runTestsWithLogs(params?: TestRunnerOptions | string): string;
