@@ -1,7 +1,58 @@
+import {JASLib} from 'jas_api';
+
 import BalanceSheet from './balance_sheet';
 import ClientSheetManager from './client_sheet_manager';
 
 type Spreadsheet = GoogleAppsScript.Spreadsheet.Spreadsheet;
+
+/** Visible for testing. */
+export class MenuItems {
+  // Map of menu display name to Menu function.
+  static readonly Specs: Map<string, {
+    functionName: JASLib.KeysOfType<typeof MenuItems, Function>,
+    spreadsheetAgnostic?: boolean,
+  }> =
+      new Map([
+        [
+          'Register new spreadsheet',
+          {functionName: 'registerNewClientSheet', spreadsheetAgnostic: true}
+        ],
+        [
+          'Unregister this spreadsheet', {functionName: 'unregisterClientSheet'}
+        ],
+        ['Update status cell', {functionName: 'updateStatusCell'}],
+      ]);
+
+  static registerNewClientSheet() {
+    const response = SpreadsheetApp.getUi().prompt(
+        'Register new spreadsheet', 'ID of new spreadsheet:\n\n',
+        SpreadsheetApp.getUi().ButtonSet.OK_CANCEL);
+    if (response.getSelectedButton() === SpreadsheetApp.getUi().Button.OK) {
+      const spreadsheetId = response.getResponseText().trim();
+      if (spreadsheetId) ClientSheetManager.register(spreadsheetId);
+    } else {
+      Logger.log('Registration cancelled');
+    }
+  }
+
+  static unregisterClientSheet(spreadsheetId: string) {
+    const response = SpreadsheetApp.getUi().alert(
+        'Unregister this sheet',
+        'Unregister this sheet from the OgunBank manager?\n\n',
+        SpreadsheetApp.getUi().ButtonSet.OK_CANCEL);
+    if (response === SpreadsheetApp.getUi().Button.OK) {
+      ClientSheetManager.unregister(spreadsheetId);
+      SpreadsheetApp.openById(spreadsheetId).removeMenu(Menu.DISPLAY_NAME);
+    } else {
+      Logger.log('Unregistration cancelled');
+    }
+  }
+
+  static updateStatusCell(spreadsheetId: string) {
+    _JasLibContext.spreadsheetId = spreadsheetId;
+    BalanceSheet.updateStatusCell();
+  }
+}
 
 /**
  * Installs a menu in every client sheet.
@@ -16,23 +67,13 @@ type Spreadsheet = GoogleAppsScript.Spreadsheet.Spreadsheet;
  * function name is suffixed with a hash of the spreadsheet id.
  */
 export class Menu {
-  // Map of menu display name to Menu function.
-  private static readonly ItemSpecs:
-      Map<string,
-          {spreadsheetAgnostic?: boolean, functionName: keyof typeof Menu}> =
-          new Map([
-            [
-              'Register new spreadsheet',
-              {functionName: 'registerNew', spreadsheetAgnostic: true}
-            ],
-            ['Update status cell', {functionName: 'updateStatusCell'}],
-          ]);
+  static readonly DISPLAY_NAME = 'OgunBank';
 
   static install(spreadsheet: Spreadsheet) {
     const suffix = Menu.spreadsheetIdToFunctionSuffix(spreadsheet.getId());
 
     const menuItems = [
-      ...Menu.ItemSpecs
+      ...MenuItems.Specs
     ].map(([displayName, {spreadsheetAgnostic, functionName}]) => {
       return {
         name: displayName,
@@ -40,41 +81,25 @@ export class Menu {
       };
     });
 
-    spreadsheet.addMenu('OgunBank', menuItems);
-  }
-
-  static registerNew() {
-    const response =
-        SpreadsheetApp.getUi().prompt('Spreadsheet ID of new sheet:\n\n');
-    if (response.getSelectedButton() === SpreadsheetApp.getUi().Button.OK ||
-        response.getSelectedButton() === SpreadsheetApp.getUi().Button.YES) {
-      ClientSheetManager.register(response.getResponseText().trim());
-    } else {
-      Logger.log('prompt cancelled');
-    }
-  }
-
-  static updateStatusCell(spreadsheetId: string) {
-    _JasLibContext.spreadsheetId = spreadsheetId;
-    BalanceSheet.updateStatusCell();
+    spreadsheet.addMenu(Menu.DISPLAY_NAME, menuItems);
   }
 
   static registerPerClientFunctions() {
     const spreadsheetIds = ClientSheetManager.getAll();
 
-    for (const [_, {spreadsheetAgnostic, functionName}] of Menu.ItemSpecs) {
+    for (const [_, {spreadsheetAgnostic, functionName}] of MenuItems.Specs) {
       if (spreadsheetAgnostic) {
-        globalThis[`menu_${functionName}`] = Menu[functionName];
+        globalThis[`menu_${functionName}`] = MenuItems[functionName];
       }
     }
 
     for (const spreadsheetId of spreadsheetIds) {
       const suffix = Menu.spreadsheetIdToFunctionSuffix(spreadsheetId);
 
-      for (const [_, {spreadsheetAgnostic, functionName}] of Menu.ItemSpecs) {
+      for (const [_, {spreadsheetAgnostic, functionName}] of MenuItems.Specs) {
         if (!spreadsheetAgnostic) {
           globalThis[`menu_${functionName}${suffix}`] =
-              (Menu[functionName] as Function).bind(null, spreadsheetId);
+              (MenuItems[functionName] as Function).bind(null, spreadsheetId);
         }
       }
     }

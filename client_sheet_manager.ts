@@ -1,4 +1,5 @@
 import {JASLib} from 'jas_api';
+import SpyTest from 'testing/spy_test';
 
 import BalanceSheet from './balance_sheet';
 import Config from './config';
@@ -67,6 +68,8 @@ export default class ClientSheetManager {
     PropertiesService.getScriptProperties().setProperty(
         ClientSheetManager.PROPERTY_NAME,
         JSON.stringify(Array.from(registeredSet)));
+
+    Triggers.updateOpenAndEditTriggers();
 
     Logger.log(`Unregistered client sheet ${spreadsheetId}`);
   }

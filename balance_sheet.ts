@@ -3,12 +3,6 @@ import {SSLib} from 'ss_api';
 import Util from './_util';
 import Config from './config';
 
-export function testUpdateStatusCell() {
-  _JasLibContext.spreadsheetId = '1e-xDkyts6jt_2JPGS5i1hX4opVJ9niQ9f0y8YtAvTlw';
-  BalanceSheet.updateStatusCell();
-  return Logger.getLog();
-}
-
 export default class BalanceSheet {
   static readonly SHEET_NAME = 'Balance';
 

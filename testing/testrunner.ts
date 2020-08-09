@@ -38,11 +38,8 @@ export function runTestsWithLogs(params: TestRunnerOptions|string = {}) {
 }
 
 export default class TestRunner {
-  private static readonly LEASE_TEMPLATE_SPREADSHEET_ID =
-      '1e-xDkyts6jt_2JPGS5i1hX4opVJ9niQ9f0y8YtAvTlw';
-
   static run({
-    spreadsheetId = TestRunner.LEASE_TEMPLATE_SPREADSHEET_ID,
+    spreadsheetId = TestData.LEASE_TEMPLATE_SPREADSHEET_ID,
     suppressLogs = true,
     showSuccesses = true,
     testClassNames = undefined,

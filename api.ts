@@ -2,20 +2,17 @@ import BalanceSheet from './balance_sheet';
 import ClientSheetManager from './client_sheet_manager';
 import EmailChecker from './email_checker';
 
-const LEASE_TEMPLATE_SPREADSHEET_ID =
-    '1e-xDkyts6jt_2JPGS5i1hX4opVJ9niQ9f0y8YtAvTlw';
-
 _JasLibContext = {
   spreadsheetId: ''
 };
 
 export function template_dailyBalanceUpdate() {
-  _JasLibContext.spreadsheetId = LEASE_TEMPLATE_SPREADSHEET_ID;
+  _JasLibContext.spreadsheetId = TestData.LEASE_TEMPLATE_SPREADSHEET_ID;
   return Executrix.run(() => BalanceSheet.dailyUpdate());
 }
 
 export function template_checkLabeledEmails() {
-  _JasLibContext.spreadsheetId = LEASE_TEMPLATE_SPREADSHEET_ID;
+  _JasLibContext.spreadsheetId = TestData.LEASE_TEMPLATE_SPREADSHEET_ID;
   return Executrix.run(() => {
     EmailChecker.checkLabeledEmails();
   });
