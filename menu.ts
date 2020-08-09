@@ -5,55 +5,6 @@ import ClientSheetManager from './client_sheet_manager';
 
 type Spreadsheet = GoogleAppsScript.Spreadsheet.Spreadsheet;
 
-/** Visible for testing. */
-export class MenuItems {
-  // Map of menu display name to Menu function.
-  static readonly Specs: Map<string, {
-    functionName: JASLib.KeysOfType<typeof MenuItems, Function>,
-    spreadsheetAgnostic?: boolean,
-  }> =
-      new Map([
-        [
-          'Register new spreadsheet',
-          {functionName: 'registerNewClientSheet', spreadsheetAgnostic: true}
-        ],
-        [
-          'Unregister this spreadsheet', {functionName: 'unregisterClientSheet'}
-        ],
-        ['Update status cell', {functionName: 'updateStatusCell'}],
-      ]);
-
-  static registerNewClientSheet() {
-    const response = SpreadsheetApp.getUi().prompt(
-        'Register new spreadsheet', 'ID of new spreadsheet:\n\n',
-        SpreadsheetApp.getUi().ButtonSet.OK_CANCEL);
-    if (response.getSelectedButton() === SpreadsheetApp.getUi().Button.OK) {
-      const spreadsheetId = response.getResponseText().trim();
-      if (spreadsheetId) ClientSheetManager.register(spreadsheetId);
-    } else {
-      Logger.log('Registration cancelled');
-    }
-  }
-
-  static unregisterClientSheet(spreadsheetId: string) {
-    const response = SpreadsheetApp.getUi().alert(
-        'Unregister this sheet',
-        'Unregister this sheet from the OgunBank manager?\n\n',
-        SpreadsheetApp.getUi().ButtonSet.OK_CANCEL);
-    if (response === SpreadsheetApp.getUi().Button.OK) {
-      ClientSheetManager.unregister(spreadsheetId);
-      SpreadsheetApp.openById(spreadsheetId).removeMenu(Menu.DISPLAY_NAME);
-    } else {
-      Logger.log('Unregistration cancelled');
-    }
-  }
-
-  static updateStatusCell(spreadsheetId: string) {
-    _JasLibContext.spreadsheetId = spreadsheetId;
-    BalanceSheet.updateStatusCell();
-  }
-}
-
 /**
  * Installs a menu in every client sheet.
  *
@@ -118,6 +69,55 @@ export class Menu {
       throw new Error(
           'Spreadsheet ID produces insufficiently unique function suffix.');
     }
+  }
+}
+
+/** Visible for testing. */
+export class MenuItems {
+  // Map of menu display name to Menu function.
+  static readonly Specs: Map<string, {
+    functionName: JASLib.KeysOfType<typeof MenuItems, Function>,
+    spreadsheetAgnostic?: boolean,
+  }> =
+      new Map([
+        [
+          'Register new spreadsheet',
+          {functionName: 'registerNewClientSheet', spreadsheetAgnostic: true}
+        ],
+        [
+          'Unregister this spreadsheet', {functionName: 'unregisterClientSheet'}
+        ],
+        ['Update status cell', {functionName: 'updateStatusCell'}],
+      ]);
+
+  static registerNewClientSheet() {
+    const response = SpreadsheetApp.getUi().prompt(
+        'Register new spreadsheet', 'ID of new spreadsheet:\n\n',
+        SpreadsheetApp.getUi().ButtonSet.OK_CANCEL);
+    if (response.getSelectedButton() === SpreadsheetApp.getUi().Button.OK) {
+      const spreadsheetId = response.getResponseText().trim();
+      if (spreadsheetId) ClientSheetManager.register(spreadsheetId);
+    } else {
+      Logger.log('Registration cancelled');
+    }
+  }
+
+  static unregisterClientSheet(spreadsheetId: string) {
+    const response = SpreadsheetApp.getUi().alert(
+        'Unregister this sheet',
+        'Unregister this sheet from the OgunBank manager?\n\n',
+        SpreadsheetApp.getUi().ButtonSet.OK_CANCEL);
+    if (response === SpreadsheetApp.getUi().Button.OK) {
+      ClientSheetManager.unregister(spreadsheetId);
+      SpreadsheetApp.openById(spreadsheetId).removeMenu(Menu.DISPLAY_NAME);
+    } else {
+      Logger.log('Unregistration cancelled');
+    }
+  }
+
+  static updateStatusCell(spreadsheetId: string) {
+    _JasLibContext.spreadsheetId = spreadsheetId;
+    BalanceSheet.updateStatusCell();
   }
 }
 

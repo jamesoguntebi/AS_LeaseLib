@@ -1,5 +1,4 @@
 import {JASLib} from 'jas_api';
-import SpyTest from 'testing/spy_test';
 
 import BalanceSheet from './balance_sheet';
 import Config from './config';
