@@ -13,8 +13,6 @@ P0:
   - receive email
   - respond to email with message that has no deposit text in it
   - does this second message get parsed as a deposit?
-- register abriel life loan sheet
-  - new gmail label to differentiate
 
 
 P1:
@@ -22,14 +20,9 @@ P1:
 - More comments everywhere
 - Allow inserting row at correct date in balance sheet using date passed in to
   insertRow()
-- validate config on edit
-  - with a config valid checkbox!
 - if interest and payment are the same date, make payment be before interest
 - optimizations
   - store per-project configs in Properties, update onEdit
-  - https://developers.google.com/apps-script/reference/script/trigger-builder#forspreadsheetkey
-- set balance sheet tab color based on current balance
-- throttle onEdit event per sheet using Properties
 - investigate if Menu function registration needs complex id mapping. or just
   incrementing index
 
@@ -61,6 +54,10 @@ P3:
 - automated way to unregister deleted clients, or really, any good way to
   unregister.
 - mark L tests and make running them optional
+- set balance sheet tab color based on current balance
+- validate config on edit
+  - with a config valid checkbox!
+  - throttle onEdit event per sheet using Properties
 
 P4
 - we get message date to use as transaction date. this date isn't always
@@ -143,6 +140,8 @@ P0:
   - ClientSheetManager
   - Triggers
   - Menu
+- register abriel life loan sheet
+  - new gmail label to differentiate
 
 P1:
 - add option to add a full payment
