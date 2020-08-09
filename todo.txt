@@ -15,12 +15,10 @@ P0:
   - does this second message get parsed as a deposit?
 - register abriel life loan sheet
   - new gmail label to differentiate
-- store both id and name in ClientSheetManager
 
 
 P1:
 - read all emails, and ask admin to verify emails that should be parsed
-- Move client projects off of dev mode to versioned library
 - More comments everywhere
 - Allow inserting row at correct date in balance sheet using date passed in to
   insertRow()
@@ -42,6 +40,9 @@ P1:
   - https://developers.google.com/apps-script/reference/script/trigger-builder#forspreadsheetkey
 - set balance sheet tab color based on current balance
 - throttle onEdit event per sheet using Properties
+- store both id and name in ClientSheetManager
+- investigate if Menu function registration needs complex id mapping. or just
+  incrementing index
 
 
 P2:
@@ -174,6 +175,8 @@ P1:
 - set Google Sans font everywhere
 - document design in Menu
 - add toBe to tests
+- Delete all client projects. Library can do everything.
+- status alert after menu actions
 
 P2:
 - instead of checking emails, let manual step be to label emails. script do the

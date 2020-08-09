@@ -99,7 +99,15 @@ export class MenuItems {
         SpreadsheetApp.getUi().ButtonSet.OK_CANCEL);
     if (response.getSelectedButton() === SpreadsheetApp.getUi().Button.OK) {
       const spreadsheetId = response.getResponseText().trim();
-      if (spreadsheetId) ClientSheetManager.register(spreadsheetId);
+      if (spreadsheetId) {
+        try {
+          ClientSheetManager.register(spreadsheetId);
+          SpreadsheetApp.getUi().alert(`Spreadsheet registered!`);
+        } catch (e) {
+          SpreadsheetApp.getUi().alert(`Spreadsheet registration failed!\n\n${
+              JASLib.Util.isError(e) ? e.stack || e.message : 'Unkown error'}`);
+        }
+      }
     } else {
       Logger.log('Registration cancelled');
     }
@@ -113,6 +121,7 @@ export class MenuItems {
     if (response === SpreadsheetApp.getUi().Button.OK) {
       ClientSheetManager.unregister(spreadsheetId);
       SpreadsheetApp.openById(spreadsheetId).removeMenu(Menu.DISPLAY_NAME);
+      SpreadsheetApp.getUi().alert(`Spreadsheet unregistered!`);
     } else {
       Logger.log('Unregistration cancelled');
     }

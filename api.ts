@@ -1,5 +1,4 @@
 import BalanceSheet from './balance_sheet';
-import ClientSheetManager from './client_sheet_manager';
 import EmailChecker from './email_checker';
 
 _JasLibContext = {
@@ -16,14 +15,6 @@ export function template_checkLabeledEmails() {
   return Executrix.run(() => {
     EmailChecker.checkLabeledEmails();
   });
-}
-
-export function registerClientSheet(spreadsheetId: string) {
-  return Executrix.run(() => ClientSheetManager.register(spreadsheetId));
-}
-
-export function unregisterClientSheet(spreadsheetId: string) {
-  return Executrix.run(() => ClientSheetManager.unregister(spreadsheetId));
 }
 
 export function testing(spreadsheetId: string) {

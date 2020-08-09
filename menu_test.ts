@@ -29,6 +29,7 @@ export class MenuTest implements JASLib.Test {
           getSelectedButton: () => button,
           getResponseText: () => responseText,
         }),
+        alert: () => FakeDialogButtons.OK,
         Button: FakeDialogButtons,
         ButtonSet: FakeDialogButtonSets,
       });
@@ -62,17 +63,38 @@ export class MenuTest implements JASLib.Test {
 
       t.it('registers for completed prompt', () => {
         fakePrompt(FakeDialogButtons.OK, spreadsheetId);
+        t.spyOn(SpreadsheetApp.getUi(), 'alert');
 
         MenuItems.registerNewClientSheet();
 
         t.expect(ClientSheetManager.register)
             .toHaveBeenCalledWith(spreadsheetId);
+        t.expect(SpreadsheetApp.getUi().alert)
+            .toHaveBeenCalledWith(`Spreadsheet registered!`);
       });
 
       t.it('does nothing for canceled prompt', () => {
         fakePrompt(FakeDialogButtons.CLOSE, spreadsheetId);
         MenuItems.registerNewClientSheet();
         t.expect(ClientSheetManager.register).not.toHaveBeenCalled();
+      });
+
+      t.it('fails and alerts for invalid spreadsheet id', () => {
+        JASLib.Spy.assertSpy(ClientSheetManager.register).and.callFake(() => {
+          throw new Error('Invalid spreadsheet id');
+        });
+        fakePrompt(FakeDialogButtons.OK, 'invalid spreadsheet id');
+        t.spyOn(SpreadsheetApp.getUi(), 'alert');
+        MenuItems.registerNewClientSheet();
+
+        t.expect(ClientSheetManager.register).toHaveBeenCalled();
+        t.expect(SpreadsheetApp.getUi().alert)
+            .not.toHaveBeenCalledWith(`Spreadsheet registered!`);
+        t.expect(SpreadsheetApp.getUi().alert)
+            .toHaveBeenCalledLike(t.matcher((args: unknown[]) => {
+              return (args[0] as string)
+                  .startsWith('Spreadsheet registration failed!');
+            }));
       });
 
       t.it('does nothing for closed prompt', () => {
@@ -100,12 +122,15 @@ export class MenuTest implements JASLib.Test {
 
       t.it('unregisters for confirmed alert', () => {
         fakeAlert(FakeDialogButtons.OK);
+        t.spyOn(SpreadsheetApp.getUi(), 'alert').and.callThrough();
 
         MenuItems.unregisterClientSheet(spreadsheetId);
 
         t.expect(ClientSheetManager.unregister)
             .toHaveBeenCalledWith(spreadsheetId);
         t.expect(SpreadsheetApp.openById).toHaveBeenCalledWith(spreadsheetId);
+        t.expect(SpreadsheetApp.getUi().alert)
+            .toHaveBeenCalledWith(`Spreadsheet unregistered!`);
       });
 
       t.it('does nothing for canceled alert', () => {

@@ -63,7 +63,7 @@ export default class ClientSheetManagerTest implements JASLib.Test {
         forceConfigSheetInvalid = true;
         forceBalanceSheetInvalid = false;
         forceMenuIdCheckInvalid = false;
-        ClientSheetManager.register('sheet-id');
+        t.expect(() => ClientSheetManager.register('sheet-id')).toThrow();
         this.expectRegisteredCount(t, 0);
         t.expect(Triggers.installForClientSheet).not.toHaveBeenCalled();
       });
@@ -72,7 +72,7 @@ export default class ClientSheetManagerTest implements JASLib.Test {
         forceConfigSheetInvalid = false;
         forceBalanceSheetInvalid = true;
         forceMenuIdCheckInvalid = false;
-        ClientSheetManager.register('sheet-id');
+        t.expect(() => ClientSheetManager.register('sheet-id')).toThrow();
         this.expectRegisteredCount(t, 0);
         t.expect(Triggers.installForClientSheet).not.toHaveBeenCalled();
       });
@@ -83,7 +83,7 @@ export default class ClientSheetManagerTest implements JASLib.Test {
             forceConfigSheetInvalid = false;
             forceBalanceSheetInvalid = false;
             forceMenuIdCheckInvalid = true;
-            ClientSheetManager.register('sheet-id');
+            t.expect(() => ClientSheetManager.register('sheet-id')).toThrow();
             this.expectRegisteredCount(t, 0);
             t.expect(Triggers.installForClientSheet).not.toHaveBeenCalled();
           });

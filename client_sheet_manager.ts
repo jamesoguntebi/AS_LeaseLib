@@ -45,7 +45,7 @@ export default class ClientSheetManager {
       Logger.log('Validation of new sheet failed with error:');
       Logger.log(
           JASLib.Util.isError(e) ? e.stack || e.message : 'Unknown error');
-      return;
+      throw e;
     } finally {
       _JasLibContext.spreadsheetId = storedSpreadsheetId;
     }
