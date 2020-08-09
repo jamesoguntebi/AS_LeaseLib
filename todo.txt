@@ -15,22 +15,6 @@ P0:
   - receive email
   - respond to email with message that has no deposit text in it
   - does this second message get parsed as a deposit?
-- options in spreadsheet menu:
-  - register new sheet
-  - unregister this sheet
-    - prompt/alert/confirm
-    - update triggers
-  - update status cell
-  - maybe add rent/loan transaction
-  - check email now
-  - validate config
-  - add payment
-- unregister test lease/loan template:
-  - https://docs.google.com/spreadsheets/d/1vtpuR1GuzuwT1o9j62xSZlhg6_HgvjZEDXL56GoLpFI/edit#gid=1280668841
-- handle unit tests
-  - ClientSheetManager
-  - Triggers
-  - Menu
 - register abriel life loan sheet
   - new gmail label to differentiate
 
@@ -143,6 +127,22 @@ P0:
 - fix validation failure error reporing during client sheet registration
   - Maybe use Util.isError from JAS_Lib
   - Test by having a 0-interest sheet with no monthly interest day
+- options in spreadsheet menu:
+  - register new sheet
+  - unregister this sheet
+    - prompt/alert/confirm
+    - update triggers
+  - update status cell
+  - maybe add rent/loan transaction
+  - check email now
+  - validate config
+  - add payment
+- unregister test lease/loan template:
+  - https://docs.google.com/spreadsheets/d/1vtpuR1GuzuwT1o9j62xSZlhg6_HgvjZEDXL56GoLpFI/edit#gid=1280668841
+- handle unit tests
+  - ClientSheetManager
+  - Triggers
+  - Menu
 
 P1:
 - add option to add a full payment
