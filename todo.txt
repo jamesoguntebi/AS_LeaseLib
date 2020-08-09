@@ -24,23 +24,12 @@ P1:
   insertRow()
 - validate config on edit
   - with a config valid checkbox!
-  - labels. maybe a custom label name in config
 - if interest and payment are the same date, make payment be before interest
-- optimize Config.get
-  - maybe only call it once per method
-    - some way to cache the current Config
-  - read the entire sheet and operate on it, rather than reading every cell one
-    at a time
-- make doDailyUpdate idempotent
-  - check if rent or interest was already applied
-- static file analysis
-  - no 'this' in ts files
 - optimizations
   - store per-project configs in Properties, update onEdit
   - https://developers.google.com/apps-script/reference/script/trigger-builder#forspreadsheetkey
 - set balance sheet tab color based on current balance
 - throttle onEdit event per sheet using Properties
-- store both id and name in ClientSheetManager
 - investigate if Menu function registration needs complex id mapping. or just
   incrementing index
 
@@ -54,6 +43,18 @@ P2:
 - Add a log in the spreadsheet, showing recent events
 - make addPayment idempotent
   - add gmail message id in invisible column?
+- static file analysis
+  - no 'this' in ts files
+- optimize Config.get
+  - maybe only call it once per method
+    - some way to cache the current Config
+  - read the entire sheet and operate on it, rather than reading every cell one
+    at a time
+- make doDailyUpdate idempotent
+  - check if rent or interest was already applied
+- store both id and name in ClientSheetManager
+  - use this to print registered sheet names instead of Ids
+  - print one per line
 
 P3:
 - integrate with Plaid to *maybe* get Zelle Ids
