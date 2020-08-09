@@ -14,17 +14,9 @@
     1. Add 'Show warning' protection to the entire Config sheet except the value
        column.
 
-4. Open the Script Editor. 'Tools' -> 'Script Editor'
+4. In any other sheet, like the template, open the OgunBank menu and select the
+   option to register a new sheet. Paste in the spreadsheet ID of the new sheet.
 
-5. Title the Script the same as the Spreadsheet
+5. Wait for the first valid email, label it correctly, and brace yourself.
 
-6. Note that there is an onOpen(). Manually run it. This will prompt to approve
-   permissions. You may have to run it again after accepting permissions.
-
-7. Go to Apps Script [My Executions](https://script.google.com/home/executions)
-   page and see the most recent logs for onOpen. Ensure the script id was
-   registered.
-
-8. Wait for the first valid email, label it correctly, and brace yourself.
-
-9. Consider babysitting the first execution just to ensure it works properly.
+6. Consider babysitting the first execution just to ensure it works properly.
