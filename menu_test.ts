@@ -131,14 +131,14 @@ export class MenuTest implements JASLib.Test {
 
       t.it('registers spreadsheet-agnostic items', () => {
         t.expect(typeof globalThis['menu_registerNewClientSheet'])
-            .toEqual('function');
+            .toBe('function');
         t.expect(globalThis[`menu_registerNewClientSheet${suffix}`])
             .toBeUndefined();
       });
 
       t.it('registers per-spreadsheet items', () => {
         t.expect(typeof globalThis[`menu_updateStatusCell${suffix}`])
-            .toEqual('function');
+            .toBe('function');
         t.expect(globalThis['menu_updateStatusCell']).toBeUndefined();
       });
     });

@@ -50,6 +50,7 @@ declare module "testing/expectation" {
         readonly not: Expectation<T>;
         readonly notString: string;
         constructor(actual: T, isInverse?: boolean, notSource?: Expectation<T>);
+        toBe(expected: T): void;
         toEqual(expected: T): void;
         toThrow(expectedErrorMessage?: string): void;
         toContain(expectedContents: unknown): void;
@@ -57,6 +58,8 @@ declare module "testing/expectation" {
         toHaveBeenCalledTimes(expected: number): void;
         toHaveBeenCalledLike(spyMatcher: SpyMatcher): void;
         toHaveBeenCalledWith(...expectedArgs: unknown[]): void;
+        toBeNull(): void;
+        toBeDefined(): void;
         toBeUndefined(): void;
         private static augmentAndThrow;
     }
@@ -208,6 +211,8 @@ declare module "testing/expectation_test" {
     import SimpleTest from "testing/_simple_test";
     export default class ExpectationTest extends SimpleTest {
         private createSpy;
+        testToBe(): void;
+        testNotToBe(): void;
         testToEqual(): void;
         testNotToEqual(): void;
         testToThrow(): void;
@@ -222,6 +227,10 @@ declare module "testing/expectation_test" {
         testNotToHaveBeenCalledLike(): void;
         testToHaveBeenCalledWith(): void;
         testNotToHaveBeenCalledWith(): void;
+        testToBeNull(): void;
+        testNotToBeNull(): void;
+        testToBeDefined(): void;
+        testNotToBeDefined(): void;
         testToBeUndefined(): void;
         testNotToBeUndefined(): void;
     }

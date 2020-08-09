@@ -1,6 +1,7 @@
-import Tester from "./testing/tester";
-import Util from "./_util";
-import { JASLib } from "jas_api"
+import {JASLib} from 'jas_api'
+
+import Util from './_util';
+import Tester from './testing/tester';
 
 export default class UtilTest implements JASLib.Test {
   readonly name: string = 'UtilTest';
@@ -10,37 +11,37 @@ export default class UtilTest implements JASLib.Test {
 
     t.describe('formatMoney', () => {
       t.it('adds commas in large numbers', () => {
-        t.expect(Util.formatMoney(1500)).toEqual('$1,500');
+        t.expect(Util.formatMoney(1500)).toBe('$1,500');
       });
 
       t.it('handles negative numbers', () => {
-        t.expect(Util.formatMoney(-50)).toEqual('-$50');
+        t.expect(Util.formatMoney(-50)).toBe('-$50');
       });
 
       t.it('rounds decimals', () => {
-        t.expect(Util.formatMoney(15.12848)).toEqual('$15.13');
+        t.expect(Util.formatMoney(15.12848)).toBe('$15.13');
       });
 
       t.it('combines correct formatting', () => {
-        t.expect(Util.formatMoney(-4119283.12848)).toEqual('-$4,119,283.13');
+        t.expect(Util.formatMoney(-4119283.12848)).toBe('-$4,119,283.13');
       });
     });
 
     t.describe('dateString', () => {
       t.it('handles today', () => {
-        t.expect(Util.dateString(new Date())).toEqual('today');
+        t.expect(Util.dateString(new Date())).toBe('today');
       });
 
       t.it('handles yesterday', () => {
         const date = new Date();
         date.setTime(date.getTime() - DAY_IN_MILLIS);
-        t.expect(Util.dateString(date)).toEqual('yesterday');
+        t.expect(Util.dateString(date)).toBe('yesterday');
       });
 
       t.it('handles tomorrow', () => {
         const date = new Date();
         date.setTime(date.getTime() + DAY_IN_MILLIS);
-        t.expect(Util.dateString(date)).toEqual('tomorrow');
+        t.expect(Util.dateString(date)).toBe('tomorrow');
       });
 
       t.it('handles days in this year', () => {
@@ -57,9 +58,8 @@ export default class UtilTest implements JASLib.Test {
           // This test fails if we happen to run the test on a day that is
           // yesterday, today, or tomorrow of the month spec day.
           if (month === thisMonth) continue;
-          t.expect(Util.dateString(new Date(thisYear, month, 15))).toEqual(
-            `on ${monthName} 15`
-          );
+          t.expect(Util.dateString(new Date(thisYear, month, 15)))
+              .toBe(`on ${monthName} 15`);
         }
       });
 
@@ -74,9 +74,8 @@ export default class UtilTest implements JASLib.Test {
         const years = [thisYear - 1, thisYear + 1];
         for (const {month, monthName} of monthSpecs) {
           for (const year of years) {
-            t.expect(Util.dateString(new Date(year, month, 15))).toEqual(
-              `on ${monthName} 15, ${year}`
-            );
+            t.expect(Util.dateString(new Date(year, month, 15)))
+                .toBe(`on ${monthName} 15, ${year}`);
           }
         }
       });

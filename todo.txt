@@ -9,14 +9,13 @@ P0:
 - update README
 - integration tests
   - probably api_test.ts
-- add updateStatusCell option in spreadsheet UI menu
-  - tests needed
 - check for bug in email parsing
   - receive email
   - respond to email with message that has no deposit text in it
   - does this second message get parsed as a deposit?
 - register abriel life loan sheet
   - new gmail label to differentiate
+- store both id and name in ClientSheetManager
 
 
 P1:

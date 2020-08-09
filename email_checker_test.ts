@@ -23,21 +23,21 @@ export default class EmailCheckerTest implements JASLib.Test {
                    .getUserLabelByName(EmailChecker.PENDING_LABEL_NAME)!
                    .getThreads()
                    .length)
-          .toEqual(expectedCounts.pending);
+          .toBe(expectedCounts.pending);
     }
     if (expectedCounts.done !== undefined) {
       t.expect(
            JASLib.FakeGmailApp.getUserLabelByName(EmailChecker.DONE_LABEL_NAME)!
                .getThreads()
                .length)
-          .toEqual(expectedCounts.done);
+          .toBe(expectedCounts.done);
     }
     if (expectedCounts.failed !== undefined) {
       t.expect(
            JASLib.FakeGmailApp
                .getUserLabelByName(EmailChecker.FAILED_LABEL_NAME)!.getThreads()
                .length)
-          .toEqual(expectedCounts.failed);
+          .toBe(expectedCounts.failed);
     }
   }
 

@@ -147,8 +147,8 @@ export default class BalanceSheetTest implements JASLib.Test {
               } else {
                 this.expectInsertRowToHaveBeenCalledLike(
                     t, (row: BalanceRow) => {
-                      t.expect(row.description).toEqual(expectedDecription);
-                      t.expect(row.transaction).toEqual(expectedTransaction);
+                      t.expect(row.description).toBe(expectedDecription);
+                      t.expect(row.transaction).toBe(expectedTransaction);
                       return true;
                     });
                 // insertRow() calls updateStatusCell(), but this just verifies
@@ -181,8 +181,8 @@ export default class BalanceSheetTest implements JASLib.Test {
           BalanceSheet.addPayment(159, new Date());
 
           this.expectInsertRowToHaveBeenCalledLike(t, (row: BalanceRow) => {
-            t.expect(row.description).toEqual(expectedDecription);
-            t.expect(row.transaction).toEqual(159);
+            t.expect(row.description).toBe(expectedDecription);
+            t.expect(row.transaction).toBe(159);
             return true;
           });
         });
@@ -200,7 +200,7 @@ export default class BalanceSheetTest implements JASLib.Test {
         const firstDataRow = sheet.getFrozenRows() + 1;
         sheet.getRange(firstDataRow, balanceColumn).setValue(initialBalance);
 
-        t.expect(BalanceSheet.getBalance()).toEqual(initialBalance);
+        t.expect(BalanceSheet.getBalance()).toBe(initialBalance);
 
         t.setConfig(Config.getLoanConfigForTest());
         t.spyOn(BalanceSheet, 'updateStatusCell');
@@ -217,7 +217,7 @@ export default class BalanceSheetTest implements JASLib.Test {
             for (const {colName, expectedValue} of checkSpecs) {
               const column = SSLib.JasSpreadsheet.findColumn(colName, sheet);
               t.expect(sheet.getRange(dataRow, column).getValue())
-                  .toEqual(expectedValue);
+                  .toBe(expectedValue);
             }
           };
 
@@ -388,14 +388,14 @@ export default class BalanceSheetTest implements JASLib.Test {
       t.it('sets font size', () => {
         t.setConfig(Config.DEFAULT);
         BalanceSheet.updateStatusCell();
-        t.expect(statusCell.getFontSize()).toEqual(12);
+        t.expect(statusCell.getFontSize()).toBe(12);
       });
 
       t.describe('balance line', () => {
         const getBalanceStyle = (): TextStyle => {
           const {text, styledRuns} = getLineInStatusCell('balance');
           t.expect(text).toContain('Balance');
-          t.expect(styledRuns.length).toEqual(1);
+          t.expect(styledRuns.length).toBe(1);
           return styledRuns[0].getTextStyle();
         };
 
@@ -405,8 +405,8 @@ export default class BalanceSheetTest implements JASLib.Test {
           BalanceSheet.updateStatusCell();
 
           const {text, styledRuns} = getLineInStatusCell('balance');
-          t.expect(text).toEqual('Balance: $1,000');
-          t.expect(styledRuns[0].getText()).toEqual('$1,000');
+          t.expect(text).toBe('Balance: $1,000');
+          t.expect(styledRuns[0].getText()).toBe('$1,000');
         });
 
         t.it('never styles loan config balance', () => {
@@ -415,12 +415,12 @@ export default class BalanceSheetTest implements JASLib.Test {
           // Positive balance.
           t.spyOn(BalanceSheet, 'getBalance').and.returnValue(1000);
           BalanceSheet.updateStatusCell();
-          t.expect(getBalanceStyle().getForegroundColor()).toEqual(BLACK);
+          t.expect(getBalanceStyle().getForegroundColor()).toBe(BLACK);
 
           // Negative balance.
           t.spyOn(BalanceSheet, 'getBalance').and.returnValue(-1000);
           BalanceSheet.updateStatusCell();
-          t.expect(getBalanceStyle().getForegroundColor()).toEqual(BLACK);
+          t.expect(getBalanceStyle().getForegroundColor()).toBe(BLACK);
         });
 
         t.it('styles positive rent balance red', () => {
@@ -429,7 +429,7 @@ export default class BalanceSheetTest implements JASLib.Test {
 
           BalanceSheet.updateStatusCell();
           t.expect(getBalanceStyle().getForegroundColor())
-              .toEqual(Colors.RED_BALANCE);
+              .toBe(Colors.RED_BALANCE);
         });
 
         t.it('styles negative rent balance green', () => {
@@ -438,7 +438,7 @@ export default class BalanceSheetTest implements JASLib.Test {
 
           BalanceSheet.updateStatusCell();
           t.expect(getBalanceStyle().getForegroundColor())
-              .toEqual(Colors.GREEN_BALANCE);
+              .toBe(Colors.GREEN_BALANCE);
         });
 
         t.it('styles zero rent balance green', () => {
@@ -447,7 +447,7 @@ export default class BalanceSheetTest implements JASLib.Test {
 
           BalanceSheet.updateStatusCell();
           t.expect(getBalanceStyle().getForegroundColor())
-              .toEqual(Colors.GREEN_BALANCE);
+              .toBe(Colors.GREEN_BALANCE);
         });
       });
 
@@ -470,7 +470,7 @@ export default class BalanceSheetTest implements JASLib.Test {
           this.deleteAllDataRows(sheet);
           BalanceSheet.updateStatusCell();
 
-          t.expect(getLineInStatusCell('last payment')).toEqual(null);
+          t.expect(getLineInStatusCell('last payment')).toBeNull();
           t.expect(statusCell.getRichTextValue().getText())
               .not.toContain('Last payment');
         });
@@ -483,8 +483,8 @@ export default class BalanceSheetTest implements JASLib.Test {
               BalanceSheet.updateStatusCell();
 
               const {text, styledRuns} = getLineInStatusCell('last payment');
-              t.expect(text).toEqual('Last payment: $500, on Jun 17');
-              t.expect(styledRuns[0].getText()).toEqual('$500');
+              t.expect(text).toBe('Last payment: $500, on Jun 17');
+              t.expect(styledRuns[0].getText()).toBe('$500');
             });
       });
 
@@ -493,7 +493,7 @@ export default class BalanceSheetTest implements JASLib.Test {
           t.setConfig(Config.ZERO_INTEREST_LOAN);
           BalanceSheet.updateStatusCell();
 
-          t.expect(getLineInStatusCell('upcoming')).toEqual(null);
+          t.expect(getLineInStatusCell('upcoming')).toBeNull();
           t.expect(statusCell.getRichTextValue().getText())
               .not.toContain('Upcoming');
         });
@@ -510,10 +510,10 @@ export default class BalanceSheetTest implements JASLib.Test {
 
           const nextInterestAmount = balance * interestRate / 12;
           const {text, styledRuns} = getLineInStatusCell('upcoming');
-          t.expect(text).toEqual(`Upcoming: $${
+          t.expect(text).toBe(`Upcoming: $${
               nextInterestAmount.toFixed(2)} interest to be applied on Apr 27`);
           t.expect(styledRuns[0].getText())
-              .toEqual(`$${nextInterestAmount.toFixed(2)}`);
+              .toBe(`$${nextInterestAmount.toFixed(2)}`);
         });
 
         t.it('works for rent config', () => {
@@ -526,8 +526,8 @@ export default class BalanceSheetTest implements JASLib.Test {
           BalanceSheet.updateStatusCell();
 
           const {text, styledRuns} = getLineInStatusCell('upcoming');
-          t.expect(text).toEqual(`Upcoming: $1,671 due on Oct 03`);
-          t.expect(styledRuns[0].getText()).toEqual(`$1,671`);
+          t.expect(text).toBe(`Upcoming: $1,671 due on Oct 03`);
+          t.expect(styledRuns[0].getText()).toBe(`$1,671`);
         });
       });
 
@@ -538,7 +538,7 @@ export default class BalanceSheetTest implements JASLib.Test {
           deleteAllPaymentRows();
           BalanceSheet.updateStatusCell();
 
-          t.expect(sheet.getRowHeight(1)).toEqual(37);
+          t.expect(sheet.getRowHeight(1)).toBe(37);
         });
 
         t.it('for 2 rows', () => {
@@ -547,7 +547,7 @@ export default class BalanceSheetTest implements JASLib.Test {
           deleteAllPaymentRows();
           BalanceSheet.updateStatusCell();
 
-          t.expect(sheet.getRowHeight(1)).toEqual(58);
+          t.expect(sheet.getRowHeight(1)).toBe(58);
         });
 
         t.it('for 3 rows', () => {
@@ -556,7 +556,7 @@ export default class BalanceSheetTest implements JASLib.Test {
           BalanceSheet.addPayment(178, new Date());
           BalanceSheet.updateStatusCell();
 
-          t.expect(sheet.getRowHeight(1)).toEqual(79);
+          t.expect(sheet.getRowHeight(1)).toBe(79);
         });
       });
     });

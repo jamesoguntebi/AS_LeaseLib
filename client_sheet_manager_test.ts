@@ -13,7 +13,7 @@ export default class ClientSheetManagerTest implements JASLib.Test {
   private expectRegisteredCount(t: Tester, expected: number) {
     let count = 0;
     ClientSheetManager.forEach(() => void count++);
-    t.expect(count).toEqual(expected);
+    t.expect(count).toBe(expected);
   }
 
   run(t: Tester) {

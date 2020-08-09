@@ -96,14 +96,12 @@ export default class EmailSenderTest implements JASLib.Test {
 
           this.expectSendMailToHaveBeenCalledLike(
               t, (params: SendEmailParameters) => {
-                t.expect(params[0]).toEqual(
+                t.expect(params[0]).toBe(
                     Config.DEFAULT.customerEmails.join(', '));
-                t.expect(params[3].cc)
-                    .toEqual(Config.DEFAULT.emailCCs.join(', '));
+                t.expect(params[3].cc).toBe(Config.DEFAULT.emailCCs.join(', '));
                 t.expect(params[3].bcc)
-                    .toEqual(Config.DEFAULT.emailBCCs.join(', '));
-                t.expect(params[3].name)
-                    .toEqual(Config.DEFAULT.emailDisplayName);
+                    .toBe(Config.DEFAULT.emailBCCs.join(', '));
+                t.expect(params[3].name).toBe(Config.DEFAULT.emailDisplayName);
                 return true;
               });
         });
