@@ -2,6 +2,7 @@ import {JASLib} from 'jas_api';
 
 import BalanceSheet from './balance_sheet';
 import ClientSheetManager from './client_sheet_manager';
+import Config from './config';
 
 type Spreadsheet = GoogleAppsScript.Spreadsheet.Spreadsheet;
 
@@ -88,6 +89,8 @@ export class MenuItems {
           'Unregister this spreadsheet', {functionName: 'unregisterClientSheet'}
         ],
         ['Update status cell', {functionName: 'updateStatusCell'}],
+        ['Do daily update now', {functionName: 'dailyUpdate'}],
+        ['Validate config', {functionName: 'validateConfig'}],
       ]);
 
   static registerNewClientSheet() {
@@ -118,6 +121,23 @@ export class MenuItems {
   static updateStatusCell(spreadsheetId: string) {
     _JasLibContext.spreadsheetId = spreadsheetId;
     BalanceSheet.updateStatusCell();
+  }
+
+  static dailyUpdate(spreadsheetId: string) {
+    _JasLibContext.spreadsheetId = spreadsheetId;
+    BalanceSheet.dailyUpdate();
+  }
+
+  static validateConfig(spreadsheetId: string) {
+    _JasLibContext.spreadsheetId = spreadsheetId;
+
+    try {
+      Config.get();
+      SpreadsheetApp.getUi().alert(`Config is valid!`);
+    } catch (e) {
+      SpreadsheetApp.getUi().alert(`Config is not valid!\n\n${
+          JASLib.Util.isError(e) ? e.stack || e.message : 'Unkown error'}`);
+    }
   }
 }
 

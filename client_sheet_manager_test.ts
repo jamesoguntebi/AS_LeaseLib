@@ -38,6 +38,7 @@ export default class ClientSheetManagerTest implements JASLib.Test {
       t.spyOn(SpreadsheetApp, 'flush');
       t.spyOn(Utilities, 'sleep');
       t.spyOn(Triggers, 'installForClientSheet');
+      t.spyOn(Triggers, 'updateOpenAndEditTriggers');
     });
 
     t.beforeEach(() => {
@@ -52,32 +53,52 @@ export default class ClientSheetManagerTest implements JASLib.Test {
       t.it('registers valid spreadsheets', () => {
         forceConfigSheetInvalid = false;
         forceBalanceSheetInvalid = false;
+        forceMenuIdCheckInvalid = false;
         ClientSheetManager.register('sheet-id');
         this.expectRegisteredCount(t, 1);
+        t.expect(Triggers.installForClientSheet).toHaveBeenCalled();
       });
 
       t.it('skips a spreadsheet with an invalid config', () => {
         forceConfigSheetInvalid = true;
         forceBalanceSheetInvalid = false;
+        forceMenuIdCheckInvalid = false;
         ClientSheetManager.register('sheet-id');
         this.expectRegisteredCount(t, 0);
+        t.expect(Triggers.installForClientSheet).not.toHaveBeenCalled();
       });
 
       t.it('skips a spreadsheet with an invalid balance sheet', () => {
         forceConfigSheetInvalid = false;
         forceBalanceSheetInvalid = true;
+        forceMenuIdCheckInvalid = false;
         ClientSheetManager.register('sheet-id');
         this.expectRegisteredCount(t, 0);
+        t.expect(Triggers.installForClientSheet).not.toHaveBeenCalled();
       });
+
+      t.it(
+          'skips a spreadsheet with an invalid id (for menu registration)',
+          () => {
+            forceConfigSheetInvalid = false;
+            forceBalanceSheetInvalid = false;
+            forceMenuIdCheckInvalid = true;
+            ClientSheetManager.register('sheet-id');
+            this.expectRegisteredCount(t, 0);
+            t.expect(Triggers.installForClientSheet).not.toHaveBeenCalled();
+          });
 
       t.it('skips an already registered spreadsheet', () => {
         forceConfigSheetInvalid = false;
         forceBalanceSheetInvalid = false;
+        forceMenuIdCheckInvalid = false;
         ClientSheetManager.register('sheet-id');
         this.expectRegisteredCount(t, 1);
+        t.expect(Triggers.installForClientSheet).toHaveBeenCalledTimes(1);
 
         ClientSheetManager.register('sheet-id');
         this.expectRegisteredCount(t, 1);
+        t.expect(Triggers.installForClientSheet).toHaveBeenCalledTimes(1);
       });
     });
 
@@ -93,19 +114,23 @@ export default class ClientSheetManagerTest implements JASLib.Test {
       t.it('unregisters existing spreadsheets', () => {
         ClientSheetManager.unregister('sheet-1');
         this.expectRegisteredCount(t, 1);
+        t.expect(Triggers.updateOpenAndEditTriggers).toHaveBeenCalled();
       });
 
       t.it('skips unknown spreadsheets', () => {
         ClientSheetManager.unregister('some unknown spreadsheet');
         this.expectRegisteredCount(t, 2);
+        t.expect(Triggers.updateOpenAndEditTriggers).not.toHaveBeenCalled();
       });
 
       t.it('skips already unregistered spreadsheets', () => {
         ClientSheetManager.unregister('sheet-1');
         this.expectRegisteredCount(t, 1);
+        t.expect(Triggers.updateOpenAndEditTriggers).toHaveBeenCalledTimes(1);
 
         ClientSheetManager.unregister('sheet-1');
         this.expectRegisteredCount(t, 1);
+        t.expect(Triggers.updateOpenAndEditTriggers).toHaveBeenCalledTimes(1);
       });
     });
 

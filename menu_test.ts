@@ -1,6 +1,7 @@
 import {JASLib} from 'jas_api';
 
 import ClientSheetManager from './client_sheet_manager';
+import Config from './config';
 import {Menu, MenuItems} from './menu';
 import Tester from './testing/tester';
 
@@ -139,6 +140,36 @@ export class MenuTest implements JASLib.Test {
         t.expect(typeof globalThis[`menu_updateStatusCell${suffix}`])
             .toEqual('function');
         t.expect(globalThis['menu_updateStatusCell']).toBeUndefined();
+      });
+    });
+
+    t.describe('validateConfig', () => {
+      const fakeSpreadsheetUi = {
+        alert: (_: string) => {},
+      };
+
+      t.beforeAll(() => {
+        t.spyOn(fakeSpreadsheetUi, 'alert');
+        t.spyOn(SpreadsheetApp, 'getUi').and.returnValue(fakeSpreadsheetUi);
+      });
+
+      t.it('shows correct alert for valid config', () => {
+        t.setConfig(Config.DEFAULT);
+        MenuItems.validateConfig('unused-sheet-id');
+        t.expect(fakeSpreadsheetUi.alert)
+            .toHaveBeenCalledWith('Config is valid!');
+      });
+
+      t.it('shows correct alert for invalid config', () => {
+        t.spyOn(Config, 'get').and.callFake(() => {
+          throw new Error('Invalid config');
+        });
+        MenuItems.validateConfig('unused-sheet-id');
+
+        t.expect(fakeSpreadsheetUi.alert)
+            .toHaveBeenCalledLike(t.matcher((args: unknown[]) => {
+              return (args[0] as string).startsWith('Config is not valid!');
+            }));
       });
     });
   }
