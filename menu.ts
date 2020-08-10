@@ -24,11 +24,14 @@ export class Menu {
   static install(spreadsheet: Spreadsheet) {
     const suffix = Menu.spreadsheetIdToFunctionSuffix(spreadsheet.getId());
 
+    // Braile Blank U+2800 that does not get collapsed by Docs menu item
+    // renderer. This is one U+2800 and one regular space.
+    const BLANK = '⠀ ';
     const menuItems = [...MenuItems.SpecsWithSeparators].map(spec => {
       if (!spec) return null;  // Menu separator.
-      const {displayName, spreadsheetAgnostic, functionName} = spec;
+      const {icon, displayName, spreadsheetAgnostic, functionName} = spec;
       return {
-        name: displayName,
+        name: `${icon}${BLANK}${displayName}`,
         functionName: `menu_${functionName}${spreadsheetAgnostic ? '' : suffix}`
       };
     });
@@ -76,25 +79,31 @@ export class Menu {
 /** Visible for testing. */
 export class MenuItems {
   static readonly SpecsWithSeparators: Array<MenuItemSpec|null> = [
+    // Icons from https://html-css-js.com/html/character-codes/icons/
     {
+      icon: '🗹',
       displayName: 'Register new spreadsheet',
       functionName: 'registerNewClientSheet',
       spreadsheetAgnostic: true
     },
     {
+      icon: '🗵',
       displayName: 'Unregister this spreadsheet',
       functionName: 'unregisterClientSheet',
     },
     null /* Menu separator */,
     {
+      icon: '🗘',
       displayName: 'Update status cell',
       functionName: 'updateStatusCell',
     },
     {
+      icon: '🗓',
       displayName: 'Do daily update now',
       functionName: 'dailyUpdate',
     },
     {
+      icon: '⚙',
       displayName: 'Validate config',
       functionName: 'validateConfig',
     },
@@ -163,7 +172,10 @@ export class MenuItems {
 type MenuItemSpec = {
   displayName: string,
   functionName: JASLib.KeysOfType<typeof MenuItems, Function>,
-  spreadsheetAgnostic?: boolean
+  spreadsheetAgnostic?: boolean,
+                     icon:
+                         string,  // See
+                                  // https://html-css-js.com/html/character-codes/icons/.
 };
 
 Menu.registerPerClientFunctions();
