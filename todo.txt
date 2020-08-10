@@ -25,6 +25,14 @@ P1:
   - store per-project configs in Properties, update onEdit
 - investigate if Menu function registration needs complex id mapping. or just
   incrementing index
+- abstract out the notion of a script that governs multiple spreadsheets, and
+  put it in JAS_SS_Lib
+- email when rent due or interest applied is added
+- date on interest applied is wrong
+- for friendly date string, even if the year is different, don't put the year
+  unless it's not than x months away from today. Maybe 3 months or something.
+  Maybe just 1
+- stop requiring name in Test files. Infer it
 
 
 P2:

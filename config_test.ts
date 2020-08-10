@@ -7,8 +7,6 @@ import Tester from './testing/tester';
 type Range = GoogleAppsScript.Spreadsheet.Range;
 
 export default class ConfigTest implements JASLib.Test {
-  readonly name: string = 'ConfigTest';
-
   private storedConfigValues: Map<string, unknown[]> = new Map();
 
   private readonly configSheet =

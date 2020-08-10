@@ -128,7 +128,6 @@ declare module "testing/testrunner" {
         private static getStats;
     }
     export interface Test {
-        readonly name: string;
         run: (t: Tester) => void;
     }
     export interface TestRunnerOptions {

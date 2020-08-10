@@ -8,8 +8,6 @@ import Tester from './testing/tester';
 import {Triggers} from './triggers';
 
 export default class ClientSheetManagerTest implements JASLib.Test {
-  readonly name = 'ClientSheetManagerTest';
-
   private expectRegisteredCount(t: Tester, expected: number) {
     let count = 0;
     ClientSheetManager.forEach(() => void count++);

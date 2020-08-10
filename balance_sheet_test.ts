@@ -12,8 +12,6 @@ type Sheet = GoogleAppsScript.Spreadsheet.Sheet;
 type TextStyle = GoogleAppsScript.Spreadsheet.TextStyle;
 
 export default class BalanceSheetTest implements JASLib.Test {
-  readonly name = 'BalanceSheetTest';
-
   private expectInsertRowToHaveBeenCalledLike(
       t: Tester, matcher: (params: BalanceRow) => boolean) {
     t.expect(BalanceSheet.insertRow)

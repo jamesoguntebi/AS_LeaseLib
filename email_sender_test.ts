@@ -8,8 +8,6 @@ import Tester from './testing/tester';
 type SendEmailParameters = Parameters<typeof GmailApp.sendEmail>;
 
 export default class EmailSenderTest implements JASLib.Test {
-  readonly name: string = 'EmailSenderTest';
-
   private expectSendMailToHaveBeenCalledLike(
       t: Tester, matcher: (params: SendEmailParameters) => boolean) {
     t.expect(GmailApp.sendEmail)

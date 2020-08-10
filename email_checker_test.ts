@@ -8,8 +8,6 @@ import EmailSender from './email_sender';
 import Tester from './testing/tester';
 
 export default class EmailCheckerTest implements JASLib.Test {
-  readonly name = 'EmailCheckerTest';
-
   private setConfigWithPaymentTypes(t: Tester, ...paymentTypes: PaymentType[]) {
     t.setConfig(
         Config.getLoanConfigForTest(undefined, {searchQuery: {paymentTypes}}));

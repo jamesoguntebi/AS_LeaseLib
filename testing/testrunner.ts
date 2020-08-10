@@ -5,6 +5,7 @@ import ClientSheetManagerTest from '../client_sheet_manager_test';
 import ConfigTest from '../config_test';
 import EmailCheckerTest from '../email_checker_test';
 import EmailSenderTest from '../email_sender_test';
+import {IntegrationTest} from '../integration_test';
 import {MenuTest} from '../menu_test';
 import UtilTest from '../util_test';
 
@@ -52,6 +53,7 @@ export default class TestRunner {
       ConfigTest,
       EmailCheckerTest,
       EmailSenderTest,
+      IntegrationTest,
       MenuTest,
       UtilTest,
     ];

@@ -6,8 +6,6 @@ import {Menu, MenuItems} from './menu';
 import Tester from './testing/tester';
 
 export class MenuTest implements JASLib.Test {
-  readonly name = 'MenuTest';
-
   run(t: Tester) {
     const FakeDialogButtons = {
       CANCEL: 'CANCEL',
