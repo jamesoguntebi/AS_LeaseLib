@@ -28,7 +28,6 @@ P1:
 - for friendly date string, even if the year is different, don't put the year
   unless it's not than x months away from today. Maybe 3 months or something.
   Maybe just 1
-- stop requiring name in Test files. Infer it
 
 
 P2:
@@ -185,6 +184,8 @@ P1:
 - add toBe to tests
 - Delete all client projects. Library can do everything.
 - status alert after menu actions
+- stop requiring name in Test files. Infer it
+- Menu item separators
 
 P2:
 - instead of checking emails, let manual step be to label emails. script do the

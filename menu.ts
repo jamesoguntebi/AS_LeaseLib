@@ -24,9 +24,9 @@ export class Menu {
   static install(spreadsheet: Spreadsheet) {
     const suffix = Menu.spreadsheetIdToFunctionSuffix(spreadsheet.getId());
 
-    const menuItems = [
-      ...MenuItems.Specs
-    ].map(([displayName, {spreadsheetAgnostic, functionName}]) => {
+    const menuItems = [...MenuItems.SpecsWithSeparators].map(spec => {
+      if (!spec) return null;  // Menu separator.
+      const {displayName, spreadsheetAgnostic, functionName} = spec;
       return {
         name: displayName,
         functionName: `menu_${functionName}${spreadsheetAgnostic ? '' : suffix}`
@@ -39,7 +39,7 @@ export class Menu {
   static registerPerClientFunctions() {
     const spreadsheetIds = ClientSheetManager.getAll();
 
-    for (const [_, {spreadsheetAgnostic, functionName}] of MenuItems.Specs) {
+    for (const {spreadsheetAgnostic, functionName} of MenuItems.Specs) {
       if (spreadsheetAgnostic) {
         globalThis[`menu_${functionName}`] = MenuItems[functionName];
       }
@@ -48,7 +48,7 @@ export class Menu {
     for (const spreadsheetId of spreadsheetIds) {
       const suffix = Menu.spreadsheetIdToFunctionSuffix(spreadsheetId);
 
-      for (const [_, {spreadsheetAgnostic, functionName}] of MenuItems.Specs) {
+      for (const {spreadsheetAgnostic, functionName} of MenuItems.Specs) {
         if (!spreadsheetAgnostic) {
           globalThis[`menu_${functionName}${suffix}`] =
               (MenuItems[functionName] as Function).bind(null, spreadsheetId);
@@ -75,23 +75,33 @@ export class Menu {
 
 /** Visible for testing. */
 export class MenuItems {
-  // Map of menu display name to Menu function.
-  static readonly Specs: Map<string, {
-    functionName: JASLib.KeysOfType<typeof MenuItems, Function>,
-    spreadsheetAgnostic?: boolean,
-  }> =
-      new Map([
-        [
-          'Register new spreadsheet',
-          {functionName: 'registerNewClientSheet', spreadsheetAgnostic: true}
-        ],
-        [
-          'Unregister this spreadsheet', {functionName: 'unregisterClientSheet'}
-        ],
-        ['Update status cell', {functionName: 'updateStatusCell'}],
-        ['Do daily update now', {functionName: 'dailyUpdate'}],
-        ['Validate config', {functionName: 'validateConfig'}],
-      ]);
+  static readonly SpecsWithSeparators: Array<MenuItemSpec|null> = [
+    {
+      displayName: 'Register new spreadsheet',
+      functionName: 'registerNewClientSheet',
+      spreadsheetAgnostic: true
+    },
+    {
+      displayName: 'Unregister this spreadsheet',
+      functionName: 'unregisterClientSheet',
+    },
+    null /* Menu separator */,
+    {
+      displayName: 'Update status cell',
+      functionName: 'updateStatusCell',
+    },
+    {
+      displayName: 'Do daily update now',
+      functionName: 'dailyUpdate',
+    },
+    {
+      displayName: 'Validate config',
+      functionName: 'validateConfig',
+    },
+  ];
+
+  static readonly Specs: MenuItemSpec[] =
+      MenuItems.SpecsWithSeparators.filter(spec => !!spec);
 
   static registerNewClientSheet() {
     const response = SpreadsheetApp.getUi().prompt(
@@ -149,5 +159,11 @@ export class MenuItems {
     }
   }
 }
+
+type MenuItemSpec = {
+  displayName: string,
+  functionName: JASLib.KeysOfType<typeof MenuItems, Function>,
+  spreadsheetAgnostic?: boolean
+};
 
 Menu.registerPerClientFunctions();
