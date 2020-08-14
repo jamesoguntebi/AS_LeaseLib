@@ -76,6 +76,7 @@ export default class EmailCheckerTest implements JASLib.Test {
           .and.callFake(JASLib.FakeGmailApp.getUserLabelByName);
       t.spyOn(BalanceSheet, 'addPayment');
       t.spyOn(EmailSender, 'sendPaymentThanks');
+      t.spyOn(EmailSender, 'sendMultimessageThreadWarning');
 
       // Don't call the function for every registered sheet, only call it once.
       t.spyOn(ClientSheetManager, 'forEach')
@@ -141,13 +142,15 @@ export default class EmailCheckerTest implements JASLib.Test {
         });
       }
 
-      t.it('processes two valid emails in one thread', () => {
+      t.it('warns about two valid emails in one thread', () => {
         this.setConfigWithPaymentTypes(t, 'Zelle', 'Venmo');
         setDataWithPendingMessages([[VENMO_MESSAGE, VENMO_MESSAGE]]);
         EmailChecker.checkLabeledEmails();
 
-        t.expect(EmailSender.sendPaymentThanks).toHaveBeenCalledTimes(2);
-        t.expect(BalanceSheet.addPayment).toHaveBeenCalledTimes(2);
+        t.expect(EmailSender.sendPaymentThanks).toHaveBeenCalledTimes(1);
+        t.expect(BalanceSheet.addPayment).toHaveBeenCalledTimes(1);
+        t.expect(EmailSender.sendMultimessageThreadWarning)
+            .toHaveBeenCalledTimes(1);
         this.expectLabelCounts(t, {pending: 0, done: 1, failed: 0});
       });
 

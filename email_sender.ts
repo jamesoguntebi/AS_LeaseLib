@@ -2,6 +2,8 @@ import Util from './_util';
 import BalanceSheet from './balance_sheet';
 import Config from './config';
 
+type GmailThread = GoogleAppsScript.Gmail.GmailThread;
+
 export default class EmailSender {
   static sendPaymentThanks(amount: number) {
     const config = Config.get();
@@ -44,6 +46,19 @@ export default class EmailSender {
     GmailApp.sendEmail(
         'jaoguntebi@gmail.com', 'AS Lease Lib Test Payment',
         `Payment amount: $${amount}`);
+  }
+
+  static sendMultimessageThreadWarning(thread: GmailThread) {
+    const htmlBody =
+        `A payment was just processed for <a href="` +
+        `https://mail.google.com/mail/#inbox/${
+            thread.getId()}">this email</a> with subject '${
+            thread.getFirstMessageSubject()}'. The thread has multiple ` +
+        `messages but processing stopped after the first valid message. ` +
+        `Ensure there are not multiple payments in the thread.`;
+    GmailApp.sendEmail(
+        'jaoguntebi@gmail.com', 'AS Lease Lib - MultiMessage Thread Warning',
+        htmlBody, {htmlBody, name: 'Oguntebi Bot'});
   }
 }
 

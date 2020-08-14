@@ -69,6 +69,7 @@ export default class EmailChecker {
 
     for (let i = pendingThreads.length - 1; i >= 0; i--) {
       const thread = pendingThreads[i];
+      let threadProcessed = false;
 
       if (config.searchQuery.labelName) {
         const labelName = config.searchQuery.labelName!.toLowerCase();
@@ -79,8 +80,6 @@ export default class EmailChecker {
       }
 
       for (const message of thread.getMessages()) {
-        Logger.log('Checking message: ' +
-            message.getPlainBody().substring(0, 10) + ', ' + message.getDate());
         for (const paymentType of config.searchQuery.paymentTypes) {
           const parser = EmailChecker.PARSERS.get(paymentType);
           const paymentAmount = parser(message);
@@ -103,10 +102,16 @@ export default class EmailChecker {
                   message.getSubject()} failed.`);
             }
             pendingThreads.splice(i, 1);
-            Logger.log('processed. breaking');
+            threadProcessed = true;
             break;
           }
         }
+
+        if (threadProcessed) break;
+      }
+
+      if (threadProcessed && thread.getMessageCount() > 1) {
+        EmailSender.sendMultimessageThreadWarning(thread);
       }
     }
   }
@@ -142,7 +147,7 @@ export default class EmailChecker {
     }
     if (!message.getSubject().includes('AS Lease Lib Test Payment')) {
       return null;
-    } 
+    }
 
     const bodyRegEx =
         new RegExp('Payment\ amount:\ \\$([0-9]+(\.[0-9][0-9])?)');
