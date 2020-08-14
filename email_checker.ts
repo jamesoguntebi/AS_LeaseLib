@@ -101,12 +101,15 @@ export default class EmailChecker {
               Logger.log(`Updating labels for thread with message subject ${
                   message.getSubject()} failed.`);
             }
+
+            // Remove the thread so that other client sheets don't parse it.
             pendingThreads.splice(i, 1);
             threadProcessed = true;
             break;
           }
         }
 
+        // Don't process more than one message in a thread.
         if (threadProcessed) break;
       }
 

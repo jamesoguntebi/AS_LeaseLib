@@ -1,14 +1,21 @@
 export default class Util {
+  private static MONEY_FORMATTER_WITH_CENTS = new Intl.NumberFormat('en-us', {
+    currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
   private static MONEY_FORMATTER = new Intl.NumberFormat('en-us', {
     currency: 'USD',
     minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
+    maximumFractionDigits: 0,
   });
 
   private static DAY_IN_MILLIS = 24 * 60 * 60 * 1000;
 
   static formatMoney(amount: number): string {
-    let formatted = Util.MONEY_FORMATTER.format(amount);
+    const formatter = Number.isInteger(amount) ?
+        Util.MONEY_FORMATTER : Util.MONEY_FORMATTER_WITH_CENTS;
+    let formatted = formatter.format(amount);
     if (amount < 0) {
       // Insert the dollar sign after the negative.
       formatted = `-$${formatted.substring(1)}`;
