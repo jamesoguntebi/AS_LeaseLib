@@ -79,6 +79,8 @@ export default class EmailChecker {
       }
 
       for (const message of thread.getMessages()) {
+        Logger.log('Checking message: ' +
+            message.getPlainBody().substring(0, 10) + ', ' + message.getDate());
         for (const paymentType of config.searchQuery.paymentTypes) {
           const parser = EmailChecker.PARSERS.get(paymentType);
           const paymentAmount = parser(message);
@@ -101,6 +103,7 @@ export default class EmailChecker {
                   message.getSubject()} failed.`);
             }
             pendingThreads.splice(i, 1);
+            Logger.log('processed. breaking');
             break;
           }
         }
@@ -134,11 +137,12 @@ export default class EmailChecker {
   }
 
   private static parseTestMessage(message: GmailMessage): number|null {
-    Logger.log(message.getFrom());
-    Logger.log(message.getSubject());
-    Logger.log(message.getPlainBody());
-    if (message.getFrom().toLowerCase() !== 'jaoguntebi@gmail.com') return null;
-    if (message.getSubject() !== 'AS Lease Lib Test Payment') return null;
+    if (!message.getFrom().toLowerCase().includes('jaoguntebi@gmail.com')) {
+      return null;
+    }
+    if (!message.getSubject().includes('AS Lease Lib Test Payment')) {
+      return null;
+    } 
 
     const bodyRegEx =
         new RegExp('Payment\ amount:\ \\$([0-9]+(\.[0-9][0-9])?)');
