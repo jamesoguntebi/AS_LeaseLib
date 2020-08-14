@@ -5,8 +5,9 @@ export default class Config {
   static readonly SHEET_NAME = 'Config';
 
   static readonly PaymentTypeStrings: Record<string, string> = {
-    Zelle: 'Zelle',
+    Test: 'Test',
     Venmo: 'Venmo',
+    Zelle: 'Zelle',
   };
 
   static readonly DEFAULT = Config.getRentConfigForTest();

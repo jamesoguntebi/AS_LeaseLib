@@ -14,6 +14,7 @@ export default class EmailChecker {
 
   /** The first match in the RE must be the deposit amount. */
   static readonly PARSERS = new Map<PaymentType, EmailParser>([
+    ['Test', EmailChecker.parseTestMessage],
     ['Venmo', EmailChecker.parseVenmoMessage],
     ['Zelle', EmailChecker.parseZelleMessage],
   ]);
@@ -45,8 +46,10 @@ export default class EmailChecker {
         }
       }
 
-      const threadSubjects = pendingLabel.getThreads().map(
-          t => t.getMessages().map(m => m.getSubject()));
+      const threadSubjects =
+          pendingLabel.getThreads()
+              .map(t => t.getMessages().map(m => m.getSubject()))
+              .join(', ');
       throw new Error(
           `Failed to parse labeled threads with subjects: ${threadSubjects}`)
     }
@@ -67,7 +70,6 @@ export default class EmailChecker {
     for (let i = pendingThreads.length - 1; i >= 0; i--) {
       const thread = pendingThreads[i];
 
-      // TODO: Test this:
       if (config.searchQuery.labelName) {
         const labelName = config.searchQuery.labelName!.toLowerCase();
         if (!thread.getLabels().some(
@@ -126,6 +128,20 @@ export default class EmailChecker {
         'deposited.*\\$([0-9]+(\.[0-9][0-9])?).*payment.*from ' +
             Config.get().searchQuery.searchName,
         'i');
+    const regExResult = bodyRegEx.exec(message.getPlainBody());
+    if (!regExResult) return null;
+    return Number(regExResult[1]);
+  }
+
+  private static parseTestMessage(message: GmailMessage): number|null {
+    Logger.log(message.getFrom());
+    Logger.log(message.getSubject());
+    Logger.log(message.getPlainBody());
+    if (message.getFrom().toLowerCase() !== 'jaoguntebi@gmail.com') return null;
+    if (message.getSubject() !== 'AS Lease Lib Test Payment') return null;
+
+    const bodyRegEx =
+        new RegExp('Payment\ amount:\ \\$([0-9]+(\.[0-9][0-9])?)');
     const regExResult = bodyRegEx.exec(message.getPlainBody());
     if (!regExResult) return null;
     return Number(regExResult[1]);

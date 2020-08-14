@@ -28,6 +28,8 @@ P1:
 - for friendly date string, even if the year is different, don't put the year
   unless it's not than x months away from today. Maybe 3 months or something.
   Maybe just 1
+- format added payments/interest/etc with dollar sign
+- money format, when including cents, should always include two digits
 
 
 P2:
@@ -186,6 +188,7 @@ P1:
 - status alert after menu actions
 - stop requiring name in Test files. Infer it
 - Menu item separators
+- add payment type for testing
 
 P2:
 - instead of checking emails, let manual step be to label emails. script do the

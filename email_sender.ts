@@ -39,6 +39,12 @@ export default class EmailSender {
           htmlBody: template.evaluate().getContent(),
         });
   }
+
+  static sendTestPaymentMessage(amount = 50) {
+    GmailApp.sendEmail(
+        'jaoguntebi@gmail.com', 'AS Lease Lib Test Payment',
+        `Payment amount: $${amount}`);
+  }
 }
 
 /** Keep in sync with email_template_payment.html. */

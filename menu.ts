@@ -3,6 +3,8 @@ import {JASLib} from 'jas_api';
 import BalanceSheet from './balance_sheet';
 import ClientSheetManager from './client_sheet_manager';
 import Config from './config';
+import EmailChecker from './email_checker';
+import EmailSender from './email_sender';
 
 type Spreadsheet = GoogleAppsScript.Spreadsheet.Spreadsheet;
 
@@ -19,7 +21,7 @@ type Spreadsheet = GoogleAppsScript.Spreadsheet.Spreadsheet;
  * function name is suffixed with a hash of the spreadsheet id.
  */
 export class Menu {
-  static readonly DISPLAY_NAME = 'OgunBank';
+  static readonly DISPLAY_NAME = '$ OgunBank 🏛';
 
   static install(spreadsheet: Spreadsheet) {
     const suffix = Menu.spreadsheetIdToFunctionSuffix(spreadsheet.getId());
@@ -84,7 +86,7 @@ export class MenuItems {
       icon: '🗹',
       displayName: 'Register new spreadsheet',
       functionName: 'registerNewClientSheet',
-      spreadsheetAgnostic: true
+      spreadsheetAgnostic: true,
     },
     {
       icon: '🗵',
@@ -103,9 +105,21 @@ export class MenuItems {
       functionName: 'dailyUpdate',
     },
     {
+      icon: '📧',
+      displayName: 'Check email now',
+      functionName: 'checkLabeledEmail',
+    },
+    {
       icon: '⚙',
       displayName: 'Validate config',
       functionName: 'validateConfig',
+    },
+    null /* Menu separator */,
+    {
+      icon: '📧',
+      displayName: 'Send test payment email',
+      functionName: 'sendTestPaymentEmail',
+      spreadsheetAgnostic: true,
     },
   ];
 
@@ -156,6 +170,11 @@ export class MenuItems {
     BalanceSheet.dailyUpdate();
   }
 
+  static checkLabeledEmail(spreadsheetId: string) {
+    _JasLibContext.spreadsheetId = spreadsheetId;
+    EmailChecker.checkLabeledEmails();
+  }
+
   static validateConfig(spreadsheetId: string) {
     _JasLibContext.spreadsheetId = spreadsheetId;
 
@@ -167,15 +186,24 @@ export class MenuItems {
           JASLib.Util.isError(e) ? e.stack || e.message : 'Unkown error'}`);
     }
   }
+
+  static sendTestPaymentEmail() {
+    const response = SpreadsheetApp.getUi().prompt(
+        'Payment amount:\n\n', SpreadsheetApp.getUi().ButtonSet.OK_CANCEL);
+    if (response.getSelectedButton() === SpreadsheetApp.getUi().Button.OK) {
+      const paymentAmount = Number(response.getResponseText().trim());
+      if (paymentAmount) EmailSender.sendTestPaymentMessage(paymentAmount);
+    } else {
+      Logger.log('Test payment email cancelled');
+    }
+  }
 }
 
 type MenuItemSpec = {
+  icon: string,  // See https://html-css-js.com/html/character-codes/icons/.
   displayName: string,
   functionName: JASLib.KeysOfType<typeof MenuItems, Function>,
   spreadsheetAgnostic?: boolean,
-                     icon:
-                         string,  // See
-                                  // https://html-css-js.com/html/character-codes/icons/.
 };
 
 Menu.registerPerClientFunctions();
