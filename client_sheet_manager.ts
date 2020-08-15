@@ -30,6 +30,10 @@ export default class ClientSheetManager {
     _JasLibContext.spreadsheetId = storedSpreadsheetId;
   }
 
+  /**
+   * Registers a sheet as a new client sheet, first validating that it has
+   * valid config and contents.
+   */
   static register(spreadsheetId: string) {
     const registeredSet = new Set(ClientSheetManager.getAll());
     if (registeredSet.has(spreadsheetId)) return;
@@ -73,6 +77,7 @@ export default class ClientSheetManager {
     Logger.log(`Unregistered client sheet ${spreadsheetId}`);
   }
 
+  /** Returns all client sheet spreadsheet ids. */
   static getAll(): string[] {
     const propertyValue = PropertiesService.getScriptProperties().getProperty(
         ClientSheetManager.PROPERTY_NAME);

@@ -22,6 +22,10 @@ export default class UtilTest implements JASLib.Test {
         t.expect(Util.formatMoney(15.12848)).toBe('$15.13');
       });
 
+      t.it('always uses 2 digits when there are cents', () => {
+        t.expect(Util.formatMoney(15.1)).toBe('$15.10');
+      });
+
       t.it('combines correct formatting', () => {
         t.expect(Util.formatMoney(-4119283.12848)).toBe('-$4,119,283.13');
       });

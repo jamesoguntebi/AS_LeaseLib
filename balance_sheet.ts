@@ -6,6 +6,7 @@ import Config from './config';
 export default class BalanceSheet {
   static readonly SHEET_NAME = 'Balance';
 
+  /** Returns the balance in the topmost cell. */
   static getBalance(): number {
     const sheet = BalanceSheet.getSheet();
     const firstDataRow = sheet.getFrozenRows() + 1;
@@ -82,13 +83,14 @@ export default class BalanceSheet {
     });
   }
 
+  /** Inserts a new transaction at the top of the Balance sheet. */
   static insertRow(balanceRow: BalanceRow) {
     const sheet = BalanceSheet.getSheet();
     const headerRow = sheet.getFrozenRows();
     // TODO: Insert the row at the correct date location. This may need a custom
     // row sort. When the date is a tie, for loan configs, a payment should come
     // before the interest application to give the loaner the interest benefit.
-    sheet.insertRowAfter(headerRow);
+    sheet.insertRowBefore(headerRow + 1);
     const newRow = headerRow + 1;
     const balanceColumn = SSLib.JasSpreadsheet.findColumn('balance', sheet);
     const previousBalanceCellA1 =
@@ -129,6 +131,10 @@ export default class BalanceSheet {
     return new Date().getDate();
   }
 
+  /**
+   * Updates the status cell with the current balance, the last payment, and the
+   * next scheduled payment.
+   */
   static updateStatusCell() {
     BalanceSheet.validateActiveSheet();
     const config = Config.get();
