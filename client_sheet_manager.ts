@@ -21,7 +21,10 @@ export default class ClientSheetManager {
     for (const spreadsheetId of spreadsheetIds) {
       _JasLibContext.spreadsheetId = spreadsheetId;
       if (fn(spreadsheetId)) break;
+
+      // Applies all pending Spreadsheet changes.
       SpreadsheetApp.flush();
+
       // Sleeping after each spreadsheet operation is likely unecessary. It's
       // a safeguard to prevent cross-talk between client sheets.
       Utilities.sleep(500);

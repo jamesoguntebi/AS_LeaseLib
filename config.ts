@@ -15,6 +15,12 @@ export default class Config {
     loanConfig: {interestRate: 0},
   });
 
+  /**
+   * Reads all the config fields from the sheet and returns a Config object.
+   * This call is expensive.
+   * TODO: Consider improving performance by getting the entire sheet in one
+   * read and then working with the single large range.
+   */
   static get(): ConfigParams {
     const F = Config.FIELD;
     const configSheet = SSLib.JasSpreadsheet.findSheet(
@@ -25,6 +31,9 @@ export default class Config {
       const configRow = SSLib.JasSpreadsheet.findRow(configField, configSheet);
       return new SSLib.CellData(configSheet.getRange(configRow, valueColumn));
     };
+
+    // Only rent or loan config should be set. Don't set them at all if the
+    // cells are blank.
 
     let rentConfig: RentConfig;
     const rentMonthlyAmountCellData = getCellData(F.rentConfig_monthlyAmount);
