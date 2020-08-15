@@ -6,6 +6,7 @@ import Config from './config';
 export default class BalanceSheet {
   static readonly SHEET_NAME = 'Balance';
 
+  /** Returns the balance in the topmost cell. */
   static getBalance(): number {
     const sheet = BalanceSheet.getSheet();
     const firstDataRow = sheet.getFrozenRows() + 1;
@@ -82,6 +83,7 @@ export default class BalanceSheet {
     });
   }
 
+  /** Inserts a new transaction at the top of the Balance sheet. */
   static insertRow(balanceRow: BalanceRow) {
     const sheet = BalanceSheet.getSheet();
     const headerRow = sheet.getFrozenRows();
@@ -129,6 +131,10 @@ export default class BalanceSheet {
     return new Date().getDate();
   }
 
+  /**
+   * Updates the status cell with the current balance, the last payment, and the
+   * next scheduled payment.
+   */
   static updateStatusCell() {
     BalanceSheet.validateActiveSheet();
     const config = Config.get();

@@ -12,6 +12,12 @@ export default class Util {
 
   private static DAY_IN_MILLIS = 24 * 60 * 60 * 1000;
 
+  /**
+   * Formats an amount into a money string like $1,556.01.
+   * - If there are no cents, rounds. Like $1,556
+   * - If there are cents, always uses two digits.
+   * - Uses commas for thousands separator
+   */
   static formatMoney(amount: number): string {
     const formatter = Number.isInteger(amount) ?
         Util.MONEY_FORMATTER : Util.MONEY_FORMATTER_WITH_CENTS;
@@ -50,6 +56,11 @@ export default class Util {
         Utilities.formatDate(date, Session.getScriptTimeZone(), format)}`;
   }
 
+  /**
+   * Returns the date for the next occurence of the input day. If today is Jan
+   * 5, and the input is 10, returns Jan 10. If the input is 3, returns Feb 3.
+   * Validates that the input is a valid recurring date in [1, 28].
+   */
   static getNextDayOfMonth(dayOfMonth: number): Date {
     Util.validateRecurringDayOfMonth(dayOfMonth);
     const date = new Date();

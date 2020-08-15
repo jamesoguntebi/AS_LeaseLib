@@ -1,21 +1,6 @@
-import BalanceSheet from './balance_sheet';
-import EmailChecker from './email_checker';
-
 _JasLibContext = {
   spreadsheetId: ''
 };
-
-export function template_dailyBalanceUpdate() {
-  _JasLibContext.spreadsheetId = TestData.LEASE_TEMPLATE_SPREADSHEET_ID;
-  return Executrix.run(() => BalanceSheet.dailyUpdate());
-}
-
-export function template_checkLabeledEmails() {
-  _JasLibContext.spreadsheetId = TestData.LEASE_TEMPLATE_SPREADSHEET_ID;
-  return Executrix.run(() => {
-    EmailChecker.checkLabeledEmails();
-  });
-}
 
 export function testing(spreadsheetId: string) {
   _JasLibContext.spreadsheetId = spreadsheetId;
