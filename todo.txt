@@ -6,11 +6,6 @@
     |_|     \____/  |_____/   \____/    (_)
 
 P0:
-- check for bug in email parsing
-  - receive email
-  - respond to email with message that has no deposit text in it
-  - does this second message get parsed as a deposit?
-
 
 P1:
 - More comments everywhere
@@ -151,6 +146,10 @@ P0:
 - update README
 - integration tests (obsolete)
   - probably api_test.ts
+- check for bug in email parsing
+  - receive email
+  - respond to email with message that has no deposit text in it
+  - does this second message get parsed as a deposit?
 
 P1:
 - add option to add a full payment
