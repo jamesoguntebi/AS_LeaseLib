@@ -59,10 +59,10 @@ export default class Config {
     }
 
     const paymentTypes = getCellData(F.searchQuery_paymentTypes)
-                             .string()
+                             .string('')
                              .split(/,|\n/)
                              .map((pt) => pt.trim())
-                             .map((pt) => Config.assertIsPaymentType(pt));
+                             .filter(pt => !!pt);
 
     return Config.validate({
       customerDisplayName: getCellData(F.customerDisplayName).string(),
@@ -110,8 +110,8 @@ export default class Config {
       }
     }
 
-    if (!config.searchQuery.paymentTypes.length) {
-      throw new Error('At least one payment type is required in Config.');
+    for (const paymentType of config.searchQuery.paymentTypes) {
+      Config.assertIsPaymentType(paymentType);
     }
     if (!config.searchQuery.searchName) {
       throw new Error('Search query name is required in Config.');

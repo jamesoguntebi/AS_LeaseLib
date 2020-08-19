@@ -153,10 +153,10 @@ export default class ConfigTest implements JASLib.Test {
          })).toThrow('Interest rate');
       });
 
-      t.it('no payment types', () => {
+      t.it('invalid payment types', () => {
         t.expect(() => Config.getLoanConfigForTest(undefined, {
-           searchQuery: {paymentTypes: []}
-         })).toThrow('At least one payment type');
+           searchQuery: {paymentTypes: ['Paypal']}
+         })).toThrow('Expected a payment type');
       });
 
       t.it('no search query name', () => {

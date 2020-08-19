@@ -58,6 +58,10 @@ export default class EmailChecker {
   /** Searches among labeled emails. */
   static checkLabeledEmails(
       pendingLabel?: GmailLabel, pendingThreads?: GmailThread[]) {
+    const config = Config.get();
+
+    if (!config.searchQuery.paymentTypes.length) return;
+
     if (!pendingLabel) {
       pendingLabel = EmailChecker.assertLabel(EmailChecker.PENDING_LABEL_NAME);
     }
@@ -65,7 +69,6 @@ export default class EmailChecker {
       pendingThreads = pendingLabel.getThreads();
     }
     const doneLabel = EmailChecker.assertLabel(EmailChecker.DONE_LABEL_NAME);
-    const config = Config.get();
 
     for (let i = pendingThreads.length - 1; i >= 0; i--) {
       const thread = pendingThreads[i];

@@ -194,6 +194,23 @@ export default class EmailCheckerTest implements JASLib.Test {
         t.expect(BalanceSheet.addPayment).toHaveBeenCalled();
         this.expectLabelCounts(t, {pending: 0, done: 1, failed: 0});
       });
+
+      t.it('does not crash for config without search types', () => {
+        t.setConfig(Config.getLoanConfigForTest(undefined, {
+          searchQuery: {paymentTypes: []},
+        }));
+
+        // Valid messages in two threads.
+        setDataWithPendingMessages([[VENMO_MESSAGE], [ZELLE_MESSAGE]]);
+
+        // Expect the call not to throw.
+        t.expect(() => EmailChecker.checkLabeledEmails()).not.toThrow();
+
+        // Expect nothing to have happened.
+        t.expect(EmailSender.sendPaymentThanks).not.toHaveBeenCalled();
+        t.expect(BalanceSheet.addPayment).not.toHaveBeenCalled();
+        this.expectLabelCounts(t, {pending: 2, done: 0, failed: 0});
+      });
     });
   }
 }

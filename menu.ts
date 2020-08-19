@@ -1,5 +1,6 @@
 import {JASLib} from 'jas_api';
 
+import {Executrix} from './api';
 import BalanceSheet from './balance_sheet';
 import ClientSheetManager from './client_sheet_manager';
 import Config from './config';
@@ -46,7 +47,8 @@ export class Menu {
 
     for (const {spreadsheetAgnostic, functionName} of MenuItems.Specs) {
       if (spreadsheetAgnostic) {
-        globalThis[`menu_${functionName}`] = MenuItems[functionName];
+        globalThis[`menu_${functionName}`] = () =>
+            Executrix.run(MenuItems[functionName].bind(null));
       }
     }
 
@@ -55,8 +57,11 @@ export class Menu {
 
       for (const {spreadsheetAgnostic, functionName} of MenuItems.Specs) {
         if (!spreadsheetAgnostic) {
-          globalThis[`menu_${functionName}${suffix}`] =
-              (MenuItems[functionName] as Function).bind(null, spreadsheetId);
+          globalThis[`menu_${functionName}${suffix}`] = function(
+                                                            spreadsheetId) {
+            return Executrix.run(
+                MenuItems[functionName].bind(null, spreadsheetId));
+          }.bind(null, spreadsheetId);
         }
       }
     }

@@ -557,6 +557,30 @@ export default class BalanceSheetTest implements JASLib.Test {
           t.expect(sheet.getRowHeight(1)).toBe(79);
         });
       });
+
+      t.xit('bails early if status does not change', () => {
+        // Not actually sure how to write this test. I tried using DriveActivity
+        // but couldn't get auth scopes to ever work.
+
+        t.setConfig(Config.DEFAULT);
+        BalanceSheet.updateStatusCell();
+
+        const mostRecentWrite1 =
+            DriveActivity.Activity
+                .query({itemName: `items/${_JasLibContext.spreadsheetId}`})
+                .activities[0]
+                .timestamp;
+
+        BalanceSheet.updateStatusCell();
+
+        const mostRecentWrite2 =
+            DriveActivity.Activity
+                .query({itemName: `items/${_JasLibContext.spreadsheetId}`})
+                .activities[0]
+                .timestamp;
+
+        t.expect(mostRecentWrite2).toBe(mostRecentWrite1);
+      });
     });
   }
 }

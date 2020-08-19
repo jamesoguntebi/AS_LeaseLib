@@ -192,6 +192,13 @@ export default class BalanceSheet {
 
     const sheet = BalanceSheet.getSheet();
     const statusCell = sheet.getRange(1, 1);
+    const newRichText = rtBuilder.build();
+
+    // Do nothing if the text hasn't changed. This is important, because
+    // otherwise every day would add an entry in Drive Activity Log for every
+    // client sheet.
+    if (statusCell.getValue() === newRichText.getText()) return;
+
     statusCell.setRichTextValue(rtBuilder.build());
     statusCell.setFontSize(12);
 
