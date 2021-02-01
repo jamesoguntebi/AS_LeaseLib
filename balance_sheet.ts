@@ -3,6 +3,8 @@ import {SSLib} from 'ss_api';
 import Util from './_util';
 import Config from './config';
 
+
+
 export default class BalanceSheet {
   static readonly SHEET_NAME = 'Balance';
 
@@ -49,10 +51,12 @@ export default class BalanceSheet {
   static dailyUpdate() {
     const currentDayOfMonth = BalanceSheet.getCurrentDayOfMonth();
     const config = Config.get();
+    const date = Util.convertTimeZone(new Date());
+    Logger.log(`Date for daily update: ${date}`);
 
     if (config.rentConfig?.dueDayOfMonth === currentDayOfMonth) {
       BalanceSheet.insertRow({
-        date: new Date(),
+        date,
         description: 'Rent due',
         transaction: -config.rentConfig.monthlyAmount,
       });
@@ -61,7 +65,7 @@ export default class BalanceSheet {
         config.loanConfig?.interestDayOfMonth === currentDayOfMonth &&
         config.loanConfig.interestRate > 0) {
       BalanceSheet.insertRow({
-        date: new Date(),
+        date,
         description: 'Monthly interest',
         transaction: 'interest',
       });

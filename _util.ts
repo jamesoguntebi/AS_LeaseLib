@@ -12,6 +12,8 @@ export default class Util {
 
   private static DAY_IN_MILLIS = 24 * 60 * 60 * 1000;
 
+  public static DEFAULT_TIME_ZONE = 'America/New_York';
+
   /**
    * Formats an amount into a money string like $1,556.01.
    * - If there are no cents, rounds. Like $1,556
@@ -20,7 +22,8 @@ export default class Util {
    */
   static formatMoney(amount: number): string {
     const formatter = Number.isInteger(amount) ?
-        Util.MONEY_FORMATTER : Util.MONEY_FORMATTER_WITH_CENTS;
+        Util.MONEY_FORMATTER :
+        Util.MONEY_FORMATTER_WITH_CENTS;
     let formatted = formatter.format(amount);
     if (amount < 0) {
       // Insert the dollar sign after the negative.
@@ -80,5 +83,9 @@ export default class Util {
           'Day of month must be a whole number from 1 to 28 to ' +
           `valid in all months. Got ${day}`);
     }
+  }
+
+  static convertTimeZone(date: Date, timeZone = Util.DEFAULT_TIME_ZONE) {
+    return new Date(date.toLocaleString('en-US', {timeZone}));
   }
 }
