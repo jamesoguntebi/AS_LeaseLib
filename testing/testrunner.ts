@@ -1,5 +1,4 @@
-import {JASLib} from 'jas_api'
-
+import {JASLib} from 'jas_api';
 import BalanceSheetTest from '../balance_sheet_test';
 import ClientSheetManagerTest from '../client_sheet_manager_test';
 import ConfigTest from '../config_test';
@@ -7,8 +6,9 @@ import EmailCheckerTest from '../email_checker_test';
 import EmailSenderTest from '../email_sender_test';
 import {MenuTest} from '../menu_test';
 import UtilTest from '../util_test';
-
 import Tester from './tester';
+
+
 
 export function runTests(params: TestRunnerOptions|string = {}) {
   if (typeof params === 'string') {

@@ -23,6 +23,8 @@ P1:
 - for friendly date string, even if the year is different, don't put the year
   unless it's not than x months away from today. Maybe 3 months or something.
   Maybe just 1
+- parse venmo link from email
+  - paymentid and date is enough
 
 P2:
 - option to add partial payment
