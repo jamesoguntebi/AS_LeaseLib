@@ -1,9 +1,13 @@
 import {JASLib} from 'jas_api';
+import {SSLib} from 'ss_api';
 
+import Util from './_util';
 import BalanceSheet from './balance_sheet';
 import Config from './config';
 import {Menu} from './menu';
 import {Triggers} from './triggers';
+
+
 
 export default class ClientSheetManager {
   private static readonly PROPERTY_NAME = 'REGISTERED_CLIENTS';
@@ -45,6 +49,11 @@ export default class ClientSheetManager {
 
     try {
       _JasLibContext.spreadsheetId = spreadsheetId;
+
+      // So that dates in the sheet don't get off-by-1 errors.
+      SSLib.JasSpreadsheet.getSpreadsheet(spreadsheetId)
+          .setSpreadsheetTimeZone(Util.DEFAULT_TIME_ZONE);
+
       Config.get();  // This will validate that the Config sheet.
       BalanceSheet.validateActiveSheet();
       Menu.validateSpreadsheetId(spreadsheetId);
