@@ -52,3 +52,11 @@ $ clasp run 'runTests' -p '[{"spreadsheetId": "<id>", "testClassNames": ["UtilTe
 
 In `appscript.json`, this project depends on other libraries at a specific
 version.
+
+## Misc
+
+- On Chrome OS in linux terminal, `clasp login` cannot find the port. Use `clasp login --no-localhost`
+
+- Error: `Error retrieving access token: Error: invalid_grant`
+
+    > $ clasp login --creds creds.json

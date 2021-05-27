@@ -1,5 +1,8 @@
 import {SSLib} from 'ss_api';
+
 import Util from './_util';
+
+
 
 export default class Config {
   static readonly SHEET_NAME = 'Config';
@@ -25,11 +28,14 @@ export default class Config {
     const F = Config.FIELD;
     const configSheet = SSLib.JasSpreadsheet.findSheet(
         Config.SHEET_NAME, _JasLibContext.spreadsheetId);
-    const valueColumn = SSLib.JasSpreadsheet.findColumn('value', configSheet);
+    const sheetCache = SSLib.JasSpreadsheet.createSheetCache(configSheet);
+    const valueColumn =
+        SSLib.JasSpreadsheet.findColumnInCache('value', sheetCache);
 
     const getCellData = (configField: ConfigField) => {
-      const configRow = SSLib.JasSpreadsheet.findRow(configField, configSheet);
-      return new SSLib.CellData(configSheet.getRange(configRow, valueColumn));
+      const configRow =
+          SSLib.JasSpreadsheet.findRowInCache(configField, sheetCache);
+      return sheetCache.data[configRow][valueColumn];
     };
 
     // Only rent or loan config should be set. Don't set them at all if the
