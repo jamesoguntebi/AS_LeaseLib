@@ -1,0 +1,11 @@
+{
+  "name": "AppsScript app for managing leases and loans.",
+  "description": "AppsScript addon for managing leases and loans.",
+  "private": true,
+  "author": "James Oguntebi",
+  "scripts": {
+    "pushandwatch": "clasp push --watch",
+    "test": "clasp run 'runTests' -p '[\"$npm_config_llclass\"]'",
+    "testall": "clasp run 'runTests'"
+  }
+}

@@ -3,3 +3,4 @@
 *_lib.d.ts
 .git*
 .clasprc.json
+package.json
