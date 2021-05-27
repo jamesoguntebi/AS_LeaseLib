@@ -1,4 +1,4 @@
-import {JASLib} from 'jas_api'
+import {JASLib} from 'jas_api';
 
 import BalanceSheet from './balance_sheet';
 import ClientSheetManager from './client_sheet_manager';
@@ -6,6 +6,7 @@ import Config from './config';
 import {Menu} from './menu';
 import Tester from './testing/tester';
 import {Triggers} from './triggers';
+
 
 export default class ClientSheetManagerTest implements JASLib.Test {
   private expectRegisteredCount(t: Tester, expected: number) {

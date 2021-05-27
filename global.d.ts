@@ -6,3 +6,6 @@ interface LibContext {
 }
 
 declare let _JasLibContext: LibContext;
+
+/** Whether a unit test is taking place. */
+declare let UNIT_TESTING = false;

@@ -50,9 +50,14 @@ export default class ClientSheetManager {
     try {
       _JasLibContext.spreadsheetId = spreadsheetId;
 
-      // So that dates in the sheet don't get off-by-1 errors.
-      SSLib.JasSpreadsheet.getSpreadsheet(spreadsheetId)
-          .setSpreadsheetTimeZone(Util.DEFAULT_TIME_ZONE);
+      // Don't do this in unit tests because
+      // a) we only need to do it once
+      // b) it doesn't work in the test environment
+      if (!UNIT_TESTING) {
+        // So that dates in the sheet don't get off-by-1 errors.
+        SSLib.JasSpreadsheet.getSpreadsheet(spreadsheetId)
+            .setSpreadsheetTimeZone(Util.DEFAULT_TIME_ZONE);
+      }
 
       Config.get();  // This will validate that the Config sheet.
       BalanceSheet.validateActiveSheet();

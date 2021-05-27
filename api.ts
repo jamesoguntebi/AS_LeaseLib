@@ -1,6 +1,7 @@
 _JasLibContext = {
   spreadsheetId: ''
 };
+UNIT_TESTING = false;
 
 export function testing(spreadsheetId: string) {
   _JasLibContext.spreadsheetId = spreadsheetId;
