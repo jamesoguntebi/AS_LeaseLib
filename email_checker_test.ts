@@ -1,11 +1,11 @@
 import {JASLib} from 'jas_api';
-
 import BalanceSheet from './balance_sheet';
 import ClientSheetManager from './client_sheet_manager';
 import Config, {PaymentType} from './config';
 import EmailChecker from './email_checker';
 import EmailSender from './email_sender';
 import Tester from './testing/tester';
+
 
 
 
@@ -109,7 +109,6 @@ export default class EmailCheckerTest implements JASLib.Test {
           .and.callFake(JASLib.FakeGmailApp.getUserLabelByName);
       t.spyOn(BalanceSheet, 'addPayment');
       t.spyOn(EmailSender, 'sendPaymentThanks');
-      t.spyOn(EmailSender, 'sendMultimessageThreadWarning');
 
       // Call the function with the test configs.
       t.spyOn(ClientSheetManager, 'forEach').and.callFake((fn: Function) => {

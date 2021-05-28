@@ -58,21 +58,6 @@ export default class EmailSender {
       GmailApp.sendEmail('jaoguntebi@gmail.com', subject, body);
     }
   }
-
-  static sendMultimessageThreadWarning(thread: GmailThread) {
-    const config = Config.get();
-
-    const htmlBody =
-        `A payment was just processed for <a href="` +
-        `https://mail.google.com/mail/#inbox/${
-            thread.getId()}">this email</a> with subject '${
-            thread.getFirstMessageSubject()}'. The thread has multiple ` +
-        `messages but processing stopped after the first valid message. ` +
-        `Ensure there are not multiple payments in the thread.`;
-    GmailApp.sendEmail(
-        'jaoguntebi@gmail.com', 'AS Lease Lib - MultiMessage Thread Warning',
-        htmlBody, {htmlBody, name: config.emailDisplayName});
-  }
 }
 
 /** Keep in sync with email_template_payment.html. */
