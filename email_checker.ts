@@ -253,6 +253,7 @@ export default class EmailChecker {
 
         for (const thread of paymentThreads) {
           for (const message of thread.getMessages()) {
+            // if (parsedMessageIds.has(id)) continue;
             for (const paymentType of config.searchQuery.paymentTypes) {
               const parser = EmailChecker.PARSERS.get(paymentType);
               const paymentAmount = parser(message);
@@ -268,7 +269,7 @@ export default class EmailChecker {
     }
 
     // Find threads that didn't match any client sheets and write them to
-    // to storage. We don't want to check against all clinet sheets every time.
+    // to storage. We don't want to check against all client sheets every time.
   }
 
   private static assertLabel(labelName: string): GmailLabel {
