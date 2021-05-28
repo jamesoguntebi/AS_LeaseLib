@@ -1,3 +1,4 @@
+import {Executrix} from './api';
 import BalanceSheet from './balance_sheet';
 import ClientSheetManager from './client_sheet_manager';
 import Config, {PaymentType} from './config';
@@ -225,31 +226,49 @@ export default class EmailChecker {
           '("deposited your payment"|"deposited your zelle payment"|"into your account")',
     ],
     ['Venmo', '(from:venmo subject:"paid you")'],
+    ['Test', '(subject:"AS Lease Lib Test Payment")'],
   ]);
 
   /**
-   * Searches all emails for messages that look like payments from the renter.
+   * Searches all emails for messages that look like payments.
    */
   static queryAllEmails() {
-    const config = Config.get();
+    // Get all emails in the last hour that look like payments.
+    const query = `newer_than:1h  (${
+            [...EmailChecker.PAYMENT_QUERIES.values()]
+                .map(q => `(${q})`)
+                .join(' OR ')})`;
+    const paymentThreads = GmailApp.search(query);
 
-    const paymentTypes = config.searchQuery.paymentTypes;
-    const query = `newer_than:25d older_than:20d (` +
-        [
-          ...paymentTypes.map(pt => `(${EmailChecker.PAYMENT_QUERIES.get(pt)}`)
-        ].join(' OR ') /*+
-     `) + ${config.searchQuery.searchName}`*/
-        ;
-    const threads = GmailApp.search(query);
+    // Filter out threads that have been checked before and don't match any
+    // client sheet. Keep in mind that a thread could have gotten a new message
+    // that matches a clients heet. Maybe store something like
+    // Map(threadId -> checkedMessageCount). And if the message count hasn't
+    // gone up, filter the thread out.
 
-    const messages = [];
-    threads.forEach(thread => thread.getMessages().forEach(message => {
-      messages.push({
-        subject: message.getSubject(),
-        body: message.getPlainBody(),
-        from: message.getFrom(),
+    if (paymentThreads.length) {
+      ClientSheetManager.forEach(() => {
+        const config = Config.get();
+        if (!config.searchQuery.paymentTypes.length) return;
+
+        for (const thread of paymentThreads) {
+          for (const message of thread.getMessages()) {
+            for (const paymentType of config.searchQuery.paymentTypes) {
+              const parser = EmailChecker.PARSERS.get(paymentType);
+              const paymentAmount = parser(message);
+              if (paymentAmount) {
+                // TODO: Process payment as in checkLabeledEmailsHelper
+                // Add a label indicating it was auto-parsed
+                break;
+              }
+            }
+          }
+        }
       });
-    }));
+    }
+
+    // Find threads that didn't match any client sheets and write them to
+    // to storage. We don't want to check against all clinet sheets every time.
   }
 
   private static assertLabel(labelName: string): GmailLabel {
@@ -301,4 +320,8 @@ type EmailParser = (message: GmailMessage) => number|null;
 interface ParsedMessage {
   id: string;
   timestamp: number;
+}
+
+export function queryAllEmails() {
+  return Executrix.run(() => EmailChecker.queryAllEmails());
 }
