@@ -2,8 +2,6 @@ import Util from './_util';
 import BalanceSheet from './balance_sheet';
 import Config from './config';
 
-type GmailThread = GoogleAppsScript.Gmail.GmailThread;
-
 export default class EmailSender {
   static sendPaymentThanks(amount: number) {
     const config = Config.get();
