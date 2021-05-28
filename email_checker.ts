@@ -283,13 +283,9 @@ export default class EmailChecker {
   }
 
   private static writeParsedMessages(messages: ParsedMessage[]) {
-    const now = Date.now();
+    const purgeThreshold = Date.now() - EmailChecker.STORAGE_MESSAGE_TTL_MS;
+    messages = messages.filter(m => m.timestamp > purgeThreshold);
 
-    Logger.log(`now: ${now}`);
-    Logger.log(
-        `Writing messages with timestamps: ${messages.map(m => m.timestamp)}`);
-    messages = messages.filter(
-        m => m.timestamp > now - EmailChecker.STORAGE_MESSAGE_TTL_MS);
     PropertiesService.getScriptProperties().setProperty(
         EmailChecker.PROPERTY_NAME, JSON.stringify(messages));
   }
