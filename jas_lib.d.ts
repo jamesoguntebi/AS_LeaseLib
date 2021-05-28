@@ -151,9 +151,11 @@ declare module "testing/fakes" {
         threads?: GmailThreadParams[];
     }
     interface GmailThreadParams {
+        id?: string;
         messages?: GmailMessageParams[];
     }
     export interface GmailMessageParams {
+        id?: string;
         date?: Date;
         from?: string;
         plainBody?: string;

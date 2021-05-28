@@ -43,9 +43,20 @@ export default class EmailSender {
   }
 
   static sendTestPaymentMessage(amount = 50) {
-    GmailApp.sendEmail(
-        'jaoguntebi@gmail.com', 'AS Lease Lib Test Payment',
-        `Payment amount: $${amount}`);
+    const dayInMillis = 24 * 60 * 60 * 1000;
+    const minSameThreadTime = Date.now() - dayInMillis;
+    const subject = 'AS Lease Lib Test Payment';
+    const body = `Payment amount: $${amount}`;
+
+    const thread =
+        GmailApp.search(`subject:(${subject})`)
+            .find(t => t.getLastMessageDate().getTime() > minSameThreadTime);
+
+    if (thread) {
+      thread.reply(body);
+    } else {
+      GmailApp.sendEmail('jaoguntebi@gmail.com', subject, body);
+    }
   }
 
   static sendMultimessageThreadWarning(thread: GmailThread) {

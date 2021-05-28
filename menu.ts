@@ -7,6 +7,7 @@ import Config from './config';
 import EmailChecker from './email_checker';
 import EmailSender from './email_sender';
 
+
 type Spreadsheet = GoogleAppsScript.Spreadsheet.Spreadsheet;
 
 /**
@@ -177,7 +178,7 @@ export class MenuItems {
 
   static checkLabeledEmail(spreadsheetId: string) {
     _JasLibContext.spreadsheetId = spreadsheetId;
-    EmailChecker.checkLabeledEmails();
+    EmailChecker.checkLabeledEmailsForCurrentSheet();
   }
 
   static validateConfig(spreadsheetId: string) {
