@@ -48,6 +48,14 @@ By default, tests are run against the [template sheet](https://docs.google.com/s
 $ clasp run 'runTests' -p '[{"spreadsheetId": "<id>", "testClassNames": ["UtilTest"]}]'
 ```
 
+### Triggers
+
+See triggers.ts. There are triggers that run when sheets are opened, and
+triggers that run on a timer. The sheet-event triggers are updated whenever a
+client sheet is registered or unregistered. The clock triggers can be updated
+by running `clasp run 'updateClockTriggers'` from the command line or running
+the function from AppsScript web UI.
+
 ### Library Versions
 
 In `appscript.json`, this project depends on other libraries at a specific

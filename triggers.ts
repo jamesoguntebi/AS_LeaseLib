@@ -27,7 +27,7 @@ export function dailyBalanceUpdate() {
   });
 }
 
-export function routineCheckLabeledEmails() {
+export function routineCheckEmails() {
   return Executrix.run(() => EmailChecker.checkEmails('allSheets'));
 }
 
@@ -83,11 +83,11 @@ export class Triggers {
       }
     }
 
-    ScriptApp.newTrigger('routineCheckLabeledEmails')
+    ScriptApp.newTrigger('routineCheckEmails')
         .timeBased()
         .everyMinutes(5)
         .create();
-    Logger.log(`Installed trigger for routineCheckLabeledEmails.`);
+    Logger.log(`Installed trigger for routineCheckEmails.`);
 
     ScriptApp.newTrigger('dailyBalanceUpdate')
         .timeBased()
