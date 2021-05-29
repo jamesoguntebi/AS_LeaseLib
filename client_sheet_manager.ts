@@ -25,17 +25,14 @@ export default class ClientSheetManager {
     const storedSpreadsheetId = _JasLibContext.spreadsheetId;
 
     const spreadsheetIds = ClientSheetManager.getAll();
-    const spreadsheetNames = ClientSheetManager.getOrCreateSpreadsheetNames();
+    const spreadsheetNames = ClientSheetManager.readStringArray(
+        ClientSheetManager.STORAGE_PROPERTIES.CLIENT_SHEET_NAMES);
 
-    Logger.log(`Registered clients: ${
-        JSON.stringify([...spreadsheetNames.values()])}`);
+    Logger.log(
+        `Registered clients: ${JSON.stringify(spreadsheetNames, null, 2)}`);
 
     for (const spreadsheetId of spreadsheetIds) {
       _JasLibContext.spreadsheetId = spreadsheetId;
-
-      spreadsheetNames.set(
-          spreadsheetId,
-          SSLib.JasSpreadsheet.getSpreadsheet(spreadsheetId).getName());
 
       if (fn(spreadsheetId)) break;
 
@@ -46,8 +43,6 @@ export default class ClientSheetManager {
       // a safeguard to prevent cross-talk between client sheets.
       Utilities.sleep(500);
     }
-
-    ClientSheetManager.setSpreadsheetNames(spreadsheetNames);
 
     _JasLibContext.spreadsheetId = storedSpreadsheetId;
   }
@@ -88,9 +83,9 @@ export default class ClientSheetManager {
 
     Triggers.installForClientSheet(spreadsheetId);
     registeredSet.add(spreadsheetId);
-    PropertiesService.getScriptProperties().setProperty(
+    ClientSheetManager.writeStringArray(
         ClientSheetManager.STORAGE_PROPERTIES.REGISTERED_CLIENTS,
-        JSON.stringify(Array.from(registeredSet)));
+        [...registeredSet.values()]);
 
     Logger.log(`Registered client sheet ${spreadsheetId}`);
   }
@@ -100,9 +95,9 @@ export default class ClientSheetManager {
     if (!registeredSet.has(spreadsheetId)) return;
 
     registeredSet.delete(spreadsheetId);
-    PropertiesService.getScriptProperties().setProperty(
+    ClientSheetManager.writeStringArray(
         ClientSheetManager.STORAGE_PROPERTIES.REGISTERED_CLIENTS,
-        JSON.stringify(Array.from(registeredSet)));
+        [...registeredSet.values()]);
 
     Triggers.updateOpenAndEditTriggers();
 
@@ -111,57 +106,54 @@ export default class ClientSheetManager {
 
   /** Returns all client sheet spreadsheet ids. */
   static getAll(): string[] {
-    const propertyValue = PropertiesService.getScriptProperties().getProperty(
+    return ClientSheetManager.readStringArray(
         ClientSheetManager.STORAGE_PROPERTIES.REGISTERED_CLIENTS);
+  }
+
+  static getClientSheetNames() {
+    return ClientSheetManager.readStringArray(
+        ClientSheetManager.STORAGE_PROPERTIES.CLIENT_SHEET_NAMES);
+  }
+
+  static updateClientSheetNames() {
+    const spreadsheetNames: string[] = [];
+
+    ClientSheetManager.forEach((spreadsheetId) => {
+      spreadsheetNames.push(
+          SSLib.JasSpreadsheet.getSpreadsheet(spreadsheetId).getName());
+    });
+
+    ClientSheetManager.writeStringArray(
+        ClientSheetManager.STORAGE_PROPERTIES.CLIENT_SHEET_NAMES,
+        spreadsheetNames);
+
+    return spreadsheetNames;
+  }
+
+  /** Returns all client sheet spreadsheet ids. */
+  private static readStringArray(propertyName: string): string[] {
+    const propertyValue =
+        PropertiesService.getScriptProperties().getProperty(propertyName);
     if (!propertyValue) return [];
 
     try {
-      const clientList = JSON.parse(propertyValue);
-      if (clientList instanceof Array &&
-          clientList.every(clientId => typeof clientId === 'string')) {
-        return clientList;
+      const stringList = JSON.parse(propertyValue);
+      if (stringList instanceof Array &&
+          stringList.every(entry => typeof entry === 'string')) {
+        return stringList;
       } else {
-        throw new Error(`Stored client sheet id list has incorrect format: ${
+        throw new Error(`Stored ${propertyName} list has incorrect format: ${
             propertyValue}`);
       }
     } catch (e) {
-      Logger.log('Failure to parse stored client sheet id list.');
+      Logger.log(`Failure to parse stored ${propertyName} list.`);
       throw e;
     }
   }
 
-  private static getOrCreateSpreadsheetNames(): Map<string, string> {
-    let propertyValue = PropertiesService.getScriptProperties().getProperty(
-        ClientSheetManager.STORAGE_PROPERTIES.CLIENT_SHEET_NAMES);
-    if (!propertyValue) propertyValue = '[]';
-
-    const fail = () => {
-      throw new Error(`Malford client sheet name map: ${propertyValue}`);
-    };
-
-    let propertyJson = [];
-    try {
-      propertyJson = JSON.parse(propertyValue);
-    } catch (e) {
-      fail();
-    }
-
-    if (!Array.isArray(propertyJson)) fail();
-
-    for (const mapEntry of propertyJson) {
-      if (!Array.isArray(mapEntry)) fail();
-      if (mapEntry.length !== 2 || typeof mapEntry[0] !== 'string' ||
-          typeof mapEntry[1] !== 'string') {
-        fail();
-      }
-    }
-
-    return new Map(propertyJson as Array<[string, string]>);
-  }
-
-  private static setSpreadsheetNames(data: Map<string, string>) {
+  /** Returns all client sheet spreadsheet ids. */
+  private static writeStringArray(propertyName: string, value: string[]) {
     PropertiesService.getScriptProperties().setProperty(
-        ClientSheetManager.STORAGE_PROPERTIES.CLIENT_SHEET_NAMES,
-        JSON.stringify([...data]));
+        propertyName, JSON.stringify(Array.from(value)));
   }
 }

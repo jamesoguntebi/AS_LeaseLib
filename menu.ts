@@ -96,6 +96,18 @@ export class MenuItems {
       spreadsheetAgnostic: true,
     },
     {
+      icon: '↻',
+      displayName: 'Update client sheet names',
+      functionName: 'updateClientSheetNames',
+      spreadsheetAgnostic: true,
+    },
+    {
+      icon: '🗒',
+      displayName: 'Show client sheet names',
+      functionName: 'showClientSheetNames',
+      spreadsheetAgnostic: true,
+    },
+    {
       icon: '🗵',
       displayName: 'Unregister this spreadsheet',
       functionName: 'unregisterClientSheet',
@@ -203,6 +215,18 @@ export class MenuItems {
     } else {
       Logger.log('Test payment email cancelled');
     }
+  }
+
+  static updateClientSheetNames() {
+    const spreadsheetNames = ClientSheetManager.updateClientSheetNames();
+    SpreadsheetApp.getUi().alert(
+        `Spreadsheet names:\n\n${spreadsheetNames.join('\n')}`);
+  }
+
+  static showClientSheetNames() {
+    const spreadsheetNames = ClientSheetManager.getClientSheetNames();
+    SpreadsheetApp.getUi().alert(
+        `Spreadsheet names:\n\n${spreadsheetNames.join('\n')}`);
   }
 }
 

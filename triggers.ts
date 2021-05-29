@@ -164,7 +164,7 @@ class Debouncer {
       dataLater.delete(key);
       Debouncer.setProperty(dataLater);
     } else {
-      Logger.log('Call debounced.')
+      Logger.log('Call debounced.');
     }
   }
 
