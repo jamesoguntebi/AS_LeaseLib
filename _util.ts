@@ -20,8 +20,8 @@ export default class Util {
    * - If there are cents, always uses two digits.
    * - Uses commas for thousands separator
    */
-  static formatMoney(amount: number): string {
-    const formatter = Number.isInteger(amount) ?
+  static formatMoney(amount: number, forceCents = false): string {
+    const formatter = Number.isInteger(amount) && !forceCents ?
         Util.MONEY_FORMATTER :
         Util.MONEY_FORMATTER_WITH_CENTS;
     let formatted = formatter.format(amount);

@@ -1,8 +1,10 @@
-import {JASLib} from 'jas_api'
-import {SSLib} from 'ss_api'
+import {JASLib} from 'jas_api';
+import {SSLib} from 'ss_api';
 
 import Config, {ConfigField, ConfigParams} from './config';
 import Tester from './testing/tester';
+
+
 
 type Range = GoogleAppsScript.Spreadsheet.Range;
 
@@ -68,6 +70,8 @@ export default class ConfigTest implements JASLib.Test {
 
         if (c.loanConfig) {
           this.setValue(
+              t, F.loanConfig_defaultPayment, c.loanConfig.defaultPayment);
+          this.setValue(
               t, F.loanConfig_interestRate, c.loanConfig.interestRate);
           this.setValue(
               t, F.loanConfig_interestDayOfMonth,
@@ -79,21 +83,23 @@ export default class ConfigTest implements JASLib.Test {
               t, F.rentConfig_monthlyAmount, c.rentConfig.monthlyAmount);
           this.setValue(
               t, F.rentConfig_dueDayOfMonth, c.rentConfig.dueDayOfMonth);
+          this.clearValue(t, F.loanConfig_defaultPayment);
           this.clearValue(t, F.loanConfig_interestRate);
           this.clearValue(t, F.loanConfig_interestDayOfMonth);
         }
       };
 
-      const configSpecs =
-          [
-            {name: 'loan', config: Config.getLoanConfigForTest()},
-            {name: 'rent', config: Config.getRentConfigForTest()},
-          ]
+      const configSpecs = [
+        {name: 'loan', config: Config.getLoanConfigForTest()},
+        {name: 'rent', config: Config.getRentConfigForTest()},
+      ];
 
-          for (const {name, config} of configSpecs) {
+      for (const {name, config} of configSpecs) {
         t.describe(`after writing ${name} config`, () => {
           writeConfig(config);
           t.it('reads back the config', () => {
+            Logger.log(JSON.stringify(Config.get(), null, 2));
+            Logger.log(JSON.stringify(config, null, 2));
             t.expect(Config.get()).toEqual(config);
           });
         });
@@ -120,6 +126,16 @@ export default class ConfigTest implements JASLib.Test {
 
         t.expect(() => Config.getLoanConfigForTest(undefined, {
            loanConfig: {interestRate: 0},
+         })).not.toThrow();
+      });
+
+      t.it('loan config with negative default payment', () => {
+        t.expect(() => Config.getLoanConfigForTest(undefined, {
+           loanConfig: {defaultPayment: -10},
+         })).toThrow('Illegal negative default payment');
+
+        t.expect(() => Config.getLoanConfigForTest(undefined, {
+           loanConfig: {defaultPayment: 10},
          })).not.toThrow();
       });
 

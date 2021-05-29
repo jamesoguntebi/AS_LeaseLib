@@ -1,7 +1,8 @@
-import {JASLib} from 'jas_api'
+import {JASLib} from 'jas_api';
 
 import Util from './_util';
 import Tester from './testing/tester';
+
 
 export default class UtilTest implements JASLib.Test {
   readonly name: string = 'UtilTest';
@@ -24,6 +25,10 @@ export default class UtilTest implements JASLib.Test {
 
       t.it('always uses 2 digits when there are cents', () => {
         t.expect(Util.formatMoney(15.1)).toBe('$15.10');
+      });
+
+      t.it('uses 2 digits when cents are forced', () => {
+        t.expect(Util.formatMoney(15, true /* forceCents */)).toBe('$15.00');
       });
 
       t.it('combines correct formatting', () => {

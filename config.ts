@@ -56,9 +56,12 @@ export default class Config {
     const loanInterestRateCellData = getCellData(F.loanConfig_interestRate);
     const loanMonthlyInterestDayCellData =
         getCellData(F.loanConfig_interestDayOfMonth);
+    const loanDefaultPaymentCellData = getCellData(F.loanConfig_defaultPayment);
     if (!loanInterestRateCellData.isBlank() ||
-        !loanMonthlyInterestDayCellData.isBlank()) {
+        !loanMonthlyInterestDayCellData.isBlank() ||
+        !loanDefaultPaymentCellData.isBlank()) {
       loanConfig = {
+        defaultPayment: loanDefaultPaymentCellData.numberOptional(),
         interestRate: loanInterestRateCellData.number(),
         interestDayOfMonth: loanMonthlyInterestDayCellData.numberOptional(),
       };
@@ -99,7 +102,7 @@ export default class Config {
     if (config.rentConfig) {
       Util.validateRecurringDayOfMonth(config.rentConfig.dueDayOfMonth);
       if (config.rentConfig.monthlyAmount < 0) {
-        throw new Error('Illegal negative rent');
+        throw new Error('Illegal negative rent.');
       }
     }
     if (config.loanConfig) {
@@ -113,6 +116,9 @@ export default class Config {
       if (config.loanConfig.interestRate < 0 ||
           config.loanConfig.interestRate > 1) {
         throw new Error('Interest rate must be between 0 and 1.');
+      }
+      if (config.loanConfig.defaultPayment < 0) {
+        throw new Error('Illegal negative default payment.');
       }
     }
 
@@ -178,6 +184,7 @@ export default class Config {
     return Config.getConfigForTest(
         {
           loanConfig: {
+            defaultPayment: 100,
             interestRate: 0.05,
             interestDayOfMonth: 1,
             ...overrides.loanConfig,
@@ -233,6 +240,7 @@ export default class Config {
     emailDisplayName: 'email display name',
     linkToSheetHref: 'link to sheet href',
     linkToSheetText: 'link to sheet text',
+    loanConfig_defaultPayment: 'loan default payment',
     loanConfig_interestRate: 'loan interest rate',
     loanConfig_interestDayOfMonth: 'loan monthly interest day',
     rentConfig_monthlyAmount: 'rent monthly amount',
@@ -263,6 +271,7 @@ interface RentConfig {
 }
 
 interface LoanConfig {
+  defaultPayment?: number;
   interestRate: number;
   interestDayOfMonth?: number;
 }

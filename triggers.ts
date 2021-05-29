@@ -28,14 +28,14 @@ export function dailyBalanceUpdate() {
 }
 
 export function routineCheckLabeledEmails() {
-  return Executrix.run(() => EmailChecker.checkLabeledEmailsForAllSheets());
+  return Executrix.run(() => EmailChecker.checkEmails('allSheets'));
 }
 
 /**
  * Programmatically handles triggers. See them in the web ui at:
  * https://script.google.com/home/triggers
  *
- * Writing Tests for this is tricky because it would require either
+ * Writing tests for this is tricky because it would require either
  * a) Faking the entire Trigger API to provide fake but meaningful data.
  * b) Temporarily storing real triggers and the replacing them after the test.
  */
