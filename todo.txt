@@ -19,7 +19,6 @@ P1:
 - abstract out the notion of a script that governs multiple spreadsheets, and
   put it in JAS_SS_Lib
 - email when rent due or interest applied is added
-- date on interest applied is wrong
 - for friendly date string, even if the year is different, don't put the year
   unless it's not than x months away from today. Maybe 3 months or something.
   Maybe just 1
@@ -37,16 +36,8 @@ P2:
   - add gmail message id in invisible column?
 - static file analysis
   - no 'this' in ts files
-- optimize Config.get
-  - maybe only call it once per method
-    - some way to cache the current Config
-  - read the entire sheet and operate on it, rather than reading every cell one
-    at a time
 - make doDailyUpdate idempotent
   - check if rent or interest was already applied
-- store both id and name in ClientSheetManager
-  - use this to print registered sheet names instead of Ids
-  - print one per line
 
 P3:
 - integrate with Plaid to *maybe* get Zelle Ids
@@ -57,12 +48,8 @@ P3:
 - validate config on edit
   - with a config valid checkbox!
   - throttle onEdit event per sheet using Properties
-- read all emails, and ask admin to verify emails that should be parsed
 
 P4
-- we get message date to use as transaction date. this date isn't always
-  correct. in one example, email timestamp EST is day X at 2:43am, but
-  message.getDate() is apparently day X-1
 - global.d.ts
 - tsconfig
 
@@ -193,6 +180,7 @@ P1:
   for such clients
 - only update status cell every day if there has actually been activity in the
   last day. otherwise, Drive activity log is polluted
+- date on interest applied is wrong
 
 P2:
 - instead of checking emails, let manual step be to label emails. script do the
@@ -200,6 +188,21 @@ P2:
 - Add email display name to config for outgoing emails
 - maybe manage triggers programatically?
   - https://developers.google.com/apps-script/reference/script/trigger-builder
+- optimize Config.get
+  - maybe only call it once per method
+    - some way to cache the current Config
+  - read the entire sheet and operate on it, rather than reading every cell one
+    at a time (this was the chosen path)
+- store both id and name in ClientSheetManager
+  - use this to print registered sheet names instead of Ids
+  - print one per line
 
 P3:
 - remove Zelle ID from balance row interface
+- read all emails, parsing the ones whose payment amount match the default
+  amount in the config
+
+P4:
+- we get message date to use as transaction date. this date isn't always
+  correct. in one example, email timestamp EST is day X at 2:43am, but
+  message.getDate() is apparently day X-1
