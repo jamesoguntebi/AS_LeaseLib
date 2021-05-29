@@ -10,7 +10,11 @@ import {Triggers} from './triggers';
 
 
 export default class ClientSheetManager {
-  private static readonly PROPERTY_NAME = 'REGISTERED_CLIENTS';
+  // Prefix: JAS - Lease Lib - ClientSheetManager
+  private static readonly STORAGE_PROPERTIES = {
+    REGISTERED_CLIENTS: 'jas_ll_csm_rc',
+    CLIENT_SHEET_NAMES: 'jas_ll_csm_csn',
+  };
 
   /**
    * Sets each registered spreadhsheet as the current spreadsheet in the library
@@ -21,9 +25,18 @@ export default class ClientSheetManager {
     const storedSpreadsheetId = _JasLibContext.spreadsheetId;
 
     const spreadsheetIds = ClientSheetManager.getAll();
-    Logger.log(`Registered clients: ${JSON.stringify(spreadsheetIds)}`);
+    const spreadsheetNames = ClientSheetManager.getOrCreateSpreadsheetNames();
+
+    Logger.log(`Registered clients: ${
+        JSON.stringify([...spreadsheetNames.values()])}`);
+
     for (const spreadsheetId of spreadsheetIds) {
       _JasLibContext.spreadsheetId = spreadsheetId;
+
+      spreadsheetNames.set(
+          spreadsheetId,
+          SSLib.JasSpreadsheet.getSpreadsheet(spreadsheetId).getName());
+
       if (fn(spreadsheetId)) break;
 
       // Applies all pending Spreadsheet changes.
@@ -33,6 +46,8 @@ export default class ClientSheetManager {
       // a safeguard to prevent cross-talk between client sheets.
       Utilities.sleep(500);
     }
+
+    ClientSheetManager.setSpreadsheetNames(spreadsheetNames);
 
     _JasLibContext.spreadsheetId = storedSpreadsheetId;
   }
@@ -74,7 +89,7 @@ export default class ClientSheetManager {
     Triggers.installForClientSheet(spreadsheetId);
     registeredSet.add(spreadsheetId);
     PropertiesService.getScriptProperties().setProperty(
-        ClientSheetManager.PROPERTY_NAME,
+        ClientSheetManager.STORAGE_PROPERTIES.REGISTERED_CLIENTS,
         JSON.stringify(Array.from(registeredSet)));
 
     Logger.log(`Registered client sheet ${spreadsheetId}`);
@@ -86,7 +101,7 @@ export default class ClientSheetManager {
 
     registeredSet.delete(spreadsheetId);
     PropertiesService.getScriptProperties().setProperty(
-        ClientSheetManager.PROPERTY_NAME,
+        ClientSheetManager.STORAGE_PROPERTIES.REGISTERED_CLIENTS,
         JSON.stringify(Array.from(registeredSet)));
 
     Triggers.updateOpenAndEditTriggers();
@@ -97,7 +112,7 @@ export default class ClientSheetManager {
   /** Returns all client sheet spreadsheet ids. */
   static getAll(): string[] {
     const propertyValue = PropertiesService.getScriptProperties().getProperty(
-        ClientSheetManager.PROPERTY_NAME);
+        ClientSheetManager.STORAGE_PROPERTIES.REGISTERED_CLIENTS);
     if (!propertyValue) return [];
 
     try {
@@ -113,5 +128,40 @@ export default class ClientSheetManager {
       Logger.log('Failure to parse stored client sheet id list.');
       throw e;
     }
+  }
+
+  private static getOrCreateSpreadsheetNames(): Map<string, string> {
+    let propertyValue = PropertiesService.getScriptProperties().getProperty(
+        ClientSheetManager.STORAGE_PROPERTIES.CLIENT_SHEET_NAMES);
+    if (!propertyValue) propertyValue = '[]';
+
+    const fail = () => {
+      throw new Error(`Malford client sheet name map: ${propertyValue}`);
+    };
+
+    let propertyJson = [];
+    try {
+      propertyJson = JSON.parse(propertyValue);
+    } catch (e) {
+      fail();
+    }
+
+    if (!Array.isArray(propertyJson)) fail();
+
+    for (const mapEntry of propertyJson) {
+      if (!Array.isArray(mapEntry)) fail();
+      if (mapEntry.length !== 2 || typeof mapEntry[0] !== 'string' ||
+          typeof mapEntry[1] !== 'string') {
+        fail();
+      }
+    }
+
+    return new Map(propertyJson as Array<[string, string]>);
+  }
+
+  private static setSpreadsheetNames(data: Map<string, string>) {
+    PropertiesService.getScriptProperties().setProperty(
+        ClientSheetManager.STORAGE_PROPERTIES.CLIENT_SHEET_NAMES,
+        JSON.stringify([...data]));
   }
 }
