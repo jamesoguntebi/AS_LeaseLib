@@ -12,8 +12,6 @@ P1:
 - Allow inserting row at correct date in balance sheet using date passed in to
   insertRow()
 - if interest and payment are the same date, make payment be before interest
-- optimizations
-  - store per-project configs in Properties, update onEdit
 - investigate if Menu function registration needs complex id mapping. or just
   incrementing index
 - abstract out the notion of a script that governs multiple spreadsheets, and
@@ -181,6 +179,9 @@ P1:
 - only update status cell every day if there has actually been activity in the
   last day. otherwise, Drive activity log is polluted
 - date on interest applied is wrong
+- optimizations
+  - store per-client configs in Properties, update onEdit
+  - no longer necessary. getting Config is now much faster
 
 P2:
 - instead of checking emails, let manual step be to label emails. script do the
